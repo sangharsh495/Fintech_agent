@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-04-07T19:09:49.237Z",
+  "totalTransactions": 1219,
+  "dateRange": {
+    "start": "2025-02-28T20:35:00.000Z",
+    "end": "2026-02-28T14:59:00.000Z"
+  },
+  "summary": {
+    "totalCredits": 39,
+    "totalDebits": 1180,
+    "totalCreditAmount": 1285284,
+    "totalDebitAmount": 2750765,
+    "netFlow": -1465481,
+    "initialBalance": 125000,
+    "finalBalance": -1340481
+  },
+  "categoryBreakdown": [
+    {
+      "category": "salary",
+      "count": 12,
+      "totalAmount": 1033862,
+      "avgAmount": 86155
+    },
+    {
+      "category": "shopping",
+      "count": 173,
+      "totalAmount": 873422,
+      "avgAmount": 5049
+    },
+    {
+      "category": "food_dining",
+      "count": 417,
+      "totalAmount": 321154,
+      "avgAmount": 770
+    },
+    {
+      "category": "rent",
+      "count": 17,
+      "totalAmount": 306000,
+      "avgAmount": 18000
+    },
+    {
+      "category": "travel",
+      "count": 21,
+      "totalAmount": 237888,
+      "avgAmount": 11328
+    },
+    {
+      "category": "groceries",
+      "count": 101,
+      "totalAmount": 226014,
+      "avgAmount": 2238
+    },
+    {
+      "category": "emi_loan",
+      "count": 14,
+      "totalAmount": 175000,
+      "avgAmount": 12500
+    },
+    {
+      "category": "miscellaneous",
+      "count": 26,
+      "totalAmount": 144468,
+      "avgAmount": 5556
+    },
+    {
+      "category": "freelance",
+      "count": 7,
+      "totalAmount": 140649,
+      "avgAmount": 20093
+    },
+    {
+      "category": "entertainment",
+      "count": 84,
+      "totalAmount": 104149,
+      "avgAmount": 1240
+    },
+    {
+      "category": "transfer",
+      "count": 2,
+      "totalAmount": 69417,
+      "avgAmount": 34709
+    },
+    {
+      "category": "insurance",
+      "count": 29,
+      "totalAmount": 63400,
+      "avgAmount": 2186
+    },
+    {
+      "category": "gift_received",
+      "count": 6,
+      "totalAmount": 62335,
+      "avgAmount": 10389
+    },
+    {
+      "category": "healthcare",
+      "count": 19,
+      "totalAmount": 57742,
+      "avgAmount": 3039
+    },
+    {
+      "category": "utilities",
+      "count": 45,
+      "totalAmount": 56062,
+      "avgAmount": 1246
+    },
+    {
+      "category": "transportation",
+      "count": 171,
+      "totalAmount": 55510,
+      "avgAmount": 325
+    },
+    {
+      "category": "fuel",
+      "count": 19,
+      "totalAmount": 31750,
+      "avgAmount": 1671
+    },
+    {
+      "category": "investment_return",
+      "count": 8,
+      "totalAmount": 30570,
+      "avgAmount": 3821
+    },
+    {
+      "category": "refund",
+      "count": 6,
+      "totalAmount": 17867,
+      "avgAmount": 2978
+    },
+    {
+      "category": "personal_care",
+      "count": 10,
+      "totalAmount": 12420,
+      "avgAmount": 1242
+    },
+    {
+      "category": "subscriptions",
+      "count": 26,
+      "totalAmount": 8394,
+      "avgAmount": 323
+    },
+    {
+      "category": "education",
+      "count": 3,
+      "totalAmount": 5874,
+      "avgAmount": 1958
+    },
+    {
+      "category": "charity",
+      "count": 3,
+      "totalAmount": 2103,
+      "avgAmount": 701
+    }
+  ]
+}
