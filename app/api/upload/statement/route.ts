@@ -7,6 +7,8 @@ import { parseCSVStatement } from "@/server/services/parser/csv.parser"
 import { parseExcelStatement } from "@/server/services/parser/excel.parser"
 import { parsePDFStatement } from "@/server/services/parser/pdf.parser"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
+import type { ParsedTransaction } from "@/server/services/parser/deduplicator"
+import { PasswordRequiredError, PDFParseError } from "@/server/services/parser/pdf.types"
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -21,6 +23,8 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null
     const bankAccountId = formData.get("bankAccountId") as string | null
     const statementMonth = formData.get("statementMonth") as string | null
+    const password = formData.get("password") as string | null
+    const bankId = formData.get("bankId") as string | null
 
     if (!file || !bankAccountId) {
       return NextResponse.json({ error: "File and bank account are required" }, { status: 400 })
@@ -51,13 +55,54 @@ export async function POST(req: NextRequest) {
 
     // Parse file
     const buffer = Buffer.from(await file.arrayBuffer())
-    let parsed: Awaited<ReturnType<typeof parseCSVStatement>> = []
+    let parsed: ParsedTransaction[] = []
+    let statementMetadata: Record<string, unknown> | undefined
 
     try {
-      if (fileType === "csv") parsed = await parseCSVStatement(buffer)
-      else if (fileType === "xlsx") parsed = await parseExcelStatement(buffer)
-      else if (fileType === "pdf") parsed = await parsePDFStatement(buffer)
+      if (fileType === "csv") {
+        parsed = await parseCSVStatement(buffer)
+      } else if (fileType === "xlsx") {
+        parsed = await parseExcelStatement(buffer)
+      } else if (fileType === "pdf") {
+        const result = await parsePDFStatement(buffer, {
+          password: password || undefined,
+          bankId: bankId || undefined,
+        })
+        parsed = result.transactions
+        statementMetadata = {
+          bankName: result.metadata.bankName,
+          bankProfileId: result.metadata.bankProfileId,
+          accountNumber: result.metadata.accountNumber,
+          accountLast4: result.metadata.accountLast4,
+          accountHolderName: result.metadata.accountHolderName,
+          ifscCode: result.metadata.ifscCode,
+          branch: result.metadata.branch,
+          statementPeriod: result.metadata.statementPeriod
+            ? {
+                from: result.metadata.statementPeriod.from.toISOString(),
+                to: result.metadata.statementPeriod.to.toISOString(),
+              }
+            : undefined,
+          bankProfile: result.bankProfile,
+          pageCount: result.pageCount,
+          wasEncrypted: result.wasEncrypted,
+        }
+      }
     } catch (error) {
+      // Handle password-required errors specifically
+      if (error instanceof PasswordRequiredError) {
+        await db.update(statementUploads).set({
+          processingStatus: "failed",
+          errorMessage: "Password required for encrypted PDF",
+        }).where(eq(statementUploads.id, upload!.id))
+
+        return NextResponse.json({
+          error: "password_required",
+          message: error.message,
+          passwordHint: error.passwordHint,
+        }, { status: 422 })
+      }
+
       console.error("[STATEMENT PARSE ERROR]", error);
       await db.update(statementUploads).set({ processingStatus: "failed", errorMessage: "Failed to parse file" }).where(eq(statementUploads.id, upload!.id))
       return NextResponse.json({ error: "Failed to parse statement file" }, { status: 422 })
@@ -103,6 +148,7 @@ export async function POST(req: NextRequest) {
       transactionsAdded: newTransactions.length,
       transactionsSkipped: duplicates.length,
       gapWarning,
+      metadata: statementMetadata,
       message: `✓ ${newTransactions.length} transactions added${duplicates.length > 0 ? `, ${duplicates.length} duplicates skipped` : ""}`,
     })
   } catch (error) {

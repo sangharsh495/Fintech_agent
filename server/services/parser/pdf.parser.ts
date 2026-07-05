@@ -1,114 +1,142 @@
-// pdf-parse is CJS, use require with createRequire
+// ─── PDF Statement Parser — Orchestrator ────────────────────
+// Thin orchestrator that wires the three layers together:
+//   Layer 1: Decryption (pdf.decrypt)
+//   Layer 2: Header/Metadata extraction (pdf.header)
+//   Layer 3: Position-aware table extraction (pdf.table)
+//
+// All bank-specific behavior is driven by bank profiles.
+// This file contains zero bank-specific logic.
+
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
-const pdfParse = require("pdf-parse") as (buffer: Buffer) => Promise<{ text: string; numpages: number }>
-import { categorizeTransaction } from "./categorizer"
-import { computeHash } from "./deduplicator"
-import type { ParsedTransaction } from "./deduplicator"
 
-export async function parsePDFStatement(fileBuffer: Buffer): Promise<ParsedTransaction[]> {
-  const data = await pdfParse(fileBuffer)
-  const text = data.text
+import { getBankProfile, detectBank, GENERIC_PROFILE } from "./bank-profiles"
+import { decryptPDF } from "./pdf.decrypt"
+import { extractMetadata } from "./pdf.header"
+import { extractTransactions } from "./pdf.table"
+import type { PDFParseOptions, ParsedStatementResult, PositionedPage, PositionedTextItem } from "./pdf.types"
 
-  // Try specific bank formats first, then generic
-  const parsers = [parseICICIFormat, parseSBIFormat, parseGenericFormat]
-  for (const parser of parsers) {
-    const result = parser(text)
-    if (result.length > 2) return result
+// pdf.js-extract is CJS
+const PDFExtract = require("pdf.js-extract").PDFExtract as new () => PDFExtractInstance
+
+interface PDFExtractItem {
+  str: string
+  x: number
+  y: number
+  w: number
+  h: number
+  fontName?: string
+}
+
+interface PDFExtractPage {
+  pageInfo: { width: number; height: number; num: number }
+  content: PDFExtractItem[]
+}
+
+interface PDFExtractResult {
+  pages: PDFExtractPage[]
+  pdfInfo?: Record<string, unknown>
+}
+
+interface PDFExtractInstance {
+  extractBuffer(buffer: Buffer, options?: Record<string, unknown>): Promise<PDFExtractResult>
+}
+
+/**
+ * Parse a PDF bank statement into structured transactions + metadata.
+ *
+ * @param fileBuffer - The raw PDF file buffer
+ * @param options    - Optional password and/or explicit bank ID
+ * @returns Enriched result with transactions, metadata, bank profile used, and encryption status
+ *
+ * @example
+ * // Basic usage (auto-detect bank, unencrypted)
+ * const result = await parsePDFStatement(buffer)
+ *
+ * @example
+ * // With password and explicit bank
+ * const result = await parsePDFStatement(buffer, { password: "01011990", bankId: "hdfc" })
+ */
+export async function parsePDFStatement(
+  fileBuffer: Buffer,
+  options?: PDFParseOptions
+): Promise<ParsedStatementResult> {
+  // ── Layer 1: Decryption ──
+  const { buffer: cleanBuffer, wasEncrypted } = await decryptPDF(
+    fileBuffer,
+    options?.password
+  )
+
+  // ── Extract positioned text from all pages ──
+  const pages = await extractPages(cleanBuffer)
+
+  // ── Determine bank profile ──
+  const fullText = pages
+    .map((p) => p.content.map((item) => item.str).join(" "))
+    .join("\n")
+
+  let profile = GENERIC_PROFILE
+
+  if (options?.bankId) {
+    // Explicit bank ID provided — use it
+    profile = getBankProfile(options.bankId) ?? GENERIC_PROFILE
+  } else {
+    // Auto-detect bank from text content
+    const detected = detectBank(fullText)
+    if (detected) {
+      profile = detected
+    }
   }
-  return parseGenericFormat(text)
-}
 
-function parseICICIFormat(text: string): ParsedTransaction[] {
-  const rows: ParsedTransaction[] = []
-  const regex = /(\d{2}[- \/]\d{2}[- \/]\d{4})\s+(.+?)\s+([\d,]+\.\d{2})?\s+([\d,]+\.\d{2})?\s+([\d,]+\.\d{2})/g
+  // ── Layer 2: Header/Metadata extraction ──
+  const metadata = extractMetadata(pages, profile)
+  metadata.bankProfileId = profile.id
 
-  let match
-  while ((match = regex.exec(text)) !== null) {
-    const [, dateStr, desc, debit, credit, balance] = match
-    const date = parseDate(dateStr || "")
-    if (!date) continue
-
-    const debitAmt = parseFloat((debit || "0").replace(/,/g, "")) || 0
-    const creditAmt = parseFloat((credit || "0").replace(/,/g, "")) || 0
-    const bal = parseFloat((balance || "0").replace(/,/g, "")) || 0
-    if (debitAmt === 0 && creditAmt === 0) continue
-
-    const type: "credit" | "debit" = creditAmt > 0 ? "credit" : "debit"
-    const amount = type === "credit" ? creditAmt : debitAmt
-    const cat = categorizeTransaction(desc || "", amount, type)
-    const hash = computeHash(date, amount, desc || "")
-
-    rows.push({
-      date, description: cat.merchant || desc || "", rawDescription: desc || "",
-      amount, type, balance: bal, category: cat.category, subcategory: cat.subcategory,
-      merchant: cat.merchant, isRecurring: cat.isRecurring,
-      paymentMethod: detectPaymentMethod(desc || ""), hash,
-    })
+  // If metadata auto-detected a different bank than the profile, upgrade the profile
+  if (
+    profile.id === "generic" &&
+    metadata.bankProfileId &&
+    metadata.bankProfileId !== "generic"
+  ) {
+    const upgraded = getBankProfile(metadata.bankProfileId)
+    if (upgraded) {
+      profile = upgraded
+    }
   }
-  return rows
-}
 
-function parseSBIFormat(text: string): ParsedTransaction[] {
-  return parseICICIFormat(text)
-}
+  // ── Layer 3: Transaction table extraction ──
+  const transactions = extractTransactions(pages, profile)
 
-function parseGenericFormat(text: string): ParsedTransaction[] {
-  const rows: ParsedTransaction[] = []
-  const lines = text.split("\n")
-
-  for (const line of lines) {
-    const dateMatch = line.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{2,4})/)
-    if (!dateMatch) continue
-
-    const date = parseDate(dateMatch[1] || "")
-    if (!date) continue
-
-    const amounts = [...line.matchAll(/[\d,]+\.\d{2}/g)].map((m) =>
-      parseFloat(m[0].replace(/,/g, ""))
-    )
-    if (!amounts.length) continue
-
-    const amount = amounts[0]!
-    const desc = line
-      .replace(dateMatch[0], "")
-      .replace(/[\d,]+\.\d{2}/g, "")
-      .replace(/\s+/g, " ")
-      .trim()
-
-    if (!desc || amount <= 0) continue
-
-    const type: "credit" | "debit" = desc.toLowerCase().includes("cr") ? "credit" : "debit"
-    const cat = categorizeTransaction(desc, amount, type)
-    const hash = computeHash(date, amount, desc)
-
-    rows.push({
-      date, description: cat.merchant || desc, rawDescription: desc, amount, type,
-      category: cat.category, subcategory: cat.subcategory, merchant: cat.merchant,
-      isRecurring: cat.isRecurring, paymentMethod: detectPaymentMethod(desc), hash,
-    })
+  return {
+    transactions,
+    metadata,
+    bankProfile: profile.id,
+    pageCount: pages.length,
+    wasEncrypted,
   }
-  return rows
 }
 
-function parseDate(str: string): Date | null {
-  if (!str) return null
-  const m1 = str.match(/^(\d{2})[-\/](\d{2})[-\/](\d{4})$/)
-  if (m1) return new Date(`${m1[3]}-${m1[2]}-${m1[1]}`)
-  const m2 = str.match(/^(\d{2})[-\/](\d{2})[-\/](\d{2})$/)
-  if (m2) return new Date(`${parseInt(m2[3]!) + 2000}-${m2[2]}-${m2[1]}`)
-  const d = new Date(str)
-  return isNaN(d.getTime()) ? null : d
-}
+// ─── pdf.js-extract Wrapper ─────────────────────────────────
 
-function detectPaymentMethod(desc: string): string {
-  const lower = desc.toLowerCase()
-  if (lower.includes("upi")) return "upi"
-  if (lower.includes("neft")) return "neft"
-  if (lower.includes("rtgs")) return "neft"
-  if (lower.includes("imps")) return "imps"
-  if (lower.includes("atm")) return "cash"
-  if (lower.includes("auto debit") || lower.includes("nach")) return "auto_debit"
-  if (lower.includes("cheque")) return "cheque"
-  return "net_banking"
+/**
+ * Run pdf.js-extract on a buffer and normalize the output into PositionedPage[].
+ */
+async function extractPages(buffer: Buffer): Promise<PositionedPage[]> {
+  const pdfExtract = new PDFExtract()
+  const result = await pdfExtract.extractBuffer(buffer, {})
+
+  return result.pages.map((page): PositionedPage => ({
+    pageNumber: page.pageInfo.num,
+    width: page.pageInfo.width,
+    height: page.pageInfo.height,
+    content: page.content
+      .filter((item) => item.str.trim().length > 0)
+      .map((item): PositionedTextItem => ({
+        str: item.str,
+        x: item.x,
+        y: item.y,
+        width: item.w,
+        height: item.h,
+      })),
+  }))
 }
