@@ -1,0 +1,786 @@
+{
+  "cluster_metadata": [
+    {
+      "cluster_type": "spending_behavior",
+      "cluster_id": 0,
+      "label": "Essential Spender",
+      "description": "Primarily spends on necessities like rent, utilities, and groceries with regular patterns",
+      "color": "#22c55e",
+      "transaction_count": 453,
+      "total_amount": 552826.49,
+      "avg_amount": 1220.37,
+      "min_amount": 91.48,
+      "max_amount": 6047.71,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 37.47
+    },
+    {
+      "cluster_type": "spending_behavior",
+      "cluster_id": 1,
+      "label": "Lifestyle Enthusiast",
+      "description": "Higher spending on dining, entertainment, and shopping with variable patterns",
+      "color": "#8b5cf6",
+      "transaction_count": 515,
+      "total_amount": 686848.58,
+      "avg_amount": 1333.69,
+      "min_amount": 81.85,
+      "max_amount": 8938.63,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 42.6
+    },
+    {
+      "cluster_type": "spending_behavior",
+      "cluster_id": 2,
+      "label": "Conservative Saver",
+      "description": "Below-average spending with focus on essential categories only",
+      "color": "#3b82f6",
+      "transaction_count": 119,
+      "total_amount": 132284.06,
+      "avg_amount": 1111.63,
+      "min_amount": 119.0,
+      "max_amount": 3284.96,
+      "dominant_category": "utilities",
+      "dominant_payment_method": "auto_debit",
+      "percentage_of_total": 9.84
+    },
+    {
+      "cluster_type": "spending_behavior",
+      "cluster_id": 3,
+      "label": "Impulse Buyer",
+      "description": "Irregular spending bursts, often during evenings and weekends on non-essentials",
+      "color": "#f59e0b",
+      "transaction_count": 122,
+      "total_amount": 1545010.94,
+      "avg_amount": 12664.02,
+      "min_amount": 5670.86,
+      "max_amount": 41747.0,
+      "dominant_category": "shopping",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 10.09
+    },
+    {
+      "cluster_type": "transaction_size",
+      "cluster_id": 0,
+      "label": "Micro (< \u20b9500)",
+      "description": "Small daily transactions like chai, snacks, auto rides",
+      "color": "#06b6d4",
+      "transaction_count": 732,
+      "total_amount": 406819.66,
+      "avg_amount": 555.76,
+      "min_amount": 81.85,
+      "max_amount": 1760.29,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 59.03
+    },
+    {
+      "cluster_type": "transaction_size",
+      "cluster_id": 1,
+      "label": "Small (\u20b9500 - \u20b92K)",
+      "description": "Regular purchases like groceries, fuel, dining",
+      "color": "#22c55e",
+      "transaction_count": 428,
+      "total_amount": 1832780.51,
+      "avg_amount": 4282.2,
+      "min_amount": 986.16,
+      "max_amount": 23205.13,
+      "dominant_category": "shopping",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 34.52
+    },
+    {
+      "cluster_type": "transaction_size",
+      "cluster_id": 2,
+      "label": "Medium (\u20b92K - \u20b910K)",
+      "description": "Significant purchases like shopping, travel bookings",
+      "color": "#f59e0b",
+      "transaction_count": 66,
+      "total_amount": 677900.0,
+      "avg_amount": 10271.21,
+      "min_amount": 1800.0,
+      "max_amount": 18000.0,
+      "dominant_category": "insurance",
+      "dominant_payment_method": "auto_debit",
+      "percentage_of_total": 5.32
+    },
+    {
+      "cluster_type": "transaction_size",
+      "cluster_id": 3,
+      "label": "Large (\u20b910K+)",
+      "description": "Major expenses like rent, EMI, insurance, large purchases",
+      "color": "#ef4444",
+      "transaction_count": 14,
+      "total_amount": 1108231.0,
+      "avg_amount": 79159.36,
+      "min_amount": 37793.0,
+      "max_amount": 86943.0,
+      "dominant_category": "salary",
+      "dominant_payment_method": "neft",
+      "percentage_of_total": 1.13
+    },
+    {
+      "cluster_type": "temporal",
+      "cluster_id": 0,
+      "label": "Early Bird",
+      "description": "Morning transactions (6 AM - 12 PM): commute, groceries, bills",
+      "color": "#f59e0b",
+      "transaction_count": 337,
+      "total_amount": 1668010.02,
+      "avg_amount": 4949.58,
+      "min_amount": 89.25,
+      "max_amount": 86943.0,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 27.18
+    },
+    {
+      "cluster_type": "temporal",
+      "cluster_id": 1,
+      "label": "Afternoon Active",
+      "description": "Midday spending (12 PM - 5 PM): lunch, errands, shopping",
+      "color": "#22c55e",
+      "transaction_count": 334,
+      "total_amount": 1158528.35,
+      "avg_amount": 3468.65,
+      "min_amount": 99.92,
+      "max_amount": 86888.0,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 26.94
+    },
+    {
+      "cluster_type": "temporal",
+      "cluster_id": 2,
+      "label": "Evening Spender",
+      "description": "Evening transactions (5 PM - 9 PM): dining, entertainment, shopping",
+      "color": "#8b5cf6",
+      "transaction_count": 221,
+      "total_amount": 455613.08,
+      "avg_amount": 2061.6,
+      "min_amount": 81.85,
+      "max_amount": 41747.0,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "credit_card",
+      "percentage_of_total": 17.82
+    },
+    {
+      "cluster_type": "temporal",
+      "cluster_id": 3,
+      "label": "Night Owl",
+      "description": "Late night activity (9 PM - 6 AM): subscriptions, late-night orders, auto-debits",
+      "color": "#3b82f6",
+      "transaction_count": 348,
+      "total_amount": 743579.72,
+      "avg_amount": 2136.72,
+      "min_amount": 105.49,
+      "max_amount": 17127.99,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 28.06
+    },
+    {
+      "cluster_type": "category_affinity",
+      "cluster_id": 0,
+      "label": "Living Essentials",
+      "description": "Dominated by rent, utilities, groceries, and insurance",
+      "color": "#22c55e",
+      "transaction_count": 27,
+      "total_amount": 58400.0,
+      "avg_amount": 2162.96,
+      "min_amount": 1800.0,
+      "max_amount": 2500.0,
+      "dominant_category": "insurance",
+      "dominant_payment_method": "auto_debit",
+      "percentage_of_total": 2.18
+    },
+    {
+      "cluster_type": "category_affinity",
+      "cluster_id": 1,
+      "label": "Food & Transport",
+      "description": "Primarily food delivery, dining out, and ride-hailing services",
+      "color": "#f59e0b",
+      "transaction_count": 446,
+      "total_amount": 1653567.21,
+      "avg_amount": 3707.55,
+      "min_amount": 155.63,
+      "max_amount": 41747.0,
+      "dominant_category": "shopping",
+      "dominant_payment_method": "credit_card",
+      "percentage_of_total": 35.97
+    },
+    {
+      "cluster_type": "category_affinity",
+      "cluster_id": 2,
+      "label": "Shopping & Lifestyle",
+      "description": "E-commerce, fashion, entertainment, and personal care",
+      "color": "#8b5cf6",
+      "transaction_count": 12,
+      "total_amount": 1028691.0,
+      "avg_amount": 85724.25,
+      "min_amount": 84630.0,
+      "max_amount": 86943.0,
+      "dominant_category": "salary",
+      "dominant_payment_method": "neft",
+      "percentage_of_total": 0.97
+    },
+    {
+      "cluster_type": "category_affinity",
+      "cluster_id": 3,
+      "label": "Financial Obligations",
+      "description": "EMIs, insurance, subscriptions, and recurring payments",
+      "color": "#ef4444",
+      "transaction_count": 755,
+      "total_amount": 1285072.96,
+      "avg_amount": 1702.08,
+      "min_amount": 81.85,
+      "max_amount": 18000.0,
+      "dominant_category": "food_dining",
+      "dominant_payment_method": "upi",
+      "percentage_of_total": 60.89
+    },
+    {
+      "cluster_type": "anomaly",
+      "cluster_id": -1,
+      "label": "Anomalous Transactions",
+      "description": "Unusual transactions that deviate significantly from normal patterns \u2014 large amounts, odd timing, or rare categories",
+      "color": "#ef4444",
+      "transaction_count": 17,
+      "total_amount": 1108588.0,
+      "avg_amount": 65211.06,
+      "min_amount": 119.0,
+      "max_amount": 86943.0,
+      "dominant_category": "salary",
+      "percentage_of_total": 1.37
+    }
+  ],
+  "cluster_distributions": {
+    "spending_behavior": {
+      "clusters": [
+        {
+          "cluster_type": "spending_behavior",
+          "cluster_id": 0,
+          "label": "Essential Spender",
+          "description": "Primarily spends on necessities like rent, utilities, and groceries with regular patterns",
+          "color": "#22c55e",
+          "transaction_count": 453,
+          "total_amount": 552826.49,
+          "avg_amount": 1220.37,
+          "min_amount": 91.48,
+          "max_amount": 6047.71,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 37.47
+        },
+        {
+          "cluster_type": "spending_behavior",
+          "cluster_id": 1,
+          "label": "Lifestyle Enthusiast",
+          "description": "Higher spending on dining, entertainment, and shopping with variable patterns",
+          "color": "#8b5cf6",
+          "transaction_count": 515,
+          "total_amount": 686848.58,
+          "avg_amount": 1333.69,
+          "min_amount": 81.85,
+          "max_amount": 8938.63,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 42.6
+        },
+        {
+          "cluster_type": "spending_behavior",
+          "cluster_id": 2,
+          "label": "Conservative Saver",
+          "description": "Below-average spending with focus on essential categories only",
+          "color": "#3b82f6",
+          "transaction_count": 119,
+          "total_amount": 132284.06,
+          "avg_amount": 1111.63,
+          "min_amount": 119.0,
+          "max_amount": 3284.96,
+          "dominant_category": "utilities",
+          "dominant_payment_method": "auto_debit",
+          "percentage_of_total": 9.84
+        },
+        {
+          "cluster_type": "spending_behavior",
+          "cluster_id": 3,
+          "label": "Impulse Buyer",
+          "description": "Irregular spending bursts, often during evenings and weekends on non-essentials",
+          "color": "#f59e0b",
+          "transaction_count": 122,
+          "total_amount": 1545010.94,
+          "avg_amount": 12664.02,
+          "min_amount": 5670.86,
+          "max_amount": 41747.0,
+          "dominant_category": "shopping",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 10.09
+        }
+      ],
+      "total_clusters": 4,
+      "chart_data": [
+        {
+          "name": "Essential Spender",
+          "value": 453,
+          "amount": 552826.49,
+          "avgAmount": 1220.37,
+          "percentage": 37.47,
+          "color": "#22c55e"
+        },
+        {
+          "name": "Lifestyle Enthusiast",
+          "value": 515,
+          "amount": 686848.58,
+          "avgAmount": 1333.69,
+          "percentage": 42.6,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Conservative Saver",
+          "value": 119,
+          "amount": 132284.06,
+          "avgAmount": 1111.63,
+          "percentage": 9.84,
+          "color": "#3b82f6"
+        },
+        {
+          "name": "Impulse Buyer",
+          "value": 122,
+          "amount": 1545010.94,
+          "avgAmount": 12664.02,
+          "percentage": 10.09,
+          "color": "#f59e0b"
+        }
+      ]
+    },
+    "transaction_size": {
+      "clusters": [
+        {
+          "cluster_type": "transaction_size",
+          "cluster_id": 0,
+          "label": "Micro (< \u20b9500)",
+          "description": "Small daily transactions like chai, snacks, auto rides",
+          "color": "#06b6d4",
+          "transaction_count": 732,
+          "total_amount": 406819.66,
+          "avg_amount": 555.76,
+          "min_amount": 81.85,
+          "max_amount": 1760.29,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 59.03
+        },
+        {
+          "cluster_type": "transaction_size",
+          "cluster_id": 1,
+          "label": "Small (\u20b9500 - \u20b92K)",
+          "description": "Regular purchases like groceries, fuel, dining",
+          "color": "#22c55e",
+          "transaction_count": 428,
+          "total_amount": 1832780.51,
+          "avg_amount": 4282.2,
+          "min_amount": 986.16,
+          "max_amount": 23205.13,
+          "dominant_category": "shopping",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 34.52
+        },
+        {
+          "cluster_type": "transaction_size",
+          "cluster_id": 2,
+          "label": "Medium (\u20b92K - \u20b910K)",
+          "description": "Significant purchases like shopping, travel bookings",
+          "color": "#f59e0b",
+          "transaction_count": 66,
+          "total_amount": 677900.0,
+          "avg_amount": 10271.21,
+          "min_amount": 1800.0,
+          "max_amount": 18000.0,
+          "dominant_category": "insurance",
+          "dominant_payment_method": "auto_debit",
+          "percentage_of_total": 5.32
+        },
+        {
+          "cluster_type": "transaction_size",
+          "cluster_id": 3,
+          "label": "Large (\u20b910K+)",
+          "description": "Major expenses like rent, EMI, insurance, large purchases",
+          "color": "#ef4444",
+          "transaction_count": 14,
+          "total_amount": 1108231.0,
+          "avg_amount": 79159.36,
+          "min_amount": 37793.0,
+          "max_amount": 86943.0,
+          "dominant_category": "salary",
+          "dominant_payment_method": "neft",
+          "percentage_of_total": 1.13
+        }
+      ],
+      "total_clusters": 4,
+      "chart_data": [
+        {
+          "name": "Micro (< \u20b9500)",
+          "value": 732,
+          "amount": 406819.66,
+          "avgAmount": 555.76,
+          "percentage": 59.03,
+          "color": "#06b6d4"
+        },
+        {
+          "name": "Small (\u20b9500 - \u20b92K)",
+          "value": 428,
+          "amount": 1832780.51,
+          "avgAmount": 4282.2,
+          "percentage": 34.52,
+          "color": "#22c55e"
+        },
+        {
+          "name": "Medium (\u20b92K - \u20b910K)",
+          "value": 66,
+          "amount": 677900.0,
+          "avgAmount": 10271.21,
+          "percentage": 5.32,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Large (\u20b910K+)",
+          "value": 14,
+          "amount": 1108231.0,
+          "avgAmount": 79159.36,
+          "percentage": 1.13,
+          "color": "#ef4444"
+        }
+      ]
+    },
+    "temporal": {
+      "clusters": [
+        {
+          "cluster_type": "temporal",
+          "cluster_id": 0,
+          "label": "Early Bird",
+          "description": "Morning transactions (6 AM - 12 PM): commute, groceries, bills",
+          "color": "#f59e0b",
+          "transaction_count": 337,
+          "total_amount": 1668010.02,
+          "avg_amount": 4949.58,
+          "min_amount": 89.25,
+          "max_amount": 86943.0,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 27.18
+        },
+        {
+          "cluster_type": "temporal",
+          "cluster_id": 1,
+          "label": "Afternoon Active",
+          "description": "Midday spending (12 PM - 5 PM): lunch, errands, shopping",
+          "color": "#22c55e",
+          "transaction_count": 334,
+          "total_amount": 1158528.35,
+          "avg_amount": 3468.65,
+          "min_amount": 99.92,
+          "max_amount": 86888.0,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 26.94
+        },
+        {
+          "cluster_type": "temporal",
+          "cluster_id": 2,
+          "label": "Evening Spender",
+          "description": "Evening transactions (5 PM - 9 PM): dining, entertainment, shopping",
+          "color": "#8b5cf6",
+          "transaction_count": 221,
+          "total_amount": 455613.08,
+          "avg_amount": 2061.6,
+          "min_amount": 81.85,
+          "max_amount": 41747.0,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "credit_card",
+          "percentage_of_total": 17.82
+        },
+        {
+          "cluster_type": "temporal",
+          "cluster_id": 3,
+          "label": "Night Owl",
+          "description": "Late night activity (9 PM - 6 AM): subscriptions, late-night orders, auto-debits",
+          "color": "#3b82f6",
+          "transaction_count": 348,
+          "total_amount": 743579.72,
+          "avg_amount": 2136.72,
+          "min_amount": 105.49,
+          "max_amount": 17127.99,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 28.06
+        }
+      ],
+      "total_clusters": 4,
+      "chart_data": [
+        {
+          "name": "Early Bird",
+          "value": 337,
+          "amount": 1668010.02,
+          "avgAmount": 4949.58,
+          "percentage": 27.18,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Afternoon Active",
+          "value": 334,
+          "amount": 1158528.35,
+          "avgAmount": 3468.65,
+          "percentage": 26.94,
+          "color": "#22c55e"
+        },
+        {
+          "name": "Evening Spender",
+          "value": 221,
+          "amount": 455613.08,
+          "avgAmount": 2061.6,
+          "percentage": 17.82,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Night Owl",
+          "value": 348,
+          "amount": 743579.72,
+          "avgAmount": 2136.72,
+          "percentage": 28.06,
+          "color": "#3b82f6"
+        }
+      ]
+    },
+    "category_affinity": {
+      "clusters": [
+        {
+          "cluster_type": "category_affinity",
+          "cluster_id": 0,
+          "label": "Living Essentials",
+          "description": "Dominated by rent, utilities, groceries, and insurance",
+          "color": "#22c55e",
+          "transaction_count": 27,
+          "total_amount": 58400.0,
+          "avg_amount": 2162.96,
+          "min_amount": 1800.0,
+          "max_amount": 2500.0,
+          "dominant_category": "insurance",
+          "dominant_payment_method": "auto_debit",
+          "percentage_of_total": 2.18
+        },
+        {
+          "cluster_type": "category_affinity",
+          "cluster_id": 1,
+          "label": "Food & Transport",
+          "description": "Primarily food delivery, dining out, and ride-hailing services",
+          "color": "#f59e0b",
+          "transaction_count": 446,
+          "total_amount": 1653567.21,
+          "avg_amount": 3707.55,
+          "min_amount": 155.63,
+          "max_amount": 41747.0,
+          "dominant_category": "shopping",
+          "dominant_payment_method": "credit_card",
+          "percentage_of_total": 35.97
+        },
+        {
+          "cluster_type": "category_affinity",
+          "cluster_id": 2,
+          "label": "Shopping & Lifestyle",
+          "description": "E-commerce, fashion, entertainment, and personal care",
+          "color": "#8b5cf6",
+          "transaction_count": 12,
+          "total_amount": 1028691.0,
+          "avg_amount": 85724.25,
+          "min_amount": 84630.0,
+          "max_amount": 86943.0,
+          "dominant_category": "salary",
+          "dominant_payment_method": "neft",
+          "percentage_of_total": 0.97
+        },
+        {
+          "cluster_type": "category_affinity",
+          "cluster_id": 3,
+          "label": "Financial Obligations",
+          "description": "EMIs, insurance, subscriptions, and recurring payments",
+          "color": "#ef4444",
+          "transaction_count": 755,
+          "total_amount": 1285072.96,
+          "avg_amount": 1702.08,
+          "min_amount": 81.85,
+          "max_amount": 18000.0,
+          "dominant_category": "food_dining",
+          "dominant_payment_method": "upi",
+          "percentage_of_total": 60.89
+        }
+      ],
+      "total_clusters": 4,
+      "chart_data": [
+        {
+          "name": "Living Essentials",
+          "value": 27,
+          "amount": 58400.0,
+          "avgAmount": 2162.96,
+          "percentage": 2.18,
+          "color": "#22c55e"
+        },
+        {
+          "name": "Food & Transport",
+          "value": 446,
+          "amount": 1653567.21,
+          "avgAmount": 3707.55,
+          "percentage": 35.97,
+          "color": "#f59e0b"
+        },
+        {
+          "name": "Shopping & Lifestyle",
+          "value": 12,
+          "amount": 1028691.0,
+          "avgAmount": 85724.25,
+          "percentage": 0.97,
+          "color": "#8b5cf6"
+        },
+        {
+          "name": "Financial Obligations",
+          "value": 755,
+          "amount": 1285072.96,
+          "avgAmount": 1702.08,
+          "percentage": 60.89,
+          "color": "#ef4444"
+        }
+      ]
+    }
+  },
+  "anomaly_summary": {
+    "total_anomalies": 17,
+    "anomaly_rate": 1.37,
+    "total_anomaly_amount": 1108588.0,
+    "top_anomalies": [
+      {
+        "id": "txn_u0t0siaw5flmlxgjnva",
+        "amount": 37793.0,
+        "category": "healthcare",
+        "merchant": "Emergency Hospital",
+        "date": "2025-11-27 15:16:00+00:00",
+        "anomalyScore": 1.0
+      },
+      {
+        "id": "txn_rle74vp3r6dmlxgjnv1",
+        "amount": 86943.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-07-01 03:47:00+00:00",
+        "anomalyScore": 0.32912405926310484
+      },
+      {
+        "id": "txn_0dor8smffn16mlxgjnv8",
+        "amount": 86888.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-11-01 06:06:00+00:00",
+        "anomalyScore": 0.32543364720707285
+      },
+      {
+        "id": "txn_du0sxrtvae6mlxgjnv3",
+        "amount": 86135.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-08-01 06:15:00+00:00",
+        "anomalyScore": 0.3240083079271843
+      },
+      {
+        "id": "txn_lvoc8d2olkmlxgjnuw",
+        "amount": 85784.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-05-01 06:03:00+00:00",
+        "anomalyScore": 0.32295514956483096
+      },
+      {
+        "id": "txn_ub5z0jo4evsmlxgjnvf",
+        "amount": 86218.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2026-02-01 03:42:00+00:00",
+        "anomalyScore": 0.32228951742838485
+      },
+      {
+        "id": "txn_s1f5m8aokhmlxgjnvd",
+        "amount": 85341.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2026-01-01 05:50:00+00:00",
+        "anomalyScore": 0.32165069839069665
+      },
+      {
+        "id": "txn_mx8oe2sca4jmlxgjnuz",
+        "amount": 85946.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-06-01 05:42:00+00:00",
+        "anomalyScore": 0.3210132970458134
+      },
+      {
+        "id": "txn_azu5wglft1jmlxgjnuu",
+        "amount": 85243.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-04-01 06:00:00+00:00",
+        "anomalyScore": 0.3204446894129273
+      },
+      {
+        "id": "txn_jve3j5a9wpfmlxgjnts",
+        "amount": 85694.0,
+        "category": "salary",
+        "merchant": "Employer - TechCorp India",
+        "date": "2025-03-01 04:09:00+00:00",
+        "anomalyScore": 0.31983102258805696
+      }
+    ]
+  },
+  "run_history": [
+    {
+      "cluster_type": "spending_behavior",
+      "algorithm": "kmeans",
+      "n_clusters": 4,
+      "silhouette_score": 0.1874,
+      "inertia": 9577.1,
+      "total_transactions": 1209
+    },
+    {
+      "cluster_type": "transaction_size",
+      "algorithm": "kmeans",
+      "n_clusters": 4,
+      "silhouette_score": 0.5101,
+      "inertia": 1738.93,
+      "total_transactions": 1240
+    },
+    {
+      "cluster_type": "temporal",
+      "algorithm": "kmeans",
+      "n_clusters": 4,
+      "silhouette_score": 0.1776,
+      "inertia": 7233.42,
+      "total_transactions": 1240
+    },
+    {
+      "cluster_type": "category_affinity",
+      "algorithm": "kmeans",
+      "n_clusters": 4,
+      "silhouette_score": 0.1304,
+      "inertia": 34462.41,
+      "total_transactions": 1240
+    },
+    {
+      "cluster_type": "anomaly",
+      "algorithm": "dbscan",
+      "n_clusters": 4,
+      "silhouette_score": null,
+      "inertia": null,
+      "total_transactions": 1240,
+      "anomalies_detected": 17
+    }
+  ]
+}
