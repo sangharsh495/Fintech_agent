@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip:*)",
+      "Bash(pnpm add:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(npx tsx:*)",
+      "Bash(python3:*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(python -m app.main:*)",
+      "Bash(npx next build)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(\"/Users/sangharshgedekar/Downloads/fintech copy/app/layout.tsx\":*)",
+      "Bash(npm install:*)",
+      "Bash(\"/Users/sangharshgedekar/Downloads/fintech copy/app/api/ai/chat/route.ts\":*)"
+    ]
+  }
+}
