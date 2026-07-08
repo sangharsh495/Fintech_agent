@@ -25,7 +25,7 @@ while true; do
     echo "No changes to commit."
   fi
 
-  echo "Waiting for 10 minutes before the next check..."
-  # Sleep for 10 minutes (600 seconds)
-  sleep 600
+  echo "Waiting for 10 seconds before the next check..."
+  # Sleep for 10 seconds
+  sleep 10
 done
