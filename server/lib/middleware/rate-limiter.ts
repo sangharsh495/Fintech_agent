@@ -9,4 +9,4 @@ const redis = new Redis({
 })
 
 /**
- * Industry-standard
+ * Industry-standard rate
