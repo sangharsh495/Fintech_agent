@@ -22,6 +22,11 @@ export default auth(async function middleware(req) {
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
     if (isPublicRoute) return NextResponse.next()
 
+    // Allow API routes - they handle their own authentication (Bearer tokens for mobile, NextAuth for web)
+    if (pathname.startsWith("/api/")) {
+        return NextResponse.next()
+    }
+
     // Redirect unauthenticated users to login
     if (!session?.user) {
         const loginUrl = new URL("/auth/login", nextUrl)
