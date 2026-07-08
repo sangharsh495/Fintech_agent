@@ -16,7 +16,7 @@ export default function TabLayout() {
           height: 64,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: "600",
         },
         headerStyle: { backgroundColor: "#0f172a" },
@@ -50,6 +50,13 @@ export default function TabLayout() {
         options={{
           title: "AI CA",
           tabBarIcon: ({ color, size }) => <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="tax"
+        options={{
+          title: "Tax",
+          tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
