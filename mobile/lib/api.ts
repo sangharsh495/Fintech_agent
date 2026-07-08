@@ -4,7 +4,7 @@
 // For development: use your local machine's IP (not localhost — Android emulator can't access localhost)
 // For production: use your Vercel URL
 const DEV_API_URL = "http://192.168.1.100:3000" // Replace with your machine's local IP
-const PROD_API_URL = "https://your-finflow-app.vercel.app" // Replace with your Vercel URL after deployment
+const PROD_API_URL = "https://finflow-app-ashen.vercel.app" // Your deployed Vercel URL
 
 // Toggle this to switch between dev and prod
 const IS_PRODUCTION = true

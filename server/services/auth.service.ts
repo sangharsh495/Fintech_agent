@@ -77,7 +77,20 @@ export async function verifyOTP(
 // ─── Email ───────────────────────────────────────────────────
 
 export async function sendOTPEmail(email: string, otp: string, name?: string): Promise<void> {
-  // If Resend API key is configured, send a real email
+  const htmlContent = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#0f172a;color:#f8fafc;border-radius:12px;">
+      <h1 style="font-size:24px;margin-bottom:8px;">₹ FinFlow</h1>
+      <p style="color:#94a3b8;margin-bottom:32px;">Your Personal Finance Assistant</p>
+      <p style="margin-bottom:8px;">Hi ${name ?? "there"},</p>
+      <p style="color:#94a3b8;margin-bottom:24px;">Use this code to verify your email address. It expires in 5 minutes.</p>
+      <div style="background:#1e293b;border-radius:8px;padding:24px;text-align:center;letter-spacing:0.5em;font-size:36px;font-weight:bold;font-family:monospace;color:#6366f1;margin-bottom:24px;">
+        ${otp}
+      </div>
+      <p style="color:#64748b;font-size:12px;">If you didn't create a FinFlow account, you can safely ignore this email.</p>
+    </div>
+  `
+
+  // Option 1: If Resend API key is configured, send a real email using Resend
   if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith("re_your_")) {
     const { Resend } = await import("resend")
     const resend = new Resend(process.env.RESEND_API_KEY)
@@ -86,18 +99,30 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
       from: "FinFlow <onboarding@resend.dev>",
       to: email,
       subject: "Your FinFlow verification code",
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#0f172a;color:#f8fafc;border-radius:12px;">
-          <h1 style="font-size:24px;margin-bottom:8px;">₹ FinFlow</h1>
-          <p style="color:#94a3b8;margin-bottom:32px;">Your Personal Finance Assistant</p>
-          <p style="margin-bottom:8px;">Hi ${name ?? "there"},</p>
-          <p style="color:#94a3b8;margin-bottom:24px;">Use this code to verify your email address. It expires in 5 minutes.</p>
-          <div style="background:#1e293b;border-radius:8px;padding:24px;text-align:center;letter-spacing:0.5em;font-size:36px;font-weight:bold;font-family:monospace;color:#6366f1;margin-bottom:24px;">
-            ${otp}
-          </div>
-          <p style="color:#64748b;font-size:12px;">If you didn't create a FinFlow account, you can safely ignore this email.</p>
-        </div>
-      `,
+      html: htmlContent,
+    })
+    return
+  }
+
+  // Option 2: If SMTP (Gmail) is configured, use Nodemailer
+  if (process.env.SMTP_USER && process.env.SMTP_USER !== "your@gmail.com") {
+    const nodemailer = await import("nodemailer")
+    
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+
+    await transporter.sendMail({
+      from: `"FinFlow" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Your FinFlow verification code",
+      html: htmlContent,
     })
     return
   }

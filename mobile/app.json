@@ -28,7 +28,9 @@
       "package": "com.finflow.mobile",
       "permissions": [
         "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
+        "USE_FINGERPRINT",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "web": {
@@ -45,8 +47,9 @@
       ]
     ],
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "7cf4a89d-180c-4785-8d36-32cb3cb45539"
       }
     }
   }
