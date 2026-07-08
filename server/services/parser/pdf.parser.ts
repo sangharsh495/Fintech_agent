@@ -7,17 +7,12 @@
 // All bank-specific behavior is driven by bank profiles.
 // This file contains zero bank-specific logic.
 
-import { createRequire } from "module"
-const require = createRequire(import.meta.url)
-
 import { getBankProfile, detectBank, GENERIC_PROFILE } from "./bank-profiles"
 import { decryptPDF } from "./pdf.decrypt"
 import { extractMetadata } from "./pdf.header"
 import { extractTransactions } from "./pdf.table"
 import type { PDFParseOptions, ParsedStatementResult, PositionedPage, PositionedTextItem } from "./pdf.types"
-
-// pdf.js-extract is CJS
-const PDFExtract = require("pdf.js-extract").PDFExtract as new () => PDFExtractInstance
+import { PDFExtract } from "pdf.js-extract"
 
 interface PDFExtractItem {
   str: string

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/server/auth"
+import { getSession } from "@/server/lib/get-session"
 import { db } from "@/server/db"
 import { bankAccounts } from "@/server/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -12,8 +12,8 @@ const addBankSchema = z.object({
   accountType: z.enum(["savings", "current", "salary"]).default("savings"),
 })
 
-export async function GET() {
-  const session = await auth()
+export async function GET(req: NextRequest) {
+  const session = await getSession(req)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -27,7 +27,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
+  const session = await getSession(req)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

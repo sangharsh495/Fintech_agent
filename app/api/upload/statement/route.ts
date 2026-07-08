@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/server/auth"
+import { getSession } from "@/server/lib/get-session"
 import { db } from "@/server/db"
 import { statementUploads, transactions, bankAccounts } from "@/server/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -11,7 +11,7 @@ import type { ParsedTransaction } from "@/server/services/parser/deduplicator"
 import { PasswordRequiredError, PDFParseError } from "@/server/services/parser/pdf.types"
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
+  const session = await getSession(req)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
