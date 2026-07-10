@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { View, Text, ScrollView, StyleSheet, RefreshControl, ActivityIndicator, Animated, TouchableOpacity, Easing } from "react-native"
+import { LinearGradient } from "expo-linear-gradient"
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../_layout"
 import { dashboardApi } from "../../lib/api"
@@ -18,6 +19,12 @@ type DashboardData = {
   alerts: any[]
 }
 
+const bankCardColors = [
+  ["#4f46e5", "#06b6d4"], // Indigo to Cyan
+  ["#10b981", "#059669"], // Emerald to Dark Green
+  ["#ec4899", "#8b5cf6"], // Pink to Violet
+  ["#f59e0b", "#d97706"], // Amber to Orange
+]
 export default function DashboardScreen() {
   const { token, user } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
@@ -140,110 +147,91 @@ export default function DashboardScreen() {
           </Text>
         </Animated.View>
 
-        {/* Hero Card */}
-        <Animated.View
-          style={[
-            styles.heroCard,
-            {
-              opacity: heroOpacity,
-              transform: [{ translateY: heroTranslateY }],
-            },
-          ]}
-        >
-          <View style={styles.heroGradient}>
-            <View style={styles.heroDecoration1} />
-            <View style={styles.heroDecoration2} />
-            <View style={styles.heroContent}>
-              <Text style={styles.heroLabel}>Net Worth</Text>
-              <Animated.Text
-                style={[
-                  styles.heroValue,
-                  {
-                    opacity: heroAnim,
-                    transform: [{ scale: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
-                  },
-                ]}
-              >
-                {formatCurrency(data?.netWorth || 0)}
-              </Animated.Text>
-              <View style={styles.heroRow}>
-                <View style={styles.heroStat}>
-                  <Text style={styles.statLabel}>Income</Text>
-                  <Text style={[styles.statValue, { color: Colors.success }]}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
-                </View>
-                <View style={styles.heroDivider} />
-                <View style={styles.heroStat}>
-                  <Text style={styles.statLabel}>Expenses</Text>
-                  <Text style={[styles.statValue, { color: Colors.error }]}>{formatCurrency(data?.monthlyExpense || 0)}</Text>
-                </View>
-                <View style={styles.heroDivider} />
-                <View style={styles.heroStat}>
-                  <Text style={styles.statLabel}>Savings</Text>
-                  <Text style={[styles.statValue, { color: Colors.primary }]}>{data?.savingsRate || 0}%</Text>
-                </View>
+        {/* 2x2 Metrics Grid */}
+        <Animated.View style={[styles.gridContainer, { opacity: heroOpacity, transform: [{ translateY: heroTranslateY }] }]}>
+          <View style={styles.gridRow}>
+            {/* Net Worth */}
+            <View style={[styles.gridCard, { borderColor: Colors.primary + "30" }]}>
+              <View style={[styles.gridIconBg, { backgroundColor: Colors.primary + "15" }]}>
+                <Ionicons name="card-outline" size={20} color={Colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.gridLabel}>Net Worth</Text>
+                <Text style={styles.gridValue}>{formatCurrency(data?.netWorth || 0)}</Text>
+              </View>
+            </View>
+
+            {/* Savings Rate */}
+            <View style={[styles.gridCard, { borderColor: Colors.secondary + "30" }]}>
+              <View style={[styles.gridIconBg, { backgroundColor: Colors.secondary + "15" }]}>
+                <Ionicons name="pie-chart-outline" size={20} color={Colors.secondary} />
+              </View>
+              <View>
+                <Text style={styles.gridLabel}>Savings Rate</Text>
+                <Text style={styles.gridValue}>{data?.savingsRate || 0}%</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.gridRow}>
+            {/* Income */}
+            <View style={[styles.gridCard, { borderColor: Colors.success + "30" }]}>
+              <View style={[styles.gridIconBg, { backgroundColor: Colors.success + "15" }]}>
+                <Ionicons name="trending-up-outline" size={20} color={Colors.success} />
+              </View>
+              <View>
+                <Text style={styles.gridLabel}>Income</Text>
+                <Text style={[styles.gridValue, { color: Colors.success }]}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
+              </View>
+            </View>
+
+            {/* Expense */}
+            <View style={[styles.gridCard, { borderColor: Colors.error + "30" }]}>
+              <View style={[styles.gridIconBg, { backgroundColor: Colors.error + "15" }]}>
+                <Ionicons name="trending-down-outline" size={20} color={Colors.error} />
+              </View>
+              <View>
+                <Text style={styles.gridLabel}>Expenses</Text>
+                <Text style={[styles.gridValue, { color: Colors.error }]}>{formatCurrency(data?.monthlyExpense || 0)}</Text>
               </View>
             </View>
           </View>
         </Animated.View>
 
-        {/* Quick Stats List */}
-        <View style={styles.quickStatsRow}>
-          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[0], transform: [{ translateY: statsAnim.current[0].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatLeft}>
-              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.primary + "15" }]}>
-                <Ionicons name="cash-outline" size={20} color={Colors.primary} />
-              </View>
-              <View style={styles.quickStatInfo}>
-                <Text style={styles.quickStatTextLabel}>Total Balance</Text>
-                <Text style={styles.quickStatTextValue}>{formatCurrency(data?.totalBalance || 0)}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
-          </Animated.View>
-          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[1], transform: [{ translateY: statsAnim.current[1].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatLeft}>
-              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.success + "15" }]}>
-                <Ionicons name="trending-up-outline" size={20} color={Colors.success} />
-              </View>
-              <View style={styles.quickStatInfo}>
-                <Text style={styles.quickStatTextLabel}>This Month</Text>
-                <Text style={styles.quickStatTextValue}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
-          </Animated.View>
-          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[2], transform: [{ translateY: statsAnim.current[2].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatLeft}>
-              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.secondary + "15" }]}>
-                <Ionicons name="pie-chart-outline" size={20} color={Colors.secondary} />
-              </View>
-              <View style={styles.quickStatInfo}>
-                <Text style={styles.quickStatTextLabel}>Savings Rate</Text>
-                <Text style={styles.quickStatTextValue}>{data?.savingsRate || 0}%</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
-          </Animated.View>
-        </View>
-
-        {/* Bank Balances */}
+        {/* Bank Balances - Horizontal Card Scroll */}
         {data?.perBankBalances && data.perBankBalances.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Bank Accounts</Text>
-            {data.perBankBalances.map((bank: any, i: number) => (
-              <View key={i} style={styles.bankCard}>
-                <View style={styles.bankInfo}>
-                  <View style={[styles.bankIcon, { backgroundColor: Colors.primary + "15" }]}>
-                    <Ionicons name="card-outline" size={20} color={Colors.primary} />
+          <View style={[styles.section, { paddingHorizontal: 0 }]}>
+            <Text style={[styles.sectionTitle, { paddingHorizontal: Spacing.screenPaddingHorizontal }]}>Bank Accounts</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bankCardsScroll}
+              decelerationRate="fast"
+              snapToInterval={232}
+              snapToAlignment="center"
+            >
+              {data.perBankBalances.map((bank: any, i: number) => (
+                <LinearGradient
+                  key={i}
+                  colors={bankCardColors[i % bankCardColors.length]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.bankPremiumCard}
+                >
+                  <View style={styles.bankCardHeader}>
+                    <Ionicons name="card-outline" size={22} color="#ffffff" />
+                    <Text style={styles.bankPremiumName}>{bank.bankName}</Text>
                   </View>
-                  <View>
-                    <Text style={styles.bankName}>{bank.bankName}</Text>
-                    <Text style={styles.bankNickname}>{bank.accountNickname || `••••${bank.accountLast4 || ""}`}</Text>
+                  <View style={styles.bankCardBody}>
+                    <Text style={styles.bankPremiumNumber}>
+                      {bank.accountNickname || `•••• •••• ${bank.accountLast4 || "4242"}`}
+                    </Text>
+                    <Text style={styles.bankPremiumBalanceLabel}>Available Balance</Text>
+                    <Text style={styles.bankPremiumBalance}>{formatCurrency(bank.balance)}</Text>
                   </View>
-                </View>
-                <Text style={styles.bankBalance}>{formatCurrency(bank.balance)}</Text>
-              </View>
-            ))}
+                </LinearGradient>
+              ))}
+            </ScrollView>
           </View>
         )}
 
@@ -557,51 +545,94 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.secondary + "15",
   },
 
-  // Quick Stats List
-  quickStatsRow: {
+  // 2x2 Metrics Grid
+  gridContainer: {
     paddingHorizontal: Spacing.screenPaddingHorizontal,
     marginBottom: Spacing.lg,
     gap: Spacing.sm,
   },
-  quickStatCard: {
+  gridRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  gridCard: {
+    flex: 1,
     backgroundColor: Colors.surface,
-    padding: Spacing.md,
     borderRadius: BorderRadius.card,
+    padding: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.border,
+    minHeight: 110,
+    justifyContent: "space-between",
     ...Shadows.sm,
   },
-  quickStatLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  quickStatIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  gridIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 8,
   },
-  quickStatInfo: {
-    justifyContent: "center",
-  },
-  quickStatTextLabel: {
+  gridLabel: {
     fontSize: Typography.fontSize.bodyXs,
     color: Colors.textTertiary,
     fontFamily: Typography.fontFamilies.medium,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 2,
   },
-  quickStatTextValue: {
+  gridValue: {
     fontSize: Typography.fontSize.bodyMd,
     color: Colors.textPrimary,
-    fontWeight: "700",
     fontFamily: Typography.fontFamilies.bold,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+
+  // Bank Cards Carousel
+  bankCardsScroll: {
+    paddingLeft: Spacing.screenPaddingHorizontal,
+    paddingRight: Spacing.screenPaddingHorizontal,
+    gap: 12,
+  },
+  bankPremiumCard: {
+    width: 220,
+    height: 130,
+    borderRadius: BorderRadius.card,
+    padding: Spacing.md,
+    justifyContent: "space-between",
+    ...Shadows.md,
+  },
+  bankCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  bankPremiumName: {
+    color: "#ffffff",
+    fontSize: Typography.fontSize.bodySm,
+    fontFamily: Typography.fontFamilies.bold,
+    fontWeight: "700",
+  },
+  bankCardBody: {
+    justifyContent: "flex-end",
+  },
+  bankPremiumNumber: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 10,
+    fontFamily: Typography.fontFamilies.regular,
+    marginBottom: 8,
+  },
+  bankPremiumBalanceLabel: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 8,
+    textTransform: "uppercase",
+    fontFamily: Typography.fontFamilies.medium,
+  },
+  bankPremiumBalance: {
+    color: "#ffffff",
+    fontSize: Typography.fontSize.bodyLg,
+    fontFamily: Typography.fontFamilies.bold,
+    fontWeight: "800",
   },
 
   // Sections
