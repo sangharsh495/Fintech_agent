@@ -421,16 +421,16 @@
     @apply font-extrabold tabular-nums tracking-tight;
   }
   .number-display-xl {
-    @apply number-display text-numeric-xl;
+    @apply font-extrabold tabular-nums tracking-tight text-numeric-xl;
   }
   .number-display-lg {
-    @apply number-display text-numeric-lg;
+    @apply font-extrabold tabular-nums tracking-tight text-numeric-lg;
   }
   .number-display-md {
-    @apply number-display text-numeric-md;
+    @apply font-extrabold tabular-nums tracking-tight text-numeric-md;
   }
   .number-display-sm {
-    @apply number-display text-numeric-sm;
+    @apply font-extrabold tabular-nums tracking-tight text-numeric-sm;
   }
 
   /* === BUTTON VARIANTS === */
