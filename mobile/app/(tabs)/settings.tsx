@@ -8,6 +8,7 @@ import { useAuth } from "../_layout"
 import { profileApi, banksApi } from "../../lib/api"
 import { logout } from "../../lib/auth"
 import * as LocalAuthentication from "expo-local-authentication"
+import * as Haptics from "expo-haptics"
 
 export default function SettingsScreen() {
   const { token, user, setAuth } = useAuth()
@@ -18,6 +19,22 @@ export default function SettingsScreen() {
   const [biometricsAvailable, setBiometricsAvailable] = useState(false)
   const [biometricsEnabled, setBiometricsEnabled] = useState(false)
 
+  const [preferences, setPreferences] = useState({
+    notifications: {
+      budgetAlerts: true,
+      taxReminders: true,
+      securityAlerts: true,
+      pushNotifications: true,
+    },
+    privacy: {
+      shareAnalytics: false,
+      allowRecommendations: true,
+    },
+    security: {
+      biometricEnabled: false,
+    }
+  })
+
   const fetchData = useCallback(async () => {
     if (!token) return
     try {
@@ -25,7 +42,28 @@ export default function SettingsScreen() {
         profileApi.get(token).catch(() => null),
         banksApi.list(token).catch(() => ({ banks: [] })),
       ])
-      if (profileRes) setProfile(profileRes)
+      if (profileRes) {
+        setProfile(profileRes)
+        if (profileRes.preferences) {
+          setPreferences((prev) => ({
+            notifications: {
+              ...prev.notifications,
+              ...profileRes.preferences.notifications,
+            },
+            privacy: {
+              ...prev.privacy,
+              ...profileRes.preferences.privacy,
+            },
+            security: {
+              ...prev.security,
+              ...profileRes.preferences.security,
+            }
+          }))
+          if (profileRes.preferences.security?.biometricEnabled !== undefined) {
+            setBiometricsEnabled(profileRes.preferences.security.biometricEnabled)
+          }
+        }
+      }
       setBanks(banksRes.banks || [])
     } catch (error) {
       console.error("Settings fetch error:", error)
@@ -57,16 +95,54 @@ export default function SettingsScreen() {
     ])
   }
 
+  const updatePreference = async (
+    section: "notifications" | "privacy" | "security",
+    key: string,
+    value: boolean
+  ) => {
+    if (!token) return
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+
+    const updatedPreferences = {
+      ...preferences,
+      [section]: {
+        ...preferences[section],
+        [key]: value,
+      },
+    }
+
+    if (section === "security" && key === "biometricEnabled") {
+      setBiometricsEnabled(value)
+    }
+
+    setPreferences(updatedPreferences)
+
+    try {
+      await profileApi.update(token, {
+        preferences: updatedPreferences,
+      })
+    } catch (error) {
+      console.error("Failed to update preferences:", error)
+      Alert.alert("Error", "Could not sync setting to server. Please try again.")
+      // Revert
+      setPreferences(preferences)
+      if (section === "security" && key === "biometricEnabled") {
+        setBiometricsEnabled(!value)
+      }
+    }
+  }
+
   const handleBiometricToggle = async (value: boolean) => {
     if (value) {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: "Authenticate to enable biometric login",
       })
       if (result.success) {
-        setBiometricsEnabled(true)
+        updatePreference("security", "biometricEnabled", true)
       }
     } else {
-      setBiometricsEnabled(false)
+      updatePreference("security", "biometricEnabled", false)
     }
   }
 
@@ -179,7 +255,91 @@ export default function SettingsScreen() {
           />
         </View>
       </View>
+      {/* Notifications */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Notifications</Text>
+        <View style={styles.card}>
+          <View style={styles.switchRow}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="notifications-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Budget Alerts</Text>
+            </View>
+            <Switch
+              value={preferences.notifications.budgetAlerts}
+              onValueChange={(val) => updatePreference("notifications", "budgetAlerts", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="receipt-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Tax Reminders</Text>
+            </View>
+            <Switch
+              value={preferences.notifications.taxReminders}
+              onValueChange={(val) => updatePreference("notifications", "taxReminders", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="shield-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Security Alerts</Text>
+            </View>
+            <Switch
+              value={preferences.notifications.securityAlerts}
+              onValueChange={(val) => updatePreference("notifications", "securityAlerts", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="mail-unread-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Push Notifications</Text>
+            </View>
+            <Switch
+              value={preferences.notifications.pushNotifications}
+              onValueChange={(val) => updatePreference("notifications", "pushNotifications", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+        </View>
+      </View>
 
+      {/* Privacy */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Privacy</Text>
+        <View style={styles.card}>
+          <View style={styles.switchRow}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="analytics-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Share Anonymous Analytics</Text>
+            </View>
+            <Switch
+              value={preferences.privacy.shareAnalytics}
+              onValueChange={(val) => updatePreference("privacy", "shareAnalytics", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="bulb-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Personal Recommendations</Text>
+            </View>
+            <Switch
+              value={preferences.privacy.allowRecommendations}
+              onValueChange={(val) => updatePreference("privacy", "allowRecommendations", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+        </View>
+      </View>
       {/* App Info */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>About</Text>
