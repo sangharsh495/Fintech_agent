@@ -90,34 +90,34 @@ export const Typography = {
   // Fluid font sizes (mobile-optimized)
   fontSize: {
     // Display
-    displayXl: isTablet ? 56 : scale(48),
-    displayLg: isTablet ? 48 : scale(40),
-    displayMd: isTablet ? 40 : scale(32),
-    displaySm: isTablet ? 32 : scale(28),
+    displayXl: isTablet ? 56 : scale(32),
+    displayLg: isTablet ? 48 : scale(28),
+    displayMd: isTablet ? 40 : scale(24),
+    displaySm: isTablet ? 32 : scale(22),
 
     // Headings
-    h1: isTablet ? 40 : scale(32),
-    h2: isTablet ? 32 : scale(28),
-    h3: isTablet ? 24 : scale(22),
-    h4: isTablet ? 20 : scale(18),
-    h5: isTablet ? 18 : scale(16),
-    h6: isTablet ? 16 : scale(14),
+    h1: isTablet ? 36 : scale(24),
+    h2: isTablet ? 28 : scale(20),
+    h3: isTablet ? 22 : scale(18),
+    h4: isTablet ? 18 : scale(16),
+    h5: isTablet ? 16 : scale(14),
+    h6: isTablet ? 14 : scale(12),
 
     // Body
-    bodyXl: isTablet ? 20 : scale(18),
-    bodyLg: isTablet ? 18 : scale(16),
-    bodyMd: isTablet ? 16 : scale(14),
-    bodySm: isTablet ? 14 : scale(13),
-    bodyXs: isTablet ? 13 : scale(12),
+    bodyXl: isTablet ? 18 : scale(16),
+    bodyLg: isTablet ? 16 : scale(14),
+    bodyMd: isTablet ? 14 : scale(13),
+    bodySm: isTablet ? 13 : scale(12),
+    bodyXs: isTablet ? 12 : scale(11),
     labelLg: isTablet ? 16 : scale(14),
     labelMd: isTablet ? 14 : scale(13),
     labelSm: isTablet ? 13 : scale(12),
 
     // Numeric (tabular)
-    numericXl: isTablet ? 48 : scale(40),
-    numericLg: isTablet ? 36 : scale(32),
-    numericMd: isTablet ? 28 : scale(24),
-    numericSm: isTablet ? 20 : scale(18),
+    numericXl: isTablet ? 44 : scale(28),
+    numericLg: isTablet ? 32 : scale(24),
+    numericMd: isTablet ? 24 : scale(20),
+    numericSm: isTablet ? 18 : scale(16),
   },
 
   fontWeight: {
