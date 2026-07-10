@@ -551,13 +551,13 @@
     @apply animate-pulse bg-muted rounded;
   }
   .skeleton-text {
-    @apply skeleton h-4 w-full;
+    @apply animate-pulse bg-muted rounded h-4 w-full;
   }
   .skeleton-card {
-    @apply skeleton rounded-xl p-6 space-y-4;
+    @apply animate-pulse bg-muted rounded-xl p-6 space-y-4;
   }
   .skeleton-avatar {
-    @apply skeleton rounded-full;
+    @apply animate-pulse bg-muted rounded-full;
   }
 
   /* === TOOLTIP === */
