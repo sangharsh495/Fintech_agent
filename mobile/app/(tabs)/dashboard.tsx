@@ -186,28 +186,43 @@ export default function DashboardScreen() {
           </View>
         </Animated.View>
 
-        {/* Quick Stats Row */}
+        {/* Quick Stats List */}
         <View style={styles.quickStatsRow}>
           <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[0], transform: [{ translateY: statsAnim.current[0].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatIcon}>
-              <Ionicons name="cash-outline" size={24} color={Colors.primary} />
+            <View style={styles.quickStatLeft}>
+              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.primary + "15" }]}>
+                <Ionicons name="cash-outline" size={20} color={Colors.primary} />
+              </View>
+              <View style={styles.quickStatInfo}>
+                <Text style={styles.quickStatTextLabel}>Total Balance</Text>
+                <Text style={styles.quickStatTextValue}>{formatCurrency(data?.totalBalance || 0)}</Text>
+              </View>
             </View>
-            <Text style={styles.quickStatLabel}>Total Balance</Text>
-            <Text style={styles.quickStatValue}>{formatCurrency(data?.totalBalance || 0)}</Text>
+            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
           </Animated.View>
           <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[1], transform: [{ translateY: statsAnim.current[1].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatIcon}>
-              <Ionicons name="trending-up-outline" size={24} color={Colors.success} />
+            <View style={styles.quickStatLeft}>
+              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.success + "15" }]}>
+                <Ionicons name="trending-up-outline" size={20} color={Colors.success} />
+              </View>
+              <View style={styles.quickStatInfo}>
+                <Text style={styles.quickStatTextLabel}>This Month</Text>
+                <Text style={styles.quickStatTextValue}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
+              </View>
             </View>
-            <Text style={styles.quickStatLabel}>This Month</Text>
-            <Text style={styles.quickStatValue}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
+            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
           </Animated.View>
           <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[2], transform: [{ translateY: statsAnim.current[2].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-            <View style={styles.quickStatIcon}>
-              <Ionicons name="pie-chart-outline" size={24} color={Colors.secondary} />
+            <View style={styles.quickStatLeft}>
+              <View style={[styles.quickStatIconWrapper, { backgroundColor: Colors.secondary + "15" }]}>
+                <Ionicons name="pie-chart-outline" size={20} color={Colors.secondary} />
+              </View>
+              <View style={styles.quickStatInfo}>
+                <Text style={styles.quickStatTextLabel}>Savings Rate</Text>
+                <Text style={styles.quickStatTextValue}>{data?.savingsRate || 0}%</Text>
+              </View>
             </View>
-            <Text style={styles.quickStatLabel}>Savings Rate</Text>
-            <Text style={styles.quickStatValue}>{data?.savingsRate || 0}%</Text>
+            <Ionicons name="chevron-forward-outline" size={16} color={Colors.textTertiary} />
           </Animated.View>
         </View>
 
@@ -542,36 +557,39 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.secondary + "15",
   },
 
-  // Quick Stats Row
+  // Quick Stats List
   quickStatsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     paddingHorizontal: Spacing.screenPaddingHorizontal,
     marginBottom: Spacing.lg,
     gap: Spacing.sm,
   },
   quickStatCard: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.card,
-    padding: Spacing.md,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.card,
     borderWidth: 1,
     borderColor: Colors.border,
-    minHeight: 100,
-    justifyContent: "center",
     ...Shadows.sm,
   },
-  quickStatIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.primary + "15",
+  quickStatLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  quickStatIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: Spacing.sm,
   },
-  quickStatLabel: {
+  quickStatInfo: {
+    justifyContent: "center",
+  },
+  quickStatTextLabel: {
     fontSize: Typography.fontSize.bodyXs,
     color: Colors.textTertiary,
     fontFamily: Typography.fontFamilies.medium,
@@ -579,7 +597,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 2,
   },
-  quickStatValue: {
+  quickStatTextValue: {
     fontSize: Typography.fontSize.bodyMd,
     color: Colors.textPrimary,
     fontWeight: "700",
