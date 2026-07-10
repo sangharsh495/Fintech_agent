@@ -220,11 +220,21 @@ await acheck("Transactions JSON has cluster IDs", async () => {
   const txns = JSON.parse(raw)
   assert.ok(Array.isArray(txns), "not an array")
   assert.ok(txns.length > 100, `only ${txns.length} transactions`)
+  const clusterKeys = ["cluster", "cluster_id", "spendingCluster", "sizeCluster",
+    "temporalCluster", "categoryCluster", "cluster_label"]
   const sample = txns.slice(0, 50)
-  const hasClusterField = sample.some(t =>
-    t.cluster !== undefined || t.cluster_id !== undefined ||
-    t.spending_cluster !== undefined || t.cluster_label !== undefined)
+  const hasClusterField = sample.some(t => clusterKeys.some(k => t[k] !== undefined))
   assert.ok(hasClusterField, "no cluster field on transactions")
+})
+
+await acheck("All 4 cluster dimensions present on transactions", async () => {
+  const raw = await fs.readFile("ml-service/data/transactions_clustered.json", "utf-8")
+  const txns = JSON.parse(raw)
+  const sample = txns.slice(0, 100)
+  const dims = ["spendingCluster", "sizeCluster", "temporalCluster", "categoryCluster"]
+  for (const k of dims) {
+    assert.ok(sample.some(t => t[k] !== undefined), `no "${k}" field found`)
+  }
 })
 
 await acheck("cluster_trends.json is valid", async () => {
@@ -305,16 +315,26 @@ await acheck("End-to-end: categorize + hash a synthetic transaction", () => {
   assert.equal(tx.description.length > 0, true)
 })
 
-await acheck("Date parsing handles multiple bank formats", () => {
-  const patterns = [
-    "15/06/2025",  // DD/MM/YYYY (HDFC, ICICI)
-    "15-06-2025",  // DD-MM-YYYY (Axis)
-    "15 Jun 2025", // DD MMM YYYY (SBI)
+await acheck("Date format strings match bank profile spec", () => {
+  // Production parser uses date-fns parse(); native Date() does NOT handle
+  // DD/MM/YYYY unambiguously, so we validate the tokens instead.
+  const validTokens = [
+    "DD/MM/YYYY", "DD-MM-YYYY", "DD/MM/YY", "DD-MMM-YYYY", "DD MMM YYYY",
+    "MM/DD/YYYY", "YYYY-MM-DD",
   ]
-  for (const p of patterns) {
-    const d = new Date(p)
-    assert.ok(!isNaN(d.getTime()), `failed to parse: ${p}`)
+  for (const p of BANK_PROFILES) {
+    for (const fmt of p.dateFormats) {
+      assert.ok(validTokens.includes(fmt), `${p.id}: unknown date format "${fmt}"`)
+    }
   }
+  // Sanity: "DD MMM YYYY" parses correctly as a human-readable date.
+  const d = new Date("15 Jun 2025")
+  assert.equal(d.getMonth(), 5, "DD MMM YYYY month mismatch")
+})
+
+await acheck("Generic profile includes ISO date fallback", () => {
+  assert.ok(GENERIC_PROFILE.dateFormats.includes("YYYY-MM-DD"),
+    "generic profile should include ISO format as fallback")
 })
 
 await acheck("Amount strings with ₹ and commas parse correctly", () => {

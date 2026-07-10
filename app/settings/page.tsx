@@ -107,6 +107,13 @@ export default function SettingsPage() {
     financialYear: "apr-mar",
   })
 
+  const [consent, setConsent] = useState({
+    consentDataProcessing: false,
+    consentMLAnalytics: false,
+    consentAIAssistant: false,
+    consentMarketing: false,
+  })
+
   const [linkedAccounts, setLinkedAccounts] = useState([
     { id: 1, name: "HDFC Bank", type: "Savings", number: "XXXX1234", connected: true, icon: Building2 },
     { id: 2, name: "ICICI Bank", type: "Current", number: "XXXX5678", connected: true, icon: Building2 },
@@ -145,6 +152,12 @@ export default function SettingsPage() {
           if (data.preferences.notifications) setNotifications(n => ({ ...n, ...data.preferences.notifications }))
           if (data.preferences.regional) setRegional(r => ({ ...r, ...data.preferences.regional }))
         }
+        setConsent({
+          consentDataProcessing: data.consentDataProcessing || false,
+          consentMLAnalytics: data.consentMLAnalytics || false,
+          consentAIAssistant: data.consentAIAssistant || false,
+          consentMarketing: data.consentMarketing || false,
+        })
       })
       .catch((err) => console.error("Error fetching profile:", err))
   }, [])
@@ -183,6 +196,10 @@ export default function SettingsPage() {
         panNumber: userData.pan,
         city: userData.city,
         state: userData.state,
+        consentDataProcessing: consent.consentDataProcessing,
+        consentMLAnalytics: consent.consentMLAnalytics,
+        consentAIAssistant: consent.consentAIAssistant,
+        consentMarketing: consent.consentMarketing,
         preferences: {
           security,
           privacy,
@@ -865,6 +882,80 @@ export default function SettingsPage() {
                         </>
                       ) : (
                         "Save Privacy Settings"
+                      )}
+                    </Button>
+                  </div>
+                </Card>
+
+                <Card className="p-6 border border-border">
+                  <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-primary" />
+                    Data & AI Consents
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-6">Manage your consents for data processing and AI analytics</p>
+
+                  <div className="space-y-4">
+                    {[
+                      {
+                        key: "consentDataProcessing",
+                        title: "Core Data Processing",
+                        desc: "Allow processing of uploaded statements and financial data to run the platform",
+                      },
+                      {
+                        key: "consentMLAnalytics",
+                        title: "Machine Learning Analytics",
+                        desc: "Allow running ML clustering and prediction models on your transactions",
+                      },
+                      {
+                        key: "consentAIAssistant",
+                        title: "Gemini AI Assistant",
+                        desc: "Allow sharing relevant transactions and questions with Gemini AI for insights",
+                      },
+                      {
+                        key: "consentMarketing",
+                        title: "Personalized Financial Offers",
+                        desc: "Allow using anonymized data to recommend relevant tax savers or products",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.key}
+                        className="flex items-center justify-between p-5 rounded-xl bg-secondary/30 border border-border"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Shield className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{item.title}</p>
+                            <p className="text-sm text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                        <ToggleSwitch
+                          checked={consent[item.key as keyof typeof consent]}
+                          onChange={(val) => setConsent({ ...consent, [item.key]: val })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <Button
+                      onClick={handleSave}
+                      className="w-full md:w-auto btn-interactive rounded-xl"
+                      disabled={saveStatus === "saving"}
+                    >
+                      {saveStatus === "saving" ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : saveStatus === "saved" ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Changes Saved!
+                        </>
+                      ) : (
+                        "Save Consent Settings"
                       )}
                     </Button>
                   </div>
