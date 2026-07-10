@@ -367,10 +367,10 @@
     @apply bg-card text-card-foreground rounded-xl border shadow-sm;
   }
   .card-elevated {
-    @apply card-base shadow-lg shadow-black/5 dark:shadow-black/20;
+    @apply bg-card text-card-foreground rounded-xl border shadow-sm shadow-lg shadow-black/5 dark:shadow-black/20;
   }
   .card-hover {
-    @apply card-base transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 relative overflow-hidden;
+    @apply bg-card text-card-foreground rounded-xl border shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 relative overflow-hidden;
   }
   .card-hover::after {
     content: '';
@@ -380,7 +380,7 @@
     @apply opacity-100;
   }
   .card-interactive {
-    @apply card-base transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 cursor-pointer;
+    @apply bg-card text-card-foreground rounded-xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 cursor-pointer;
   }
   .card-glass {
     @apply glass rounded-2xl shadow-xl;
