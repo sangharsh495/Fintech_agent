@@ -88,6 +88,7 @@ export const transactions = pgTable("transactions", {
 
 export const clusterMetadata = pgTable("cluster_metadata", {
   id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id", { length: 128 }).notNull(),
   clusterType: varchar("cluster_type", { length: 32 }).notNull(), // spending_behavior | transaction_size | temporal | category_affinity
   clusterId: integer("cluster_id").notNull(),
   label: varchar("label", { length: 64 }).notNull(),
@@ -109,6 +110,7 @@ export const clusterMetadata = pgTable("cluster_metadata", {
 
 export const clusterRuns = pgTable("cluster_runs", {
   id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id", { length: 128 }).notNull(),
   clusterType: varchar("cluster_type", { length: 32 }).notNull(),
   algorithm: varchar("algorithm", { length: 32 }).notNull(), // kmeans | dbscan | agglomerative
   nClusters: integer("n_clusters").notNull(),
