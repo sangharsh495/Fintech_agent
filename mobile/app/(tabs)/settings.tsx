@@ -170,6 +170,7 @@ export default function SettingsScreen() {
       Alert.alert("Error", "Could not sync consent setting to server.")
       setConsent(consent)
     }
+  }
 
   const handleBiometricToggle = async (value: boolean) => {
     if (value) {
