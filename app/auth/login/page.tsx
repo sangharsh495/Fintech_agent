@@ -39,8 +39,14 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        if (result.error === "EMAIL_NOT_VERIFIED") {
+        if (
+          result.error === "EMAIL_NOT_VERIFIED" ||
+          (result as any).code === "EMAIL_NOT_VERIFIED" ||
+          result.error?.includes("EMAIL_NOT_VERIFIED")
+        ) {
           setError("Please verify your email first. Check your inbox for the OTP.")
+        } else if (result.error === "CredentialsSignin" || result.error === "Configuration") {
+          setError("Invalid email or password, or email not verified.")
         } else {
           setError("Invalid email or password")
         }
