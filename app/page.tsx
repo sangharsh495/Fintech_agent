@@ -46,6 +46,7 @@ function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: number; p
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [alerts, setAlerts] = useState<any[]>([])
   const [hasData, setHasData] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -54,19 +55,22 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true)
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((json) => {
-        setHasData(json.hasData)
-        if (json.hasData) {
+    Promise.all([
+      fetch("/api/dashboard").then((res) => res.json()),
+      fetch("/api/analytics").then((res) => res.json())
+    ])
+      .then(([dashJson, analyticsJson]) => {
+        setHasData(dashJson.hasData)
+        if (dashJson.hasData) {
           setData({
-            totalBalance: json.totalBalance,
-            monthlyIncome: json.monthlyIncome,
-            monthlyExpense: json.monthlyExpense,
-            netWorth: json.netWorth,
-            savingsRate: json.savingsRate,
+            totalBalance: dashJson.totalBalance,
+            monthlyIncome: dashJson.monthlyIncome,
+            monthlyExpense: dashJson.monthlyExpense,
+            netWorth: dashJson.netWorth,
+            savingsRate: dashJson.savingsRate,
           })
-          setAlerts(json.alerts || [])
+          setAlerts(dashJson.alerts || [])
+          setAnalyticsData(analyticsJson)
         }
       })
       .catch((err) => console.error("Failed to load dashboard data:", err))
@@ -211,7 +215,7 @@ export default function Dashboard() {
         {/* Performance Report Chart */}
         <section aria-label="Performance Report">
           <Card className="p-6 card-hover slide-in-from-bottom-4 border border-border bg-slate-900/30">
-            <DashboardCharts type="performance" />
+            <DashboardCharts type="performance" data={analyticsData} />
           </Card>
         </section>
 
@@ -224,7 +228,7 @@ export default function Dashboard() {
                 <p className="text-body-sm text-muted-foreground">Monthly cash flow comparison</p>
               </div>
             </div>
-            <DashboardCharts type="income-expense" />
+            <DashboardCharts type="income-expense" data={analyticsData} />
           </Card>
 
           {/* Savings Rate */}
@@ -274,7 +278,7 @@ export default function Dashboard() {
               <PieChart className="w-5 h-5 text-primary" />
               Expense Breakdown
             </h2>
-            <DashboardCharts type="expenses" />
+            <DashboardCharts type="expenses" data={analyticsData} />
           </Card>
 
           {/* Smart Alerts */}
@@ -333,7 +337,7 @@ export default function Dashboard() {
                 Net Worth Trend
               </h2>
             </div>
-            <DashboardCharts type="networth" />
+            <DashboardCharts type="networth" data={analyticsData} />
           </Card>
         </section>
       </main>
