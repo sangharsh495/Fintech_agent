@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import DashboardCharts from "@/components/dashboard-charts"
 import { TrendingUp, AlertCircle, PieChart, ArrowUpRight, Wallet, DollarSign, BarChart3, Target } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 interface DashboardData {
   totalBalance: number
@@ -44,70 +45,104 @@ function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: number; p
 }
 
 export default function Dashboard() {
-  const [data] = useState<DashboardData>({
-    totalBalance: 45280,
-    monthlyIncome: 85000,
-    monthlyExpense: 42500,
-    netWorth: 285000,
-    savingsRate: 50,
-  })
-
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [alerts, setAlerts] = useState<any[]>([])
+  const [hasData, setHasData] = useState<boolean | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [activeAlert, setActiveAlert] = useState<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then((json) => {
+        setHasData(json.hasData)
+        if (json.hasData) {
+          setData({
+            totalBalance: json.totalBalance,
+            monthlyIncome: json.monthlyIncome,
+            monthlyExpense: json.monthlyExpense,
+            netWorth: json.netWorth,
+            savingsRate: json.savingsRate,
+          })
+          setAlerts(json.alerts || [])
+        }
+      })
+      .catch((err) => console.error("Failed to load dashboard data:", err))
+      .finally(() => setIsLoading(false))
   }, [])
 
   if (!mounted) return null
 
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (hasData === false || !data) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+          <Wallet className="w-12 h-12 text-primary" />
+        </div>
+        <h1 className="text-h2 font-bold mb-4">Welcome to FinFlow!</h1>
+        <p className="text-body-lg text-muted-foreground max-w-md mb-8">
+          You don't have any financial data yet. Let's get started by uploading your first bank statement to analyze your cash flow.
+        </p>
+        <Link href="/upload">
+          <button className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 transition-colors">
+            Upload Statement
+          </button>
+        </Link>
+      </div>
+    )
+  }
+
   const stats = [
     {
       label: "Total Balance",
-      value: data.totalBalance / 1000,
-      suffix: "K",
+      value: data.totalBalance,
+      suffix: "",
       prefix: "₹",
-      change: "+12%",
-      changeType: "positive",
+      change: "Current",
+      changeType: "neutral",
       icon: Wallet,
       color: "from-emerald-500 to-teal-500",
     },
     {
       label: "Monthly Income",
-      value: data.monthlyIncome / 1000,
-      suffix: "K",
+      value: data.monthlyIncome,
+      suffix: "",
       prefix: "₹",
-      change: "+8%",
+      change: "This month",
       changeType: "positive",
       icon: DollarSign,
       color: "from-blue-500 to-cyan-500",
     },
     {
       label: "Monthly Expense",
-      value: data.monthlyExpense / 1000,
-      suffix: "K",
+      value: data.monthlyExpense,
+      suffix: "",
       prefix: "₹",
-      change: "50% of income",
+      change: "This month",
       changeType: "neutral",
       icon: BarChart3,
       color: "from-orange-500 to-amber-500",
     },
     {
       label: "Net Worth",
-      value: data.netWorth / 100000,
-      suffix: "L",
+      value: data.netWorth,
+      suffix: "",
       prefix: "₹",
-      change: "Strong growth",
+      change: "Total",
       changeType: "positive",
       icon: Target,
       color: "from-purple-500 to-pink-500",
     },
-  ]
-
-  const alerts = [
-    { title: "Budget Alert", desc: "You've spent 78% of your monthly food budget", type: "warning" },
-    { title: "Goal Progress", desc: "Emergency fund: 85% towards ₹5L target", type: "success" },
-    { title: "Investment Opportunity", desc: "SIP returns up 15% YoY", type: "info" },
   ]
 
   return (
@@ -221,7 +256,7 @@ export default function Dashboard() {
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <span className="text-numeric-lg font-extrabold text-gradient drop-shadow-sm">{data.savingsRate}%</span>
+                  <span className="text-numeric-lg font-extrabold text-gradient drop-shadow-sm">{Math.round(data.savingsRate)}%</span>
                 </div>
               </div>
               <div className="text-center bg-background/50 backdrop-blur-sm px-5 py-2 rounded-full border border-white/5">
@@ -249,12 +284,12 @@ export default function Dashboard() {
               Smart Alerts
             </h2>
             <div className="space-y-4 stagger-children">
-              {alerts.map((alert, i) => (
+              {alerts.length > 0 ? alerts.map((alert, i) => (
                 <div
                   key={i}
                   onClick={() => setActiveAlert(activeAlert === i ? null : i)}
                   className={cn(
-                    "alert-card group flex items-start p-4",
+                    "alert-card group flex items-start p-4 cursor-pointer",
                     alert.type === "warning" && "warning",
                     alert.type === "success" && "success",
                     alert.type === "info" && "info",
@@ -278,11 +313,13 @@ export default function Dashboard() {
                     </div>
                     <div className="flex-1">
                       <p className="font-bold text-body-sm text-foreground mb-1">{alert.title}</p>
-                      <p className="text-body-xs text-muted-foreground leading-relaxed">{alert.desc}</p>
+                      <p className="text-body-xs text-muted-foreground leading-relaxed">{alert.message || alert.desc}</p>
                     </div>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-muted-foreground text-sm">No new alerts to show right now.</p>
+              )}
             </div>
           </Card>
         </section>
