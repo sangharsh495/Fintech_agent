@@ -1,9 +1,14 @@
 import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import { CredentialsSignin } from "next-auth"
 import { db } from "@/server/db"
 import { users } from "@/server/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED"
+}
 
 export const authConfig: NextAuthConfig = {
   providers: [
@@ -33,7 +38,7 @@ export const authConfig: NextAuthConfig = {
 
           // Only allow verified users
           if (!user.emailVerified) {
-            throw new Error("EMAIL_NOT_VERIFIED")
+            throw new EmailNotVerifiedError()
           }
 
           return {
@@ -43,7 +48,7 @@ export const authConfig: NextAuthConfig = {
             image: user.image,
           }
         } catch (error) {
-          if (error instanceof Error && error.message === "EMAIL_NOT_VERIFIED") {
+          if (error instanceof EmailNotVerifiedError) {
             throw error
           }
           return null
