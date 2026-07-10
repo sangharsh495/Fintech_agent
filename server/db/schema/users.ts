@@ -45,6 +45,8 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash", { length: 255 }),
   phone: varchar("phone", { length: 20 }),
   image: varchar("image", { length: 512 }),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripePaymentMethodId: varchar("stripe_payment_method_id", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
@@ -92,6 +94,26 @@ export const otpVerifications = pgTable("otp_verifications", {
   expiresAt: timestamp("expires_at").notNull(),
   used: boolean("used").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+// ─── TOTP & Backup Codes ────────────────────────────────────
+
+export const userTotpSecrets = pgTable("user_totp_secrets", {
+  userId: uuid("user_id")
+    .notNull()
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  secret: varchar("secret", { length: 255 }).notNull(),
+  isVerified: boolean("is_verified").default(false).notNull(),
+})
+
+export const user2faBackupCodes = pgTable("user_2fa_backup_codes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  code: varchar("code", { length: 255 }).notNull(),
+  used: boolean("used").default(false).notNull(),
 })
 
 // ─── User Profiles ──────────────────────────────────────────
@@ -174,3 +196,5 @@ export type NewBankAccount = typeof bankAccounts.$inferInsert
 export type StatementUpload = typeof statementUploads.$inferSelect
 export type NewStatementUpload = typeof statementUploads.$inferInsert
 export type OtpVerification = typeof otpVerifications.$inferSelect
+export type UserTotpSecret = typeof userTotpSecrets.$inferSelect
+export type User2faBackupCode = typeof user2faBackupCodes.$inferSelect
