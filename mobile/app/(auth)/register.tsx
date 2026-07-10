@@ -403,7 +403,6 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamilies.medium,
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    whiteSpace: "nowrap",
   },
 
   // Social
