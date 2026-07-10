@@ -109,6 +109,9 @@ export const Typography = {
     bodyMd: isTablet ? 16 : scale(14),
     bodySm: isTablet ? 14 : scale(13),
     bodyXs: isTablet ? 13 : scale(12),
+    labelLg: isTablet ? 16 : scale(14),
+    labelMd: isTablet ? 14 : scale(13),
+    labelSm: isTablet ? 13 : scale(12),
 
     // Numeric (tabular)
     numericXl: isTablet ? 48 : scale(40),
@@ -657,18 +660,18 @@ export const Animation = {
   },
 
   easing: {
-    linear: 'linear',
-    easeIn: 'ease-in',
-    easeOut: 'ease-out',
-    easeInOut: 'ease-in-out',
+    linear: Easing.linear,
+    easeIn: Easing.in(Easing.ease),
+    easeOut: Easing.out(Easing.ease),
+    easeInOut: Easing.inOut(Easing.ease),
     // Premium easings
-    spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-    smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+    spring: Easing.bezier(0.34, 1.56, 0.64, 1),
+    bounce: Easing.bezier(0.68, -0.55, 0.265, 1.55),
+    smooth: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+    sharp: Easing.bezier(0.4, 0, 0.6, 1),
     // Platform
-    ios: 'cubic-bezier(0.42, 0, 0.58, 1)',
-    material: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    ios: Easing.bezier(0.42, 0, 0.58, 1),
+    material: Easing.bezier(0.4, 0, 0.2, 1),
   },
 
   // Spring configs for Reanimated
