@@ -16,147 +16,18 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
   Legend,
 } from "recharts"
 import { cn } from "@/lib/utils"
 
-const performanceDataYearly = [
-  { period: "Jan", portfolio: 25, savings: 15, investments: 5 },
-  { period: "Feb", portfolio: 30, savings: 22, investments: 12 },
-  { period: "Mar", portfolio: 65, savings: 48, investments: 28 },
-  { period: "Apr", portfolio: 78, savings: 62, investments: 45 },
-  { period: "May", portfolio: 72, savings: 55, investments: 52 },
-  { period: "Jun", portfolio: 55, savings: 48, investments: 58 },
-  { period: "Jul", portfolio: 52, savings: 42, investments: 48 },
-  { period: "Aug", portfolio: 48, savings: 45, investments: 52 },
-  { period: "Sep", portfolio: 75, savings: 58, investments: 62 },
-  { period: "Oct", portfolio: 82, savings: 72, investments: 75 },
-  { period: "Nov", portfolio: 78, savings: 75, investments: 82 },
-  { period: "Dec", portfolio: 88, savings: 85, investments: 78 },
-]
-
-const performanceDataMonthly = [
-  { period: "Week 1", portfolio: 45, savings: 35, investments: 25 },
-  { period: "Week 2", portfolio: 52, savings: 42, investments: 32 },
-  { period: "Week 3", portfolio: 58, savings: 48, investments: 38 },
-  { period: "Week 4", portfolio: 65, savings: 55, investments: 45 },
-]
-
-const performanceDataWeekly = [
-  { period: "Mon", portfolio: 42, savings: 32, investments: 22 },
-  { period: "Tue", portfolio: 48, savings: 38, investments: 28 },
-  { period: "Wed", portfolio: 52, savings: 42, investments: 32 },
-  { period: "Thu", portfolio: 55, savings: 45, investments: 35 },
-  { period: "Fri", portfolio: 58, savings: 48, investments: 38 },
-  { period: "Sat", portfolio: 62, savings: 52, investments: 42 },
-  { period: "Sun", portfolio: 65, savings: 55, investments: 45 },
-]
-
-const performanceDataDaily = [
-  { period: "6AM", portfolio: 40, savings: 30, investments: 20 },
-  { period: "9AM", portfolio: 42, savings: 32, investments: 22 },
-  { period: "12PM", portfolio: 45, savings: 35, investments: 25 },
-  { period: "3PM", portfolio: 48, savings: 38, investments: 28 },
-  { period: "6PM", portfolio: 50, savings: 40, investments: 30 },
-  { period: "9PM", portfolio: 52, savings: 42, investments: 32 },
-]
-
-const incomeExpenseYearly = [
-  { period: "Jan", income: 75000, expense: 35000 },
-  { period: "Feb", income: 82000, expense: 38000 },
-  { period: "Mar", income: 85000, expense: 40000 },
-  { period: "Apr", income: 88000, expense: 42000 },
-  { period: "May", income: 85000, expense: 41000 },
-  { period: "Jun", income: 85000, expense: 42500 },
-  { period: "Jul", income: 90000, expense: 44000 },
-  { period: "Aug", income: 92000, expense: 45000 },
-  { period: "Sep", income: 88000, expense: 43000 },
-  { period: "Oct", income: 95000, expense: 46000 },
-  { period: "Nov", income: 98000, expense: 48000 },
-  { period: "Dec", income: 105000, expense: 52000 },
-]
-
-const incomeExpenseMonthly = [
-  { period: "Week 1", income: 21250, expense: 10625 },
-  { period: "Week 2", income: 22500, expense: 11250 },
-  { period: "Week 3", income: 23000, expense: 12000 },
-  { period: "Week 4", income: 24250, expense: 11625 },
-]
-
-const incomeExpenseWeekly = [
-  { period: "Mon", income: 12143, expense: 6071 },
-  { period: "Tue", income: 13500, expense: 7200 },
-  { period: "Wed", income: 14200, expense: 6800 },
-  { period: "Thu", income: 12800, expense: 6500 },
-  { period: "Fri", income: 15000, expense: 8000 },
-  { period: "Sat", income: 8000, expense: 9500 },
-  { period: "Sun", income: 5000, expense: 7000 },
-]
-
-const incomeExpenseDaily = [
-  { period: "6AM", income: 0, expense: 500 },
-  { period: "9AM", income: 5000, expense: 1200 },
-  { period: "12PM", income: 8000, expense: 2500 },
-  { period: "3PM", income: 6000, expense: 1800 },
-  { period: "6PM", income: 3000, expense: 3200 },
-  { period: "9PM", income: 1000, expense: 1500 },
-]
-
-const netWorthYearly = [
-  { period: "Jan", worth: 220000, growth: 2.5 },
-  { period: "Feb", worth: 235000, growth: 6.8 },
-  { period: "Mar", worth: 250000, growth: 6.4 },
-  { period: "Apr", worth: 265000, growth: 6.0 },
-  { period: "May", worth: 275000, growth: 3.8 },
-  { period: "Jun", worth: 285000, growth: 3.6 },
-  { period: "Jul", worth: 295000, growth: 3.5 },
-  { period: "Aug", worth: 305000, growth: 3.4 },
-  { period: "Sep", worth: 315000, growth: 3.3 },
-  { period: "Oct", worth: 328000, growth: 4.1 },
-  { period: "Nov", worth: 342000, growth: 4.3 },
-  { period: "Dec", worth: 358000, growth: 4.7 },
-]
-
-const netWorthMonthly = [
-  { period: "Week 1", worth: 280000, growth: 0.8 },
-  { period: "Week 2", worth: 282500, growth: 0.9 },
-  { period: "Week 3", worth: 284200, growth: 0.6 },
-  { period: "Week 4", worth: 285000, growth: 0.3 },
-]
-
-const netWorthWeekly = [
-  { period: "Mon", worth: 284200, growth: 0.1 },
-  { period: "Tue", worth: 284350, growth: 0.05 },
-  { period: "Wed", worth: 284500, growth: 0.05 },
-  { period: "Thu", worth: 284650, growth: 0.05 },
-  { period: "Fri", worth: 284800, growth: 0.05 },
-  { period: "Sat", worth: 284900, growth: 0.03 },
-  { period: "Sun", worth: 285000, growth: 0.03 },
-]
-
-const netWorthDaily = [
-  { period: "6AM", worth: 284800, growth: 0.01 },
-  { period: "9AM", worth: 284850, growth: 0.02 },
-  { period: "12PM", worth: 284920, growth: 0.02 },
-  { period: "3PM", worth: 284950, growth: 0.01 },
-  { period: "6PM", worth: 284980, growth: 0.01 },
-  { period: "9PM", worth: 285000, growth: 0.01 },
-]
-
-const expenseData = [
-  { name: "Food", value: 15000, color: "#10b981" },
-  { name: "Transport", value: 8000, color: "#3b82f6" },
-  { name: "Entertainment", value: 5000, color: "#8b5cf6" },
-  { name: "Utilities", value: 6000, color: "#f59e0b" },
-  { name: "Others", value: 8500, color: "#ef4444" },
-]
-
-type TimeFilter = "day" | "week" | "month" | "year"
+type TimeFilter = "month" // Simplified for live data MVP
 
 interface DashboardChartsProps {
   type: "income-expense" | "expenses" | "networth" | "performance"
+  data?: any
 }
+
+const COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#ec4899", "#06b6d4"]
 
 const CustomTooltip = ({ active, payload, label, prefix = "₹", suffix = "" }: any) => {
   if (active && payload && payload.length) {
@@ -180,79 +51,25 @@ const CustomTooltip = ({ active, payload, label, prefix = "₹", suffix = "" }: 
   return null
 }
 
-const TimeFilterToggle = ({
-  value,
-  onChange,
-  options = ["day", "week", "month", "year"],
-}: {
-  value: TimeFilter
-  onChange: (v: TimeFilter) => void
-  options?: TimeFilter[]
-}) => {
-  const labels: Record<TimeFilter, string> = {
-    day: "DAY",
-    week: "WEEK",
-    month: "MONTH",
-    year: "YEAR",
-  }
-
-  return (
-    <div className="flex items-center gap-1 bg-secondary/80 backdrop-blur-sm rounded-full p-1 border border-border/50">
-      {options.map((opt) => (
-        <button
-          key={opt}
-          onClick={() => onChange(opt)}
-          className={cn(
-            "px-4 py-2 text-xs font-bold rounded-full transition-all duration-300 tracking-wide",
-            value === opt
-              ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/30"
-              : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
-          )}
-        >
-          {labels[opt]}
-        </button>
-      ))}
-    </div>
-  )
+const formatMonth = (YYYYMM: string) => {
+  if (!YYYYMM) return ""
+  const [year, month] = YYYYMM.split("-")
+  const date = new Date(parseInt(year), parseInt(month) - 1)
+  return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" })
 }
 
-export function PerformanceChart() {
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("year")
+export function PerformanceChart({ data }: { data: any }) {
+  if (!data?.monthly) return null
 
-  const getData = () => {
-    switch (timeFilter) {
-      case "day":
-        return performanceDataDaily
-      case "week":
-        return performanceDataWeekly
-      case "month":
-        return performanceDataMonthly
-      case "year":
-        return performanceDataYearly
-      default:
-        return performanceDataYearly
-    }
-  }
+  const chartData = data.monthly.map((m: any) => ({
+    period: formatMonth(m.month),
+    income: m.income,
+    savings: m.savings,
+    expenses: m.expenses,
+  }))
 
-  const totalComponents = 56321
-  const components = [
-    { label: "Portfolio", value: 3236, color: "#22d3ee" },
-    { label: "Savings", value: 8583, color: "#a855f7" },
-    { label: "Investments", value: 1142, color: "#4ade80" },
-  ]
-
-  const quarterData = [
-    { name: "Q1", value: 18, color: "#22d3ee" },
-    { name: "Q2", value: 9, color: "#a855f7" },
-    { name: "Q3", value: 26, color: "#4ade80" },
-    { name: "Q4", value: 47, color: "#c084fc" },
-  ]
-
-  const last3Months = [
-    { label: "Oct", value: 25000, color: "#22d3ee" },
-    { label: "Nov", value: 56000, color: "#a855f7" },
-    { label: "Dec", value: 15000, color: "#4ade80" },
-  ]
+  const totals = data.totals || { income: 0, savings: 0, expenses: 0 }
+  const totalSum = totals.income + totals.savings + totals.expenses || 1
 
   return (
     <div className="space-y-6">
@@ -261,11 +78,9 @@ export function PerformanceChart() {
           <h2 className="text-2xl font-bold text-foreground">Performance Report</h2>
           <p className="text-sm text-muted-foreground mt-1">Track your financial growth over time</p>
         </div>
-        <TimeFilterToggle value={timeFilter} onChange={setTimeFilter} />
       </div>
 
       <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700/50 overflow-hidden shadow-2xl">
-        {/* Grid pattern overlay */}
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -277,7 +92,7 @@ export function PerformanceChart() {
           }}
         />
         <ResponsiveContainer width="100%" height={380}>
-          <LineChart data={getData()} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
+          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
             <defs>
               <filter id="glowPerf">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -301,11 +116,11 @@ export function PerformanceChart() {
               tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 500 }}
               axisLine={false}
               tickLine={false}
-              domain={[0, 100]}
+              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
               dx={-10}
             />
             <Tooltip
-              content={<CustomTooltip prefix="" suffix="%" />}
+              content={<CustomTooltip />}
               cursor={{ stroke: "rgba(255,255,255,0.1)", strokeWidth: 1, strokeDasharray: "4 4" }}
             />
             <Legend
@@ -315,8 +130,8 @@ export function PerformanceChart() {
             />
             <Line
               type="monotoneX"
-              dataKey="portfolio"
-              name="Portfolio"
+              dataKey="income"
+              name="Income"
               stroke="#06b6d4"
               strokeWidth={3}
               dot={false}
@@ -333,8 +148,8 @@ export function PerformanceChart() {
             />
             <Line
               type="monotoneX"
-              dataKey="investments"
-              name="Investments"
+              dataKey="expenses"
+              name="Expenses"
               stroke="#8b5cf6"
               strokeWidth={3}
               dot={false}
@@ -345,7 +160,7 @@ export function PerformanceChart() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700/50 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700/50 relative overflow-hidden md:col-span-3">
           <div
             className="absolute inset-0 opacity-[0.02]"
             style={{
@@ -354,99 +169,39 @@ export function PerformanceChart() {
             }}
           />
           <div className="relative z-10">
-            <div className="text-3xl font-bold text-white mb-1">₹{totalComponents.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-white mb-1">₹{totals.income.toLocaleString()}</div>
             <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-              <span>Total Components</span>
-              <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">YTD</span>
+              <span>Total Income</span>
+              <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">Past 6 Months</span>
             </div>
             <div className="flex gap-1 h-3 rounded-full overflow-hidden mb-3 bg-slate-700/50">
-              {components.map((c, i) => (
-                <div
-                  key={i}
-                  className="h-full transition-all duration-500"
-                  style={{
-                    backgroundColor: c.color,
-                    width: `${(c.value / totalComponents) * 100}%`,
-                    boxShadow: `0 0 10px ${c.color}40`,
-                  }}
-                />
-              ))}
+              <div
+                className="h-full bg-cyan-400 transition-all duration-500"
+                style={{ width: `${(totals.income / totalSum) * 100}%` }}
+              />
+              <div
+                className="h-full bg-emerald-400 transition-all duration-500"
+                style={{ width: `${(totals.savings / totalSum) * 100}%` }}
+              />
+              <div
+                className="h-full bg-purple-400 transition-all duration-500"
+                style={{ width: `${(totals.expenses / totalSum) * 100}%` }}
+              />
             </div>
             <div className="flex justify-between text-xs text-slate-400">
-              {components.map((c, i) => (
-                <div key={i} className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
-                  <span>₹{c.value.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700/50">
-          <div className="text-sm font-medium text-slate-400 mb-3">This Year</div>
-          <div className="flex items-center justify-center">
-            <div className="relative w-32 h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={quarterData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={35}
-                    outerRadius={55}
-                    dataKey="value"
-                    startAngle={90}
-                    endAngle={-270}
-                    stroke="none"
-                  >
-                    {quarterData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => `${value}%`}
-                    contentStyle={{
-                      backgroundColor: "rgba(15,23,42,0.95)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: "8px",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="flex justify-center gap-3 mt-3">
-            {quarterData.map((q, i) => (
-              <div key={i} className="flex items-center gap-1 text-xs">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: q.color }} />
-                <span className="text-slate-400">{q.name}</span>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                <span>Income</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl p-5 border border-slate-700/50">
-          <div className="text-sm font-medium text-slate-400 mb-4">Last 3 Months</div>
-          <div className="space-y-4">
-            {last3Months.map((m, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                  <span>{m.label}</span>
-                  <span className="font-bold text-white">₹{(m.value / 1000).toFixed(0)}K</span>
-                </div>
-                <div className="h-2 rounded-full bg-slate-700/50 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      backgroundColor: m.color,
-                      width: `${(m.value / 60000) * 100}%`,
-                      boxShadow: `0 0 10px ${m.color}40`,
-                    }}
-                  />
-                </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Savings</span>
               </div>
-            ))}
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-purple-400" />
+                <span>Expenses</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -454,23 +209,14 @@ export function PerformanceChart() {
   )
 }
 
-export function IncomeExpenseChart() {
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("year")
+export function IncomeExpenseChart({ data }: { data: any }) {
+  if (!data?.monthly) return null
 
-  const getData = () => {
-    switch (timeFilter) {
-      case "day":
-        return incomeExpenseDaily
-      case "week":
-        return incomeExpenseWeekly
-      case "month":
-        return incomeExpenseMonthly
-      case "year":
-        return incomeExpenseYearly
-      default:
-        return incomeExpenseYearly
-    }
-  }
+  const chartData = data.monthly.map((m: any) => ({
+    period: formatMonth(m.month),
+    income: m.income,
+    expense: m.expenses,
+  }))
 
   return (
     <div className="space-y-4">
@@ -483,7 +229,6 @@ export function IncomeExpenseChart() {
             <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" /> Expense
           </span>
         </div>
-        <TimeFilterToggle value={timeFilter} onChange={setTimeFilter} />
       </div>
       <div className="relative">
         <div
@@ -498,7 +243,7 @@ export function IncomeExpenseChart() {
         />
         <ResponsiveContainer width="100%" height={320}>
           <BarChart
-            data={getData()}
+            data={chartData}
             barGap={6}
             barCategoryGap="20%"
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
@@ -536,35 +281,31 @@ export function IncomeExpenseChart() {
   )
 }
 
-export function NetWorthChart() {
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("year")
+export function NetWorthChart({ data }: { data: any }) {
+  if (!data?.monthly) return null
 
-  const getData = () => {
-    switch (timeFilter) {
-      case "day":
-        return netWorthDaily
-      case "week":
-        return netWorthWeekly
-      case "month":
-        return netWorthMonthly
-      case "year":
-        return netWorthYearly
-      default:
-        return netWorthYearly
+  let cumulativeSavings = 0
+  const chartData = data.monthly.map((m: any) => {
+    cumulativeSavings += m.savings
+    return {
+      period: formatMonth(m.month),
+      worth: cumulativeSavings,
+      growth: m.income > 0 ? ((m.savings / m.income) * 100).toFixed(1) : 0,
     }
-  }
+  })
 
-  const data = getData()
-  const firstValue = data[0].worth
-  const lastValue = data[data.length - 1].worth
-  const percentChange = (((lastValue - firstValue) / firstValue) * 100).toFixed(1)
+  if (chartData.length === 0) return null
+
+  const firstValue = chartData[0].worth || 1
+  const lastValue = chartData[chartData.length - 1].worth
+  const percentChange = (((lastValue - firstValue) / Math.abs(firstValue)) * 100).toFixed(1)
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            Current: <span className="font-bold text-foreground text-xl">₹{(lastValue / 100000).toFixed(2)}L</span>
+            Cumulative Savings: <span className="font-bold text-foreground text-xl">₹{(lastValue / 1000).toFixed(1)}K</span>
           </div>
           <div
             className={cn(
@@ -578,7 +319,6 @@ export function NetWorthChart() {
             {percentChange}%
           </div>
         </div>
-        <TimeFilterToggle value={timeFilter} onChange={setTimeFilter} />
       </div>
       <div className="relative">
         <div
@@ -589,7 +329,7 @@ export function NetWorthChart() {
           }}
         />
         <ResponsiveContainer width="100%" height={320}>
-          <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <defs>
               <linearGradient id="worthAreaGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.5} />
@@ -615,8 +355,7 @@ export function NetWorthChart() {
               tick={{ fill: "var(--muted-foreground)", fontSize: 12, fontWeight: 500 }}
               axisLine={{ stroke: "var(--border)" }}
               tickLine={false}
-              tickFormatter={(value) => `₹${(value / 100000).toFixed(1)}L`}
-              domain={["dataMin - 10000", "dataMax + 10000"]}
+              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
             />
             <Tooltip
               content={({ active, payload, label }) => {
@@ -624,24 +363,23 @@ export function NetWorthChart() {
                   const worth = payload[0].value as number
                   const growth = payload[0].payload.growth
                   return (
-                    <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl">
+                     <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl">
                       <p className="font-bold text-foreground mb-3 text-sm border-b border-border/50 pb-2">{label}</p>
                       <p className="text-sm flex items-center gap-3 py-1">
                         <span
                           className="w-3 h-3 rounded-full bg-cyan-400 shadow-lg"
                           style={{ boxShadow: "0 0 8px #22d3ee" }}
                         />
-                        <span className="text-muted-foreground flex-1">Net Worth:</span>
-                        <span className="font-bold text-cyan-500">₹{(worth / 100000).toFixed(2)}L</span>
+                        <span className="text-muted-foreground flex-1">Cum. Savings:</span>
+                        <span className="font-bold text-cyan-500">₹{(worth / 1000).toFixed(1)}K</span>
                       </p>
                       <p className="text-sm flex items-center gap-3 py-1">
                         <span
                           className="w-3 h-3 rounded-full bg-emerald-400 shadow-lg"
                           style={{ boxShadow: "0 0 8px #10b981" }}
                         />
-                        <span className="text-muted-foreground flex-1">Growth:</span>
+                        <span className="text-muted-foreground flex-1">Savings Rate:</span>
                         <span className={cn("font-bold", growth >= 0 ? "text-emerald-500" : "text-rose-500")}>
-                          {growth >= 0 ? "+" : ""}
                           {growth}%
                         </span>
                       </p>
@@ -668,8 +406,16 @@ export function NetWorthChart() {
   )
 }
 
-export function ExpenseChart() {
-  const total = expenseData.reduce((sum, item) => sum + item.value, 0)
+export function ExpenseChart({ data }: { data: any }) {
+  if (!data?.categoryBreakdown) return null
+
+  const expenseData = data.categoryBreakdown.map((c: any, i: number) => ({
+    name: c.category,
+    value: c.total,
+    color: COLORS[i % COLORS.length]
+  }))
+
+  const total = expenseData.reduce((sum: number, item: any) => sum + item.value, 0)
 
   return (
     <div className="flex flex-col lg:flex-row items-center gap-6">
@@ -680,7 +426,7 @@ export function ExpenseChart() {
         <ResponsiveContainer width={220} height={220}>
           <PieChart>
             <defs>
-              {expenseData.map((entry, index) => (
+              {expenseData.map((entry: any, index: number) => (
                 <linearGradient key={index} id={`pieGradient${index}`} x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor={entry.color} stopOpacity={1} />
                   <stop offset="100%" stopColor={entry.color} stopOpacity={0.7} />
@@ -697,7 +443,7 @@ export function ExpenseChart() {
               dataKey="value"
               stroke="none"
             >
-              {expenseData.map((entry, index) => (
+              {expenseData.map((entry: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={`url(#pieGradient${index})`} />
               ))}
             </Pie>
@@ -720,8 +466,8 @@ export function ExpenseChart() {
         </div>
       </div>
       <div className="flex flex-wrap gap-3 justify-center lg:flex-col lg:gap-2">
-        {expenseData.map((item, index) => {
-          const percentage = ((item.value / total) * 100).toFixed(0)
+        {expenseData.map((item: any, index: number) => {
+          const percentage = ((item.value / (total || 1)) * 100).toFixed(0)
           return (
             <div
               key={index}
@@ -739,16 +485,24 @@ export function ExpenseChart() {
   )
 }
 
-export default function DashboardCharts({ type }: DashboardChartsProps) {
+export default function DashboardCharts({ type, data }: DashboardChartsProps) {
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   switch (type) {
     case "performance":
-      return <PerformanceChart />
+      return <PerformanceChart data={data} />
     case "income-expense":
-      return <IncomeExpenseChart />
+      return <IncomeExpenseChart data={data} />
     case "expenses":
-      return <ExpenseChart />
+      return <ExpenseChart data={data} />
     case "networth":
-      return <NetWorthChart />
+      return <NetWorthChart data={data} />
     default:
       return null
   }
