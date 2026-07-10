@@ -593,7 +593,7 @@
     @apply bg-border w-px h-full;
   }
   .divider-bold {
-    @apply divider h-[2px];
+    @apply bg-border h-px w-full h-[2px];
   }
 
   /* === LAYOUT UTILITIES === */
@@ -828,7 +828,7 @@
            hover:bg-secondary hover:text-primary;
   }
   .nav-link-active {
-    @apply nav-link bg-primary text-primary-foreground shadow-lg shadow-primary/20;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ease-out text-foreground hover:bg-secondary hover:text-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20;
   }
   .nav-link-icon {
     @apply w-5 h-5 transition-transform duration-300 ease-out;
@@ -846,13 +846,13 @@
            backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out;
   }
   .sidebar-collapsed {
-    @apply sidebar w-[4rem];
+    @apply fixed left-0 top-16 z-40 w-[18rem] h-[calc(100vh-4rem)] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out w-[4rem];
   }
   .sidebar-hidden {
-    @apply sidebar -translate-x-full opacity-0 invisible;
+    @apply fixed left-0 top-16 z-40 w-[18rem] h-[calc(100vh-4rem)] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out -translate-x-full opacity-0 invisible;
   }
   .sidebar-visible {
-    @apply sidebar translate-x-0 opacity-100 visible;
+    @apply fixed left-0 top-16 z-40 w-[18rem] h-[calc(100vh-4rem)] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out translate-x-0 opacity-100 visible;
   }
 
   /* === TABS === */
@@ -865,7 +865,7 @@
            hover:text-foreground hover:bg-background focus-visible:ring-2 focus-visible:ring-ring;
   }
   .tabs-trigger-active {
-    @apply tabs-trigger bg-background text-foreground shadow-sm;
+    @apply flex h-9 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ease-out text-muted-foreground hover:text-foreground hover:bg-background focus-visible:ring-2 focus-visible:ring-ring bg-background text-foreground shadow-sm;
   }
 
   /* === MODAL/SHEET === */
@@ -882,13 +882,12 @@
 
   /* === TOAST === */
   .toast {
-    @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl
-           min-w-[300px] max-w-md animate-in slide-in-from-bottom-2 fade-in duration-300;
+    @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl min-w-[300px] max-w-md duration-300;
   }
-  .toast-success { @apply toast border-emerald-500/30; }
-  .toast-error { @apply toast border-rose-500/30; }
-  .toast-warning { @apply toast border-amber-500/30; }
-  .toast-info { @apply toast border-sky-500/30; }
+  .toast-success { @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl min-w-[300px] max-w-md duration-300 border-emerald-500/30; }
+  .toast-error { @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl min-w-[300px] max-w-md duration-300 border-rose-500/30; }
+  .toast-warning { @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl min-w-[300px] max-w-md duration-300 border-amber-500/30; }
+  .toast-info { @apply fixed z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-2xl min-w-[300px] max-w-md duration-300 border-sky-500/30; }
 
   /* === RESPONSIVE UTILITIES === */
   /* Hide on mobile */
