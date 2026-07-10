@@ -100,6 +100,8 @@ export async function POST(req: NextRequest) {
           error: "password_required",
           message: error.message,
           passwordHint: error.passwordHint,
+          detectedBankId: error.detectedBankId,
+          detectedBankName: error.detectedBankName,
         }, { status: 422 })
       }
 

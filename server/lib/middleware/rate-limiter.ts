@@ -1,102 +1,209 @@
-import { Redis } from "@upstash/redis"
+import { NextRequest, NextResponse } from "next/server"
 import { Ratelimit } from "@upstash/ratelimit"
-import type { NextRequest, NextResponse } from "next/server"
+import { Redis } from "@upstash/redis"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/server/auth/config"
 
-// Initialize Upstash Redis for rate limiting
+/**
+ * Rate Limiting Middleware for FinFlow
+ * Uses Upstash Redis for distributed rate limiting
+ */
+
+// Initialize Upstash Redis client
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
-/**
- * Industry-standard rate limiter using Upstash Redis
- * Implements sliding window algorithm
- */
-export const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(100, "1 m"), // 100 requests per minute
-  analytics: true,
-  prefix: "ratelimit:finflow",
-})
+// Rate limit configurations per endpoint type
+export const RateLimitConfigs = {
+  // Auth endpoints - strict limits
+  AUTH: {
+    tokens: 5,
+    window: "1 m",
+    prefix: "rl:auth",
+  },
+  // File upload - moderate limits
+  UPLOAD: {
+    tokens: 10,
+    window: "1 h",
+    prefix: "rl:upload",
+  },
+  // Read APIs - generous limits
+  READ_API: {
+    tokens: 100,
+    window: "1 m",
+    prefix: "rl:read",
+  },
+  // Write APIs - moderate limits
+  WRITE_API: {
+    tokens: 30,
+    window: "1 m",
+    prefix: "rl:write",
+  },
+  // AI Chat - strict to control costs
+  AI_CHAT: {
+    tokens: 20,
+    window: "1 m",
+    prefix: "rl:ai",
+  },
+  // Admin - moderate
+  ADMIN: {
+    tokens: 50,
+    window: "1 m",
+    prefix: "rl:admin",
+  },
+} as const
+
+type RateLimitConfig = (typeof RateLimitConfigs)[keyof typeof RateLimitConfigs]
+
+// Cache of rate limiters
+const rateLimiters = new Map<string, Ratelimit>()
+
+function getRateLimiter(config: RateLimitConfig): Ratelimit {
+  const key = `${config.prefix}:${config.tokens}:${config.window}`
+  
+  if (!rateLimiters.has(key)) {
+    rateLimiters.set(
+      key,
+      new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(config.tokens, config.window),
+        prefix: config.prefix,
+        analytics: true,
+      })
+    )
+  }
+  
+  return rateLimiters.get(key)!
+}
 
 /**
- * Strict rate limiter for sensitive endpoints (auth, upload)
- */
-export const strictRatelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute
-  analytics: true,
-  prefix: "ratelimit:finflow:strict",
-})
-
-/**
- * Rate limiter for AI/chat endpoints
- */
-export const aiRatelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(20, "1 m"), // 20 requests per minute
-  analytics: true,
-  prefix: "ratelimit:finflow:ai",
-})
-
-/**
- * Extract identifier from request for rate limiting
+ * Extract identifier for rate limiting
  * Uses user ID if authenticated, otherwise IP address
  */
-export function getRateLimitIdentifier(req: NextRequest): string {
-  // Try to get user ID from auth header
-  const authHeader = req.headers.get("authorization")
-  if (authHeader?.startsWith("Bearer ")) {
-    // In production, decode JWT to get user ID
-    return `user:${authHeader.slice(7, 27)}` // Use first 20 chars of token as identifier
+async function getIdentifier(request: NextRequest): Promise<string> {
+  try {
+    const session = await getServerSession(authOptions)
+    if (session?.user?.id) {
+      return `user:${session.user.id}`
+    }
+  } catch {
+    // Session not available, fall back to IP
   }
-
-  // Fallback to IP address
-  const forwarded = req.headers.get("x-forwarded-for")
-  const ip = forwarded ? forwarded.split(",")[0].trim() : 
-             req.headers.get("x-real-ip") || 
-             "unknown"
+  
+  // Get IP from headers (works with Vercel, Cloudflare, etc.)
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || request.headers.get("x-real-ip")
+    || "unknown"
+  
   return `ip:${ip}`
 }
 
 /**
- * Apply rate limiting to a request
- * Returns rate limit info and whether request should proceed
+ * Create rate limiting middleware for a specific configuration
  */
-export async function applyRateLimit(
-  req: NextRequest,
-  limiter: typeof ratelimit = ratelimit
-): Promise<{
-  success: boolean
-  limit: number
-  remaining: number
-  reset: number
-  headers: Record<string, string>
-}> {
-  const identifier = getRateLimitIdentifier(req)
-  const { success, limit, remaining, reset } = await limiter.limit(identifier)
-
-  const headers = {
-    "X-RateLimit-Limit": limit.toString(),
-    "X-RateLimit-Remaining": remaining.toString(),
-    "X-RateLimit-Reset": reset.toString(),
+export function createRateLimiter(config: RateLimitConfig) {
+  const limiter = getRateLimiter(config)
+  
+  return async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
+    const identifier = await getIdentifier(request)
+    const { success, limit, reset, remaining } = await limiter.limit(identifier)
+    
+    // Add rate limit headers
+    const headers = new Headers()
+    headers.set("X-RateLimit-Limit", limit.toString())
+    headers.set("X-RateLimit-Remaining", remaining.toString())
+    headers.set("X-RateLimit-Reset", reset.toString())
+    
+    if (!success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
+          retryAfter: Math.ceil((reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers,
+        }
+      )
+    }
+    
+    // Return null to indicate success - attach headers to response later
+    return null
   }
-
-  return { success, limit, remaining, reset, headers }
 }
 
 /**
- * Create rate limit response headers
+ * Apply rate limiting to a response
  */
-export function createRateLimitHeaders(
+export function applyRateLimitHeaders(
+  response: NextResponse,
   limit: number,
   remaining: number,
   reset: number
-): Record<string, string> {
-  return {
-    "X-RateLimit-Limit": limit.toString(),
-    "X-RateLimit-Remaining": Math.max(0, remaining).toString(),
-    "X-RateLimit-Reset": reset.toString(),
-    "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
+): NextResponse {
+  response.headers.set("X-RateLimit-Limit", limit.toString())
+  response.headers.set("X-RateLimit-Remaining", remaining.toString())
+  response.headers.set("X-RateLimit-Reset", reset.toString())
+  return response
+}
+
+/**
+ * Pre-configured rate limiters for common use cases
+ */
+export const rateLimiters = {
+  auth: createRateLimiter(RateLimitConfigs.AUTH),
+  upload: createRateLimiter(RateLimitConfigs.UPLOAD),
+  readApi: createRateLimiter(RateLimitConfigs.READ_API),
+  writeApi: createRateLimiter(RateLimitConfigs.WRITE_API),
+  aiChat: createRateLimiter(RateLimitConfigs.AI_CHAT),
+  admin: createRateLimiter(RateLimitConfigs.ADMIN),
+}
+
+/**
+ * Higher-order function to wrap an API route with rate limiting
+ */
+export function withRateLimit(
+  handler: (request: NextRequest) => Promise<NextResponse>,
+  config: RateLimitConfig
+) {
+  const limiter = createRateLimiter(config)
+  
+  return async function rateLimitedHandler(request: NextRequest): Promise<NextResponse> {
+    const identifier = await getIdentifier(request)
+    const { success, limit, reset, remaining } = await limiter.limit(identifier)
+    
+    if (!success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
+          retryAfter: Math.ceil((reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+            "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
+          },
+        }
+      )
+    }
+    
+    const response = await handler(request)
+    
+    // Add rate limit headers to successful response
+    response.headers.set("X-RateLimit-Limit", limit.toString())
+    response.headers.set("X-RateLimit-Remaining", remaining.toString())
+    response.headers.set("X-RateLimit-Reset", reset.toString())
+    
+    return response
   }
 }
+
+console.log("[RateLimiter] Initialized with Upstash Redis")

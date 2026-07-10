@@ -96,18 +96,21 @@ export function extractMetadata(
  * another label, or excessive whitespace.
  */
 function findLabelValue(text: string, labels: string[]): string | null {
+  // Strip non-printable chars that can sneak into PDF text extraction (e.g., \r, zero-width spaces)
+  const sanitized = text.replace(/[\r\u200B\u200C\u200D\uFEFF\u00A0\u2000-\u200F]/g, " ").replace(/\s{2,}/g, " ")
+
   for (const label of labels) {
     // Build regex: label followed by optional colon/dash, then capture the value
     const escaped = escapeRegex(label)
     const pattern = new RegExp(
-      `${escaped}[\\s]*[:—\\-]?[\\s]*([^\\n]{2,80})`,
+      `${escaped}[\\s]*[:—\\-]?[\\s]*([^\\n]{1,80})`,
       "i"
     )
-    const match = text.match(pattern)
+    const match = sanitized.match(pattern)
     if (match?.[1]) {
       const value = match[1].trim()
-      // Filter out empty or obviously wrong captures
-      if (value.length > 1 && !looksLikeAnotherLabel(value, labels)) {
+      // Filter out values that are actually another label
+      if (value.length >= 1 && !looksLikeAnotherLabel(value, labels)) {
         return value
       }
     }

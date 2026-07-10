@@ -81,13 +81,31 @@ export interface TableRow {
 
 // ─── Errors ────────────────────────────────────────────────
 
+export interface PDFDecryptResult {
+  /** Decrypted buffer (or original if not encrypted) */
+  buffer: Buffer
+  /** Whether the original PDF was encrypted */
+  wasEncrypted: boolean
+  /** Method used for decryption */
+  decryptMethod: "qpdf" | "pdfjs-dist" | "none"
+}
+
 export class PasswordRequiredError extends Error {
   public passwordHint: string
+  /** The detected bank profile id, if auto-detected before password request */
+  public detectedBankId?: string
+  /** Detected bank display name for user-friendly messages */
+  public detectedBankName?: string
 
-  constructor(hint: string = "Enter the PDF password") {
-    super("This PDF is password-protected. A password is required to decrypt it.")
+  constructor(hint: string = "Enter the PDF password", bankId?: string, bankName?: string) {
+    const bankContext = bankName
+      ? `\n\nDetected bank: ${bankName}. ${hint}`
+      : `\n\n${hint}`
+    super(`This PDF is password-protected. A password is required to decrypt it.${bankContext}`)
     this.name = "PasswordRequiredError"
     this.passwordHint = hint
+    this.detectedBankId = bankId
+    this.detectedBankName = bankName
   }
 }
 
