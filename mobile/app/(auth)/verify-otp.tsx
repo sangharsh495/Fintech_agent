@@ -148,7 +148,6 @@ export default function VerifyOtpScreen() {
                 maxLength={1}
                 selectTextOnFocus
                 textAlign="center"
-                fontFamily={Typography.fontFamilies.bold}
               />
             </View>
           ))}
