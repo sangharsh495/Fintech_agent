@@ -47,7 +47,7 @@ const STEP_CONFIG = [
 ]
 
 export default function OnboardingPage() {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -120,6 +120,8 @@ export default function OnboardingPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...profile, ...consents, complete: true }),
         })
+        
+        await updateSession({ onboardingComplete: true })
       } catch {
         setError("Failed to save. Please try again.")
         setIsLoading(false)
