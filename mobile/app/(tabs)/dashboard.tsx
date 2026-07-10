@@ -1,20 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react"
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  ActivityIndicator,
-  Animated,
-  PanResponder,
-  Easing,
-  TouchableOpacity,
-} from "react-native"
+import { View, Text, ScrollView, StyleSheet, RefreshControl, ActivityIndicator, Animated, TouchableOpacity, Easing } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../_layout"
 import { dashboardApi } from "../../lib/api"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from "@expo/vector-icons"
+import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Layout, Animation, Interaction, PremiumEffects, DesignSystem } from "../../lib/design-system"
 import * as Haptics from "expo-haptics"
 
 type DashboardData = {
@@ -34,23 +23,19 @@ export default function DashboardScreen() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [animation, setAnimation] = useState(new Animated.Value(0))
-  const [swipeAnim] = useState(new Animated.Value(0))
+  const [mounted, setMounted] = useState(false)
   const [showQuickActions, setShowQuickActions] = useState(false)
+  const [sheetHeight, setSheetHeight] = useState(0)
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        if (gesture.dy < -20 && !showQuickActions) {
-          setShowQuickActions(true)
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        }
-      },
-      onPanResponderRelease: () => {},
-    })
-  ).current
+  const sheetAnim = useRef(new Animated.Value(0)).current
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const heroAnim = useRef(new Animated.Value(0)).current
+  const statsAnim = useRef([] as Animated.Value[]).current
+
+  // Initialize staggered animations
+  useEffect(() => {
+    statsAnim.current = Array.from({ length: 3 }, () => new Animated.Value(0))
+  }, [])
 
   const fetchDashboard = useCallback(async () => {
     if (!token) return
@@ -67,17 +52,43 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     fetchDashboard()
-    // Entrance animation
-    Animated.timing(animation, {
-      toValue: 1,
-      duration: 800,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start()
+    setMounted(true)
   }, [fetchDashboard])
 
+  // Animate on mount
+  useEffect(() => {
+    if (!mounted) return
+
+    // Hero animation
+    Animated.timing(heroAnim, {
+      toValue: 1,
+      duration: Animation.duration.slower,
+      easing: Easing.out(Animation.easing.smooth),
+      useNativeDriver: true,
+    }).start()
+
+    // Fade in
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: Animation.duration.normal,
+      easing: Easing.out(Animation.easing.easeOut),
+      useNativeDriver: true,
+    }).start()
+
+    // Staggered stats
+    statsAnim.current.forEach((anim, index) => {
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: Animation.duration.slow,
+        easing: Easing.out(Animation.easing.spring),
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start()
+    })
+  }, [mounted])
+
   const onRefresh = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
     setRefreshing(true)
     fetchDashboard()
   }
@@ -87,32 +98,23 @@ export default function DashboardScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer} {...panResponder.panHandlers}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     )
   }
 
-  const heroAnim = animation.interpolate({
+  const heroTranslateY = heroAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [50, 0],
+    outputRange: [30, 0],
   })
-  const heroOpacity = animation.interpolate({
+  const heroOpacity = heroAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 1],
   })
 
-  const statsAnim = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [30, 0],
-  })
-  const statsOpacity = animation.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, 0.5, 1],
-  })
-
   return (
-    <Animated.View style={[styles.container, { opacity: animation }]} {...panResponder.panHandlers}>
+    <Animated.View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -120,34 +122,46 @@ export default function DashboardScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={Colors.primary}
+            colors={[Colors.primary, Colors.secondary, Colors.accent]}
             progressBackgroundColor={Colors.surface}
-            progressViewOffset={60}
           />
         }
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         {/* Greeting */}
         <Animated.View
-          style={[styles.greeting, { opacity: heroOpacity, transform: [{ translateY: heroAnim }] }]}
+          style={[styles.greeting, { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}
         >
           <Text style={styles.greetingText}>
             Welcome back, <Text style={styles.greetingName}>{user?.name || "User"}</Text>{" "}
-            <Text style={styles.greetingEmoji}>👋</Text>
+            <Text style={{ fontSize: Typography.fontSize.bodyLg }}>👋</Text>
           </Text>
         </Animated.View>
 
-        {/* Net Worth Hero Card */}
+        {/* Hero Card */}
         <Animated.View
-          style={[styles.heroCard, { opacity: heroOpacity, transform: [{ translateY: heroAnim }] }]}
+          style={[
+            styles.heroCard,
+            {
+              opacity: heroOpacity,
+              transform: [{ translateY: heroTranslateY }],
+            },
+          ]}
         >
-          <LinearGradient colors={[Colors.surface, Colors.surfaceElevated]} style={styles.heroGradient}>
+          <View style={styles.heroGradient}>
+            <View style={styles.heroDecoration1} />
+            <View style={styles.heroDecoration2} />
             <View style={styles.heroContent}>
               <Text style={styles.heroLabel}>Net Worth</Text>
               <Animated.Text
                 style={[
                   styles.heroValue,
-                  { opacity: animation, transform: [{ translateY: animation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
+                  {
+                    opacity: heroAnim,
+                    transform: [{ scale: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
+                  },
                 ]}
               >
                 {formatCurrency(data?.netWorth || 0)}
@@ -169,198 +183,208 @@ export default function DashboardScreen() {
                 </View>
               </View>
             </View>
-            {/* Decorative elements */}
-            <View style={styles.heroDecoration1} />
-            <View style={styles.heroDecoration2} />
-          </LinearGradient>
+          </View>
         </Animated.View>
 
         {/* Quick Stats Row */}
-        <Animated.View
-          style={[styles.quickStatsRow, { opacity: statsOpacity, transform: [{ translateY: statsAnim }] }]}
-        >
-          <TouchableOpacity
-            style={styles.quickStatCard}
-            activeOpacity={0.8}
-            onPress={() => Haptics.selectionAsync()}
-          >
+        <View style={styles.quickStatsRow}>
+          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[0], transform: [{ translateY: statsAnim.current[0].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
             <View style={styles.quickStatIcon}>
-              <Ionicons name="wallet-outline" size={24} color={Colors.primary} />
+              <Ionicons name="cash-outline" size={24} color={Colors.primary} />
             </View>
-            <Text style={styles.quickStatLabel}>Balance</Text>
+            <Text style={styles.quickStatLabel}>Total Balance</Text>
             <Text style={styles.quickStatValue}>{formatCurrency(data?.totalBalance || 0)}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickStatCard}
-            activeOpacity={0.8}
-            onPress={() => Haptics.selectionAsync()}
-          >
+          </Animated.View>
+          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[1], transform: [{ translateY: statsAnim.current[1].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
             <View style={styles.quickStatIcon}>
               <Ionicons name="trending-up-outline" size={24} color={Colors.success} />
             </View>
-            <Text style={styles.quickStatLabel}>Income</Text>
-            <Text style={[styles.quickStatValue, { color: Colors.success }]}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickStatCard}
-            activeOpacity={0.8}
-            onPress={() => Haptics.selectionAsync()}
-          >
+            <Text style={styles.quickStatLabel}>This Month</Text>
+            <Text style={styles.quickStatValue}>{formatCurrency(data?.monthlyIncome || 0)}</Text>
+          </Animated.View>
+          <Animated.View style={[styles.quickStatCard, { opacity: statsAnim.current[2], transform: [{ translateY: statsAnim.current[2].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
             <View style={styles.quickStatIcon}>
-              <Ionicons name="trending-down-outline" size={24} color={Colors.error} />
+              <Ionicons name="pie-chart-outline" size={24} color={Colors.secondary} />
             </View>
-            <Text style={styles.quickStatLabel}>Expenses</Text>
-            <Text style={[styles.quickStatValue, { color: Colors.error }]}>{formatCurrency(data?.monthlyExpense || 0)}</Text>
-          </TouchableOpacity>
-        </Animated.View>
+            <Text style={styles.quickStatLabel}>Savings Rate</Text>
+            <Text style={styles.quickStatValue}>{data?.savingsRate || 0}%</Text>
+          </Animated.View>
+        </View>
 
         {/* Bank Balances */}
         {data?.perBankBalances && data.perBankBalances.length > 0 && (
-          <Animated.View style={[styles.section, { opacity: statsOpacity, transform: [{ translateY: statsAnim }] }]}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Bank Accounts</Text>
             {data.perBankBalances.map((bank: any, i: number) => (
-              <TouchableOpacity
-                key={i}
-                style={styles.bankCard}
-                activeOpacity={0.8}
-                onPress={() => Haptics.selectionAsync()}
-              >
+              <View key={i} style={styles.bankCard}>
                 <View style={styles.bankInfo}>
-                  <View style={styles.bankIcon}>
+                  <View style={[styles.bankIcon, { backgroundColor: Colors.primary + "15" }]}>
                     <Ionicons name="card-outline" size={20} color={Colors.primary} />
                   </View>
                   <View>
                     <Text style={styles.bankName}>{bank.bankName}</Text>
-                    <Text style={styles.bankNickname}>
-                      {bank.accountNickname || `••••${bank.accountLast4 || ""}`}
-                    </Text>
+                    <Text style={styles.bankNickname}>{bank.accountNickname || `••••${bank.accountLast4 || ""}`}</Text>
                   </View>
                 </View>
                 <Text style={styles.bankBalance}>{formatCurrency(bank.balance)}</Text>
-                <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.textTertiary} />
-              </TouchableOpacity>
+              </View>
             ))}
-          </Animated.View>
+          </View>
         )}
 
         {/* Recent Transactions */}
-        <Animated.View style={[styles.section, { opacity: statsOpacity, transform: [{ translateY: statsAnim }] }]}>
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity
-              style={styles.viewAllButton}
-              onPress={() => Haptics.selectionAsync()}
-            >
+            <TouchableOpacity style={styles.viewAllButton} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}>
               <Text style={styles.viewAllText}>View All</Text>
-              <MaterialCommunityIcons name="chevron-right" size={16} color={Colors.primary} />
+              <Ionicons name="chevron-forward-outline" size={16} color={Colors.primary} />
             </TouchableOpacity>
           </View>
           {(!data?.recentTransactions || data.recentTransactions.length === 0) ? (
             <View style={styles.emptyCard}>
               <Ionicons name="receipt-outline" size={48} color={Colors.textTertiary} />
               <Text style={styles.emptyText}>No transactions yet</Text>
-              <Text style={styles.emptySubtext}>Upload a bank statement to get started</Text>
+              <Text style={styles.emptySubtext}>Upload a bank statement to get started!</Text>
             </View>
           ) : (
-            data.recentTransactions.slice(0, 5).map((txn: any, i: number) => (
-              <TouchableOpacity
-                key={i}
-                style={styles.txnCard}
-                activeOpacity={0.7}
-                onPress={() => Haptics.selectionAsync()}
-              >
-                <View style={styles.txnLeft}>
-                  <View style={styles.txnIconWrapper}>
-                    <Ionicons
-                      name={txn.type === "credit" ? "arrow-down-circle-outline" : "arrow-up-circle-outline"}
-                      size={22}
-                      color={txn.type === "credit" ? Colors.success : Colors.error}
-                    />
+            data.recentTransactions.slice(0, 5).map((txn: any, i: number) => {
+              const isCredit = txn.type === "credit"
+              const iconName = isCredit ? "arrow-down-circle-outline" : "arrow-up-circle-outline"
+              const iconBgColor = isCredit ? Colors.success + "15" : Colors.error + "15"
+              const iconColor = isCredit ? Colors.success : Colors.error
+
+              return (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.txnCard}
+                  onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.txnLeft}>
+                    <View style={[styles.txnIconWrapper, { backgroundColor: iconBgColor }]}>
+                      <Ionicons name={iconName} size={22} color={iconColor} />
+                    </View>
+                    <View style={styles.txnInfo}>
+                      <Text style={styles.txnDesc} numberOfLines={1}>
+                        {txn.description || txn.merchant || "Transaction"}
+                      </Text>
+                      <Text style={styles.txnDate}>
+                        {new Date(txn.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.txnInfo}>
-                    <Text style={styles.txnDesc} numberOfLines={1}>
-                      {txn.description || txn.merchant || "Transaction"}
-                    </Text>
-                    <Text style={styles.txnDate}>
-                      {new Date(txn.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={[styles.txnAmount, txn.type === "credit" ? styles.txnCredit : styles.txnDebit]}>
-                  {txn.type === "credit" ? "+" : "-"}{formatCurrency(parseFloat(txn.amount))}
-                </Text>
-              </TouchableOpacity>
-            ))
+                  <Text style={[styles.txnAmount, isCredit ? styles.txnCredit : styles.txnDebit]}>
+                    {isCredit ? "+" : "-"}{formatCurrency(parseFloat(txn.amount))}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })
           )}
-        </Animated.View>
+        </View>
 
         {/* Alerts */}
         {data?.alerts && data.alerts.length > 0 && (
-          <Animated.View style={[styles.section, { opacity: statsOpacity, transform: [{ translateY: statsAnim }] }]}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>
-                <MaterialCommunityIcons name="alert-circle-outline" size={20} color={Colors.warning} />
-                {" Alerts"}
-              </Text>
-            </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>⚠️ Alerts</Text>
             {data.alerts.map((alert: any, i: number) => (
               <View key={i} style={styles.alertCard}>
-                <MaterialCommunityIcons
-                  name={alert.type === "warning" ? "alert-outline" : alert.type === "success" ? "check-circle-outline" : "information-outline"}
-                  size={18}
-                  color={
-                    alert.type === "warning" ? Colors.warning : alert.type === "success" ? Colors.success : Colors.secondary
-                  }
-                />
+                <Ionicons name="alert-circle-outline" size={20} color={Colors.warning} />
                 <Text style={styles.alertText}>{alert.message}</Text>
               </View>
             ))}
-          </Animated.View>
+          </View>
         )}
 
-        {/* Quick Actions (Swipe up from bottom) */}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* Quick Actions Sheet */}
+      <Animated.View
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          backgroundColor: showQuickActions ? "rgba(0,0,0,0.4)" : "transparent",
+        }}
+        pointerEvents={showQuickActions ? "auto" : "none"}
+      >
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+            Animated.timing(sheetAnim, {
+              toValue: 0,
+              duration: Animation.duration.normal,
+              easing: Easing.out(Animation.easing.smooth),
+              useNativeDriver: true,
+            }).start(() => setShowQuickActions(false))
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: Animation.duration.fast,
+              useNativeDriver: true,
+            }).start()
+          }}
+        />
         <Animated.View
           style={[
             styles.quickActionsSheet,
             {
-              opacity: showQuickActions ? 1 : 0,
-              transform: [{ translateY: showQuickActions ? 0 : 100 }],
+              transform: [{ translateY: sheetAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) }],
             },
           ]}
         >
-          <TouchableOpacity
-            style={styles.quickActionsHandle}
-            onPress={() => {
-              setShowQuickActions(false)
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-            }}
-          >
+          <View style={styles.quickActionsHandle}>
             <View style={styles.handleBar} />
-          </TouchableOpacity>
+          </View>
           <Text style={styles.quickActionsTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setShowQuickActions(false) }}>
-              <View style={styles.quickActionIcon}>
+            <TouchableOpacity
+              style={styles.quickActionBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                setShowQuickActions(false)
+              }}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: Colors.primary + "15" }]}>
                 <Ionicons name="cloud-upload-outline" size={28} color={Colors.primary} />
               </View>
               <Text style={styles.quickActionLabel}>Upload Statement</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setShowQuickActions(false) }}>
-              <View style={styles.quickActionIcon}>
-                <Ionicons name="analytics-outline" size={28} color={Colors.secondary} />
+            <TouchableOpacity
+              style={styles.quickActionBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                setShowQuickActions(false)
+              }}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: Colors.secondary + "15" }]}>
+                <Ionicons name="bar-chart-outline" size={28} color={Colors.secondary} />
               </View>
               <Text style={styles.quickActionLabel}>View Analytics</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setShowQuickActions(false) }}>
-              <View style={styles.quickActionIcon}>
+            <TouchableOpacity
+              style={styles.quickActionBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                setShowQuickActions(false)
+              }}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: Colors.success + "15" }]}>
                 <Ionicons name="calculator-outline" size={28} color={Colors.success} />
               </View>
               <Text style={styles.quickActionLabel}>Calculators</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionBtn} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setShowQuickActions(false) }}>
-              <View style={styles.quickActionIcon}>
+            <TouchableOpacity
+              style={styles.quickActionBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                setShowQuickActions(false)
+              }}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: Colors.warning + "15" }]}>
                 <Ionicons name="settings-outline" size={28} color={Colors.warning} />
               </View>
               <Text style={styles.quickActionLabel}>Settings</Text>
@@ -368,8 +392,37 @@ export default function DashboardScreen() {
           </View>
         </Animated.View>
 
-        <View style={{ height: 120 }} />
-      </ScrollView>
+        {/* Floating Action Button */}
+        <TouchableOpacity
+          style={[
+            styles.fab,
+            {
+              transform: [
+                { translateY: sheetAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -320] }) },
+                { scale: sheetAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0.9] }) },
+              ],
+            },
+          ]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+            setShowQuickActions(true)
+            Animated.timing(sheetAnim, {
+              toValue: 1,
+              duration: Animation.duration.slow,
+              easing: Easing.out(Animation.easing.spring),
+              useNativeDriver: true,
+            }).start()
+            Animated.timing(fadeAnim, {
+              toValue: 0.4,
+              duration: Animation.duration.fast,
+              useNativeDriver: true,
+            }).start()
+          }}
+          activeOpacity={0.9}
+        >
+          <Ionicons name="add" size={28} color={Colors.onPrimary} />
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>
   )
 }
@@ -408,9 +461,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontWeight: "700",
     fontFamily: Typography.fontFamilies.bold,
-  },
-  greetingEmoji: {
-    fontSize: Typography.fontSize.bodyLg,
   },
 
   // Hero Card
@@ -778,7 +828,21 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamilies.semibold,
     textAlign: "center",
   },
+
+  // FAB
+  fab: {
+    position: "absolute",
+    bottom: Spacing.xl + 20,
+    right: Spacing.screenPaddingHorizontal,
+    width: ComponentSizes.touchTarget.generous,
+    height: ComponentSizes.touchTarget.generous,
+    borderRadius: ComponentSizes.touchTarget.generous / 2,
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    ...Shadows.lg,
+    zIndex: 50,
+  },
 })
 
-// Re-export design tokens for this file
-import { Spacing, Typography, Colors, BorderRadius, Shadows } from "../../lib/design-system"
+export default DashboardScreen
