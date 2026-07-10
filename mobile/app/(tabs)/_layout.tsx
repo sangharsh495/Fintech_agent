@@ -43,7 +43,6 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.textPrimary,
         headerTitleStyle: { fontWeight: "700", fontFamily: Typography.fontFamilies.bold },
-        animation: "slide_from_right",
       }}
     >
       <Tabs.Screen
