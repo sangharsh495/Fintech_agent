@@ -1,7 +1,7 @@
 // Mobile Design System - React Native / Expo StyleSheet Constants
 // Industry-standard dimensions for premium fintech mobile app
 
-import { Dimensions, Platform, PixelRatio } from 'react-native';
+import { Dimensions, Platform, PixelRatio, StyleSheet } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isIOS = Platform.OS === 'ios';

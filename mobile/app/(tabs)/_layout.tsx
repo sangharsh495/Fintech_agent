@@ -34,9 +34,6 @@ export default function TabLayout() {
           fontFamily: Typography.fontFamilies.semibold,
           marginTop: Spacing.xs,
         },
-        tabBarIndicatorStyle: {
-          backgroundColor: "transparent",
-        },
         tabBarItemStyle: {
           paddingVertical: Spacing.xs,
         },
