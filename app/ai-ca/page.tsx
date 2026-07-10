@@ -86,7 +86,7 @@ export default function AICAsPage() {
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000"></div>
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>
 
-        <div className="relative z-10 px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center justify-center text-center">
+        <div className="relative z-10 px-4 md:px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center justify-center text-center">
           <div className="section-header slide-up max-w-3xl float">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <Sparkles className="w-4 h-4" />
@@ -108,7 +108,7 @@ export default function AICAsPage() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 lg:px-8 py-6">
+      <div className="flex-1 px-4 md:px-6 lg:px-8 py-4 md:py-6">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
           {/* Left Column - Chat Interface */}
           <div className="xl:col-span-2 flex flex-col gap-6">
@@ -117,7 +117,7 @@ export default function AICAsPage() {
               {features.map((feature, i) => {
                 const Icon = feature.icon
                 return (
-                  <Card key={i} className="p-5 text-center card-hover group border border-border">
+                  <Card key={i} className="p-4 md:p-5 text-center card-hover group border border-border">
                     <div
                       className={cn(
                         "w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center bg-gradient-to-br shadow-lg transition-transform duration-300 group-hover:scale-110",
@@ -134,7 +134,7 @@ export default function AICAsPage() {
             </div>
 
             {/* Chat Interface - Fills remaining height */}
-            <Card className="p-6 card-hover flex flex-col flex-1 min-h-[500px] slide-up border border-border">
+            <Card className="p-4 md:p-6 card-hover flex flex-col flex-1 min-h-[500px] slide-up border border-border">
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto mb-6 space-y-4 pr-2">
                 {chatMessages.map((message) => (
