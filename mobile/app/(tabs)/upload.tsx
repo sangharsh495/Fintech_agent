@@ -19,6 +19,8 @@ import { LinearGradient } from "expo-linear-gradient"
 import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Layout, Animation, Interaction, PremiumEffects, DesignSystem } from "../../lib/design-system"
 import * as Haptics from "expo-haptics"
 
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+
 export default function UploadScreen() {
   const { token } = useAuth()
   const [banks, setBanks] = useState<any[]>([])
@@ -192,7 +194,7 @@ export default function UploadScreen() {
       </Animated.View>
 
       {/* File Picker */}
-      <Animated.View
+      <AnimatedTouchableOpacity
         style={[
           styles.filePickerButton,
           { opacity: fadeIn, transform: [{ translateY: slideUp }] },
@@ -210,7 +212,7 @@ export default function UploadScreen() {
                 ]}
               >
                 <MaterialCommunityIcons
-                  name={getFileIcon(file.name).icon}
+                  name={getFileIcon(file.name).icon as any}
                   size={32}
                   color={getFileIcon(file.name).color}
                 />
@@ -228,10 +230,10 @@ export default function UploadScreen() {
             {(file.size / 1024).toFixed(0)} KB
           </Text>
         )}
-      </Animated.View>
+      </AnimatedTouchableOpacity>
 
       {/* Upload Button */}
-      <Animated.View
+      <AnimatedTouchableOpacity
         style={[
           styles.uploadButton,
           (!file || !selectedBank || uploading) && styles.uploadButtonDisabled,
@@ -246,7 +248,7 @@ export default function UploadScreen() {
         ) : (
           <Text style={styles.uploadButtonText}>Upload & Process</Text>
         )}
-      </Animated.View>
+      </AnimatedTouchableOpacity>
 
       {/* Result */}
       {result && (
