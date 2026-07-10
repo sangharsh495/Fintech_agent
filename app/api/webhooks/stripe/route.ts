@@ -3,11 +3,11 @@ import Stripe from 'stripe';
 const prisma = {} as any; // TODO: Replace Prisma with Drizzle ORM
 
 // Initialize Stripe (in practice, use environment variable)
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
   apiVersion: '2023-10-16',
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy';
 
 export async function POST(request: NextRequest) {
   const buf = await request.text();
