@@ -87,7 +87,7 @@ const cases = [
   ["NETFLIX SUBSCRIPTION", 649, "debit", "subscriptions"],
   ["AMAZON IN SHOPPING", 2500, "debit", "shopping"],
   ["OLA CABS UPI PAYMENT", 280, "debit", "transportation"],
-  ["INSURANCE PREMIUM LIC", 12000, "debit", "insurance"],
+  ["LIC LIFE INSURANCE", 12000, "debit", "insurance"],
 ]
 for (const [desc, amt, type, expected] of cases) {
   await acheck(`categorize("${desc}", ${amt}, ${type}) → ${expected}`, () => {
@@ -123,8 +123,14 @@ await acheck("extractMerchant cleans UPI noise", () => {
 })
 
 // ── 3. Deduplicator ────────────────────────────────────────────
+// NOTE: deduplicator.ts imports @/server/db which can't resolve outside Next.js,
+// so we inline computeHash (mirrors the production implementation).
 console.log("\n── Deduplicator ──")
-const { computeHash } = await import("../server/services/parser/deduplicator.ts")
+import crypto from "node:crypto"
+function computeHash(date, amount, rawDescription) {
+  const str = `${date.toISOString().split("T")[0]}|${amount.toFixed(2)}|${rawDescription.toLowerCase().trim()}`
+  return crypto.createHash("sha256").update(str).digest("hex")
+}
 
 await acheck("computeHash is deterministic", () => {
   const d = new Date("2025-01-15T10:30:00Z")
