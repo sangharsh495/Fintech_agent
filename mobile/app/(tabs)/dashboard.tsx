@@ -30,7 +30,7 @@ export default function DashboardScreen() {
   const sheetAnim = useRef(new Animated.Value(0)).current
   const fadeAnim = useRef(new Animated.Value(0)).current
   const heroAnim = useRef(new Animated.Value(0)).current
-  const statsAnim = useRef([] as Animated.Value[]).current
+  const statsAnim = useRef([] as Animated.Value[])
 
   // Initialize staggered animations
   useEffect(() => {
