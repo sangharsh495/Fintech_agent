@@ -806,15 +806,26 @@ export const GENERIC_PROFILE: BankProfile = {
 export function detectBank(text: string): BankProfile | null {
   const upper = text.toUpperCase()
 
+  // Collect all matches and prefer the longest, most specific identifier.
+  // This prevents false positives like "Indian Bank" matching inside
+  // "South Indian Bank" — the longer, more specific identifier wins.
+  let bestMatch: { profile: BankProfile; score: number } | null = null
+
   for (const profile of BANK_PROFILES) {
     for (const identifier of profile.identifiers) {
-      if (upper.includes(identifier.toUpperCase())) {
-        return profile
+      const idUpper = identifier.toUpperCase()
+      if (upper.includes(idUpper)) {
+        // Weight multi-word identifiers higher to avoid single-word false positives.
+        const words = idUpper.split(/\s+/).length
+        const score = idUpper.length + words * 10
+        if (!bestMatch || score > bestMatch.score) {
+          bestMatch = { profile, score }
+        }
       }
     }
   }
 
-  return null
+  return bestMatch?.profile ?? null
 }
 
 /**
