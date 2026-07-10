@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  ScrollView,
   Animated,
   Easing,
 } from "react-native"
@@ -16,8 +17,7 @@ import { useRouter } from "expo-router"
 import { login } from "../../lib/auth"
 import { useAuth } from "../_layout"
 import { Ionicons } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
-import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Animation, Interaction } from "../../lib/design-system"
+import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Animation } from "../../lib/design-system"
 import * as Haptics from "expo-haptics"
 
 export default function LoginScreen() {
@@ -26,19 +26,19 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState(false)
   const [passwordError, setPasswordError] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [anim] = useState(new Animated.Value(0))
   const router = useRouter()
   const { setAuth } = useAuth()
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: Animation.duration.slower,
-        easing: Easing.out(Animation.easing.spring),
-        useNativeDriver: true,
-      }),
-    ]).start()
+    setMounted(true)
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: Animation.duration.slower,
+      easing: Easing.out(Animation.easing.spring),
+      useNativeDriver: true,
+    }).start()
   }, [])
 
   const handleLogin = async () => {
@@ -72,6 +72,14 @@ export default function LoginScreen() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    )
+  }
+
   const fadeIn = anim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 1],
@@ -85,180 +93,171 @@ export default function LoginScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      keyboardVerticalOffset={Spacing.md}
     >
       <Animated.ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* Logo & Brand */}
         <Animated.View
           style={[
-            styles.logoContainer,
+            styles.content,
             { opacity: fadeIn, transform: [{ translateY: slideUp }] },
           ]}
         >
-          <LinearGradient colors={Colors.gradients.primary} style={styles.logoGradient}>
-            <Ionicons name="wallet-outline" size={48} color={Colors.onPrimary} />
-          </LinearGradient>
-          <Text style={styles.logoText}>Legend</Text>
-          <Text style={styles.logoSubtitle}>Financial Manager</Text>
-        </Animated.View>
-
-        {/* Welcome Text */}
-        <Animated.View
-          style={[
-            styles.welcomeContainer,
-            { opacity: fadeIn, transform: [{ translateY: slideUp }] },
-          ]}
-        >
-          <Text style={styles.welcomeTitle}>Welcome Back</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Sign in to continue managing your finances
-          </Text>
-        </Animated.View>
-
-        {/* Form */}
-        <Animated.View
-          style={[
-            styles.form,
-            { opacity: fadeIn, transform: [{ translateY: slideUp }] },
-          ]}
-        >
-          {/* Email Field */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Email Address</Text>
-            <View style={[
-              styles.inputWrapper,
-              emailError && styles.inputWrapperError,
-            ]}>
-              <Ionicons
-                name="mail-outline"
-                size={Typography.fontSize.bodyMd}
-                color={emailError ? Colors.error : Colors.textTertiary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
-                placeholderTextColor={Colors.textTertiary}
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text)
-                  if (emailError) setEmailError(false)
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                onBlur={() => {
-                  if (!email.trim()) setEmailError(true)
-                }}
-              />
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={[styles.logoGradient, { ...Shadows.primary }]}>
+              <Ionicons name="wallet-outline" size={48} color={Colors.onPrimary} />
             </View>
-            {emailError && (
-              <Text style={styles.errorText}>Email is required</Text>
-            )}
+            <Text style={styles.logoText}>Legend</Text>
+            <Text style={styles.logoSubtitle}>Financial Manager</Text>
           </View>
 
-          {/* Password Field */}
-          <View style={styles.fieldContainer}>
-            <View style={styles.fieldRow}>
-              <Text style={styles.label}>Password</Text>
+          {/* Welcome */}
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeTitle}>Welcome Back</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Sign in to continue managing your finances
+            </Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Email Address</Text>
+              <View style={[
+                styles.inputWrapper,
+                emailError && styles.inputWrapperError,
+                { ...Shadows.sm },
+              ]}>
+                <Ionicons
+                  name="mail-outline"
+                  size={22}
+                  color={emailError ? Colors.error : Colors.textTertiary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="you@example.com"
+                  placeholderTextColor={Colors.textTertiary}
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text)
+                    if (emailError) setEmailError(false)
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  fontFamily={Typography.fontFamilies.regular}
+                  onBlur={() => { if (!email.trim()) setEmailError(true) }}
+                />
+              </View>
+              {emailError && (
+                <Text style={styles.errorText}>Email is required</Text>
+              )}
+            </View>
+
+            <View style={styles.fieldContainer}>
+              <View style={styles.fieldRow}>
+                <Text style={styles.label}>Password</Text>
+                <TouchableOpacity
+                  style={styles.forgotButton}
+                  onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                >
+                  <Text style={styles.forgotText}>Forgot?</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={[
+                styles.inputWrapper,
+                passwordError && styles.inputWrapperError,
+                { ...Shadows.sm },
+              ]}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={22}
+                  color={passwordError ? Colors.error : Colors.textTertiary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={Colors.textTertiary}
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text)
+                    if (passwordError) setPasswordError(false)
+                  }}
+                  secureTextEntry
+                  autoComplete="password"
+                  fontFamily={Typography.fontFamilies.regular}
+                  onBlur={() => { if (!password) setPasswordError(true) }}
+                />
+              </View>
+              {passwordError && (
+                <Text style={styles.errorText}>Password is required</Text>
+              )}
+            </View>
+
+            {/* Sign In Button */}
+            <TouchableOpacity
+              style={[
+                styles.button,
+                loading && styles.buttonLoading,
+                { ...Shadows.primary },
+              ]}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.9}
+            >
+              {loading ? (
+                <ActivityIndicator color={Colors.onPrimary} size="large" />
+              ) : (
+                <Text style={styles.buttonText}>Sign In</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.divider} />
+            </View>
+
+            {/* Social Buttons */}
+            <View style={styles.socialRow}>
               <TouchableOpacity
-                style={styles.forgotButton}
+                style={[styles.socialButton, { ...Shadows.sm }]}
                 onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                activeOpacity={0.8}
               >
-                <Text style={styles.forgotText}>Forgot?</Text>
+                <Ionicons name="logo-google" size={24} color={Colors.textPrimary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.socialButton, { ...Shadows.sm }]}
+                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-apple" size={24} color={Colors.textPrimary} />
               </TouchableOpacity>
             </View>
-            <View style={[
-              styles.inputWrapper,
-              passwordError && styles.inputWrapperError,
-            ]}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={Typography.fontSize.bodyMd}
-                color={passwordError ? Colors.error : Colors.textTertiary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={Colors.textTertiary}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text)
-                  if (passwordError) setPasswordError(false)
-                }}
-                secureTextEntry
-                autoComplete="password"
-                onBlur={() => {
-                  if (!password) setPasswordError(true)
-                }}
-              />
-            </View>
-            {passwordError && (
-              <Text style={styles.errorText}>Password is required</Text>
-            )}
-          </View>
 
-          {/* Sign In Button */}
-          <TouchableOpacity
-            style={[
-              styles.button,
-              loading && styles.buttonLoading,
-            ]}
-            onPress={handleLogin}
-            disabled={loading}
-            activeOpacity={0.9}
-          >
-            {loading ? (
-              <ActivityIndicator color={Colors.onPrimary} size="large" />
-            ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>or continue with</Text>
-            <View style={styles.divider} />
-          </View>
-
-          {/* Social Buttons */}
-          <View style={styles.socialRow}>
+            {/* Sign Up Link */}
             <TouchableOpacity
-              style={styles.socialButton}
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-              activeOpacity={0.8}
+              style={styles.linkButton}
+              onPress={() => {
+                Haptics.selectionAsync()
+                router.push("/(auth)/register")
+              }}
             >
-              <Ionicons name="logo-google" size={24} color={Colors.textPrimary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.socialButton}
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="logo-apple" size={24} color={Colors.textPrimary} />
+              <Text style={styles.linkText}>
+                Don&apos;t have an account?{" "}
+                <Text style={styles.linkHighlight}>Sign Up</Text>
+              </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Sign Up Link */}
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => {
-              Haptics.selectionAsync()
-              router.push("/(auth)/register")
-            }}
-          >
-            <Text style={styles.linkText}>
-              Don't have an account?{" "}
-              <Text style={styles.linkHighlight}>Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
         </Animated.View>
       </Animated.ScrollView>
     </KeyboardAvoidingView>
@@ -270,15 +269,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.background,
+  },
   scrollView: {
     flex: 1,
   },
-  content: {
+  scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: Spacing.screenPaddingHorizontal,
     paddingVertical: Spacing.xl,
     paddingBottom: Spacing.xl + 40,
+  },
+  content: {
+    width: "100%",
   },
 
   // Logo
@@ -293,14 +301,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing.md,
-    ...Shadows.primary,
+    backgroundColor: Colors.primary,
   },
   logoText: {
-    fontSize: Typography.fontSize.h2,
-    color: Colors.textPrimary,
+    fontSize: Typography.fontSize.h1,
+    color: Colors.onPrimary,
     fontWeight: "800",
     fontFamily: Typography.fontFamilies.extrabold,
-    letterSpacing: 0.5,
   },
   logoSubtitle: {
     fontSize: Typography.fontSize.bodySm,
@@ -353,7 +360,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.border,
-    ...Shadows.sm,
     minHeight: ComponentSizes.input.md,
   },
   inputWrapperError: {
@@ -395,7 +401,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: Spacing.lg,
     minHeight: ComponentSizes.button.md,
-    ...Shadows.primarySm,
     backgroundColor: Colors.primary,
   },
   buttonLoading: {
@@ -465,4 +470,4 @@ const styles = StyleSheet.create({
   },
 })
 
-import { useEffect } from "react"
+export default LoginScreen
