@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-const prisma = {} as any; // TODO: Replace Prisma with Drizzle ORM
+import { db } from '@/server/db';
+import { users, payments, userSubscriptions } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 // Initialize Stripe (in practice, use environment variable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
@@ -55,16 +57,13 @@ export async function POST(request: NextRequest) {
 
 async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
   // Update payment status in your database
-  // This is a simplified example - you'd want to map Stripe payment intents to your internal transactions
   try {
-    // Example: Update invoice/payment record
-    await prisma.payment.updateMany({
-      where: { stripePaymentIntentId: paymentIntent.id },
-      data: {
+    await db.update(payments)
+      .set({
         status: 'completed',
         processedAt: new Date(),
-      }
-    });
+      })
+      .where(eq(payments.stripePaymentIntentId, paymentIntent.id));
     
     console.log(`✅ Payment ${paymentIntent.id} marked as successful`);
   } catch (error) {
@@ -78,12 +77,11 @@ async function handlePaymentMethodAttached(paymentMethod: Stripe.PaymentMethod) 
   try {
     if (paymentMethod.customer) {
       // Link Stripe customer to your user
-      await prisma.user.updateMany({
-        where: { stripeCustomerId: paymentMethod.customer as string },
-        data: {
+      await db.update(users)
+        .set({
           stripePaymentMethodId: paymentMethod.id,
-        }
-      });
+        })
+        .where(eq(users.stripeCustomerId, paymentMethod.customer as string));
     }
   } catch (error) {
     console.error('Error handling payment method attachment:', error);
@@ -93,13 +91,12 @@ async function handlePaymentMethodAttached(paymentMethod: Stripe.PaymentMethod) 
 async function handleRefund(charge: Stripe.Charge) {
   // Handle refunded payments
   try {
-    await prisma.payment.updateMany({
-      where: { stripeChargeId: charge.id },
-      data: {
+    await db.update(payments)
+      .set({
         status: 'refunded',
         refundedAt: new Date(),
-      }
-    });
+      })
+      .where(eq(payments.stripeChargeId, charge.id));
     
     console.log(`↩️ Refund processed for charge ${charge.id}`);
   } catch (error) {
@@ -114,47 +111,45 @@ async function handleSubscriptionChange(
   // Handle subscription lifecycle events
   try {
     // Find user by Stripe customer ID
-    const user = await prisma.user.findFirst({
-      where: { stripeCustomerId: subscription.customer as string }
-    });
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.stripeCustomerId, subscription.customer as string))
+      .limit(1);
 
     if (!user) return;
 
     switch (eventType) {
       case 'customer.subscription.created':
-        await prisma.userSubscription.create({
-          data: {
-            userId: user.id,
-            stripeSubscriptionId: subscription.id,
-            stripeCustomerId: subscription.customer as string,
-            status: subscription.status,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          }
+        await db.insert(userSubscriptions).values({
+          userId: user.id,
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: subscription.customer as string,
+          status: subscription.status,
+          currentPeriodStart: new Date(subscription.current_period_start * 1000),
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
         });
         break;
         
       case 'customer.subscription.updated':
-        await prisma.userSubscription.updateMany({
-          where: { stripeSubscriptionId: subscription.id },
-          data: {
+        await db.update(userSubscriptions)
+          .set({
             status: subscription.status,
             currentPeriodStart: new Date(subscription.current_period_start * 1000),
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          }
-        });
+          })
+          .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
         break;
         
       case 'customer.subscription.deleted':
-        await prisma.userSubscription.updateMany({
-          where: { stripeSubscriptionId: subscription.id },
-          data: {
+        await db.update(userSubscriptions)
+          .set({
             status: 'canceled',
             endedAt: new Date(),
-          }
-        });
+          })
+          .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
         break;
     }
     
