@@ -21,12 +21,14 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json()
     const userContext = await buildUserContext(session.user.id)
 
+    const modelName = process.env.ORACLE_AI_MODEL || "llama-3.1-8b-instant"
+
     const result = streamText({
-      model: groq("llama-3.1-8b-instant"),
+      model: aiModel(modelName),
       system: `You are FinFlow AI, a personal financial assistant for Indian users.
-You have access to the user's real financial data below.
+You have comprehensive access to the user's real financial data below, including their dashboard metrics, tax estimation, profile settings, and linked bank accounts.
 Give specific, actionable answers using actual numbers from their data.
-For tax questions, reference Indian Income Tax Act sections.
+For tax questions, reference Indian Income Tax Act sections and use the provided Tax Estimation to give exact figures.
 Format currency as ₹X,XX,XXX (Indian numbering).
 Keep responses concise. Use bullet points for lists.
 Never discuss other users data.
