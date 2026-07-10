@@ -268,7 +268,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 lg:px-8 py-8">
+      <div className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8">
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
           {/* Left Column - Tabs */}
           <div className="xl:col-span-1">
@@ -312,7 +312,7 @@ export default function SettingsPage() {
             {/* Personal Info Tab */}
             {activeTab === "profile" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl">
@@ -456,7 +456,7 @@ export default function SettingsPage() {
             {/* KYC Details Tab */}
             {activeTab === "kyc" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-xl font-bold flex items-center gap-2">
@@ -610,7 +610,7 @@ export default function SettingsPage() {
             {/* Security Tab */}
             {activeTab === "security" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <Lock className="w-5 h-5 text-primary" />
                     Change Password
@@ -660,7 +660,7 @@ export default function SettingsPage() {
                   <Button className="mt-6 btn-interactive rounded-xl">Update Password</Button>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />
                     Security Options
@@ -761,7 +761,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Smartphone className="w-5 h-5 text-primary" />
                     Active Sessions
@@ -806,7 +806,7 @@ export default function SettingsPage() {
             {/* Privacy Tab */}
             {activeTab === "privacy" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <Eye className="w-5 h-5 text-primary" />
                     Privacy Settings
@@ -887,7 +887,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />
                     Data & AI Consents
@@ -961,7 +961,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <FileText className="w-5 h-5 text-primary" />
                     Legal & Compliance
@@ -992,7 +992,7 @@ export default function SettingsPage() {
             {/* Linked Accounts Tab */}
             {activeTab === "linked" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-xl font-bold flex items-center gap-2">
@@ -1066,7 +1066,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-primary" />
                     Payment Methods
@@ -1103,7 +1103,7 @@ export default function SettingsPage() {
             {/* Notifications Tab */}
             {activeTab === "notifications" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <Bell className="w-5 h-5 text-primary" />
                     Notification Preferences
@@ -1269,7 +1269,7 @@ export default function SettingsPage() {
             {/* Preferences Tab */}
             {activeTab === "preferences" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     {isDarkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
                     Appearance
@@ -1326,7 +1326,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Globe className="w-5 h-5 text-primary" />
                     Regional Settings
@@ -1435,7 +1435,7 @@ export default function SettingsPage() {
             {/* Data & Storage Tab */}
             {activeTab === "data" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <Upload className="w-5 h-5 text-primary" />
                     Import Data
@@ -1455,7 +1455,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Download className="w-5 h-5 text-primary" />
                     Export & Backup
@@ -1484,7 +1484,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />
                     Data Protection
@@ -1562,7 +1562,7 @@ export default function SettingsPage() {
             {/* Help & Support Tab */}
             {activeTab === "help" && (
               <div className="space-y-6 slide-up">
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
                     <HelpCircle className="w-5 h-5 text-primary" />
                     Help Center
@@ -1595,7 +1595,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-primary" />
                     Send Feedback
@@ -1626,7 +1626,7 @@ export default function SettingsPage() {
                   </div>
                 </Card>
 
-                <Card className="p-6 border border-border">
+                <Card className="p-4 md:p-6 border border-border">
                   <h2 className="text-xl font-bold mb-4">App Information</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div className="p-3 rounded-lg bg-secondary/30">

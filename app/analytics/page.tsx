@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
         <div className="absolute top-0 right-1/4 w-[24rem] h-[24rem] bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000" />
         <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300" />
 
-        <div className="relative z-10 px-6 lg:px-8 py-10 md:py-14 flex flex-col items-center text-center">
+        <div className="relative z-10 px-4 md:px-6 lg:px-8 py-10 md:py-14 flex flex-col items-center text-center">
           <div className="section-header slide-in-from-bottom-4 max-w-3xl float">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <BarChart3 className="w-4 h-4" />
@@ -241,10 +241,10 @@ export default function AnalyticsPage() {
       </section>
 
       {/* Main Content */}
-      <main className="flex-1 px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8 space-y-6 md:space-y-8">
         {/* KPI Stats */}
         <section aria-label="Key Performance Indicators">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
             {kpiStats.map((stat, index) => {
               const Icon = stat.icon
               return (
@@ -282,8 +282,8 @@ export default function AnalyticsPage() {
         </section>
 
         {/* Main Charts Row */}
-        <section aria-label="Main Charts" className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <Card className="p-6 border border-border card-hover relative overflow-hidden bg-card">
+        <section aria-label="Main Charts" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-4 md:p-6 border border-border card-hover relative overflow-hidden bg-card">
             <div
               className="absolute inset-0 opacity-5"
               style={{
@@ -362,7 +362,7 @@ export default function AnalyticsPage() {
             </div>
           </Card>
 
-          <Card className="p-6 border border-border card-hover relative overflow-hidden bg-card">
+          <Card className="p-4 md:p-6 border border-border card-hover relative overflow-hidden bg-card">
             <div
               className="absolute inset-0 opacity-5"
               style={{
