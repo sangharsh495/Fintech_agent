@@ -45,10 +45,18 @@ await acheck("Bank profile IDs are unique", () => {
 })
 
 await acheck(`detectBank() recognizes all ${BANK_PROFILES.length} supported banks`, () => {
+  // Use displayName (guaranteed unique) as the detection probe.
   for (const p of BANK_PROFILES) {
-    const detected = detectBank(p.identifiers[0])
-    assert.equal(detected?.id, p.id, `${p.id} not detected by its identifier`)
+    const detected = detectBank(p.displayName)
+    assert.equal(detected?.id, p.id, `${p.id} not detected by "${p.displayName}"`)
   }
+})
+
+await acheck("detectBank() prefers longer match (South Indian Bank ≠ Indian Bank)", () => {
+  // Regression: "Indian Bank" is a substring of "South Indian Bank".
+  // The longer, more specific identifier must win.
+  assert.equal(detectBank("South Indian Bank")?.id, "southindian")
+  assert.equal(detectBank("Indian Bank")?.id, "indianbank")
 })
 
 await acheck("detectBank() returns null for unknown text", () => {
