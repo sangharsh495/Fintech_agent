@@ -1,5 +1,5 @@
 import { speakeasy } from 'speakeasy';
-import { prisma } from '@/server/db/client';
+const prisma = {} as any; // TODO: Replace Prisma with Drizzle ORM
 
 export class TOTPService {
   /**

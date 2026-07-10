@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { prisma } from '@/server/db/client';
+const prisma = {} as any; // TODO: Replace Prisma with Drizzle ORM
 
 // Initialize Stripe (in practice, use environment variable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
