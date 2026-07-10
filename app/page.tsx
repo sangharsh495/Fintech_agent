@@ -35,7 +35,7 @@ function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: number; p
   }, [value])
 
   return (
-    <span>
+    <span className="font-mono tabular-nums">
       {prefix}
       {displayValue.toLocaleString()}
       {suffix}
@@ -111,101 +111,97 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col pt-16">
-      <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
-
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
         {/* Decorative Blurs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>
+        <div className="absolute top-0 left-1/4 w-[24rem] h-[24rem] bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000" />
+        <div className="absolute bottom-0 right-1/4 w-[24rem] h-[24rem] bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300" />
 
-        <div className="relative z-10 px-6 lg:px-8 py-8 md:py-12 flex flex-col items-center justify-center text-center">
-          <div className="section-header slide-up max-w-3xl float">
+        <div className="relative z-10 px-6 lg:px-8 py-10 md:py-16 flex flex-col items-center justify-center text-center">
+          <div className="section-header slide-in-from-bottom-4 max-w-3xl float">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <TrendingUp className="w-4 h-4" />
               Real-time Analytics
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-foreground drop-shadow-sm">
-              Financial <span className="gradient-text">Command Center</span>
+            <h1 className="text-h1 md:text-display-md font-extrabold tracking-tight mb-4 text-foreground drop-shadow-sm">
+              Financial <span className="text-gradient">Command Center</span>
             </h1>
-            <p className="text-lg text-muted-foreground w-full">
+            <p className="text-body-xl text-muted-foreground w-full max-w-2xl mx-auto">
               Your unified dashboard for tracking income, expenses, investments, and financial goals in real-time.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
-      <div className="flex-1 px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 px-6 lg:px-8 py-8 space-y-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon
-            return (
-              <div key={index} className="stat-card group">
-                <div className="relative z-10">
-                  <div
-                    className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br shadow-lg transition-transform duration-300 group-hover:scale-110",
-                      stat.color,
-                    )}
-                  >
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{stat.label}</p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <h3 className="number-display gradient-text">
-                      <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
-                    </h3>
-                  </div>
-                  <div
-                    className={cn(
-                      "inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border",
-                      stat.changeType === "positive" && "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
-                      stat.changeType === "neutral" && "text-muted-foreground bg-secondary/50 border-border/50",
-                    )}
-                  >
-                    {stat.changeType === "positive" && <ArrowUpRight className="w-3.5 h-3.5" />}
-                    <span>{stat.change}</span>
+        <section aria-label="Key Metrics">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <div key={index} className="stat-card group" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="relative z-10 p-5 md:p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br shadow-lg transition-transform duration-300 group-hover:scale-110",
+                        stat.color,
+                      )}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className={cn(
+                        "inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border",
+                        stat.changeType === "positive" && "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
+                        stat.changeType === "neutral" && "text-muted-foreground bg-secondary/50 border-border/50",
+                      )}>
+                        {stat.changeType === "positive" && <ArrowUpRight className="w-3.5 h-3.5" />}
+                        <span>{stat.change}</span>
+                      </div>
+                    </div>
+                    <p className="text-body-sm text-muted-foreground mb-2">{stat.label}</p>
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <h3 className="text-numeric-lg font-bold text-gradient">
+                        <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+                      </h3>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        </section>
 
         {/* Performance Report Chart */}
-        <Card className="p-6 card-hover slide-up border border-border bg-slate-900/30">
-          <DashboardCharts type="performance" />
-        </Card>
+        <section aria-label="Performance Report">
+          <Card className="p-6 card-hover slide-in-from-bottom-4 border border-border bg-slate-900/30">
+            <DashboardCharts type="performance" />
+          </Card>
+        </section>
 
-        {/* Income vs Expense Chart */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-          <Card className="xl:col-span-3 p-6 card-hover slide-up border border-border">
+        {/* Income vs Expense & Savings Rate */}
+        <section aria-label="Cash Flow & Savings" className="grid grid-cols-1 xl:grid-cols-4 gap-5">
+          <Card className="xl:col-span-3 p-6 card-hover slide-in-from-bottom-4 border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">Income vs Expense</h2>
+              <div>
+                <h2 className="text-h4 font-bold">Income vs Expense</h2>
+                <p className="text-body-sm text-muted-foreground">Monthly cash flow comparison</p>
+              </div>
             </div>
             <DashboardCharts type="income-expense" />
           </Card>
 
           {/* Savings Rate */}
-          <Card className="p-6 card-hover slide-up border border-border relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <h2 className="text-xl font-bold mb-8 text-center relative z-10 text-foreground">Savings Rate</h2>
+          <Card className="p-6 card-hover slide-in-from-bottom-4 border border-border relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <h2 className="text-h4 font-bold mb-8 text-center relative z-10 text-foreground">Savings Rate</h2>
             <div className="flex flex-col items-center justify-center gap-6 relative z-10">
-              <div className="relative w-48 h-48 float">
+              <div className="relative w-40 h-40 float">
                 {/* Glow behind the ring */}
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl z-0 scale-75"></div>
-
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl z-0 scale-75" />
                 <svg className="w-full h-full transform -rotate-90 relative z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="none"
-                    stroke="var(--secondary)"
-                    strokeWidth="12"
-                    className="opacity-20"
-                  />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--secondary)" strokeWidth="12" className="opacity-20" />
                   <circle
                     cx="50"
                     cy="50"
@@ -225,21 +221,21 @@ export default function Dashboard() {
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <span className="text-5xl font-extrabold gradient-text drop-shadow-sm">{data.savingsRate}%</span>
+                  <span className="text-numeric-lg font-extrabold text-gradient drop-shadow-sm">{data.savingsRate}%</span>
                 </div>
               </div>
-              <div className="text-center bg-background/50 backdrop-blur-sm px-6 py-2 rounded-full border border-white/5">
-                <p className="text-sm font-bold text-foreground">Excellent savings!</p>
-                <p className="text-xs text-muted-foreground">Keep up the great work</p>
+              <div className="text-center bg-background/50 backdrop-blur-sm px-5 py-2 rounded-full border border-white/5">
+                <p className="text-body-sm font-bold text-foreground">Excellent savings!</p>
+                <p className="text-body-xs text-muted-foreground">Keep up the great work</p>
               </div>
             </div>
           </Card>
-        </div>
+        </section>
 
-        {/* Category Breakdown */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <Card className="p-6 card-hover slide-up border border-border">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+        {/* Category Breakdown & Smart Alerts */}
+        <section aria-label="Category Breakdown & Alerts" className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <Card className="p-6 card-hover slide-in-from-bottom-4 border border-border">
+            <h2 className="text-h4 font-bold mb-6 flex items-center gap-2">
               <PieChart className="w-5 h-5 text-primary" />
               Expense Breakdown
             </h2>
@@ -247,8 +243,8 @@ export default function Dashboard() {
           </Card>
 
           {/* Smart Alerts */}
-          <Card className="p-6 slide-up border border-border">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <Card className="p-6 slide-in-from-bottom-4 border border-border">
+            <h2 className="text-h4 font-bold mb-6 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-primary" />
               Smart Alerts
             </h2>
@@ -264,47 +260,46 @@ export default function Dashboard() {
                     alert.type === "info" && "info",
                     activeAlert === i && "ring-2 ring-primary shadow-lg scale-[1.02]",
                   )}
+                  style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className="flex gap-4 w-full">
-                    <div
-                      className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110",
-                        alert.type === "warning" && "bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]",
-                        alert.type === "success" && "bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]",
-                        alert.type === "info" && "bg-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.2)]",
-                      )}
-                    >
-                      <AlertCircle
-                        className={cn(
-                          "w-6 h-6",
-                          alert.type === "warning" && "text-amber-500",
-                          alert.type === "success" && "text-emerald-500",
-                          alert.type === "info" && "text-sky-500",
-                        )}
-                      />
+                    <div className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110",
+                      alert.type === "warning" && "bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]",
+                      alert.type === "success" && "bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.2)]",
+                      alert.type === "info" && "bg-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.2)]",
+                    )}>
+                      <AlertCircle className={cn(
+                        "w-6 h-6",
+                        alert.type === "warning" && "text-amber-500",
+                        alert.type === "success" && "text-emerald-500",
+                        alert.type === "info" && "text-sky-500",
+                      )} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-bold text-sm text-foreground mb-1">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{alert.desc}</p>
+                      <p className="font-bold text-body-sm text-foreground mb-1">{alert.title}</p>
+                      <p className="text-body-xs text-muted-foreground leading-relaxed">{alert.desc}</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </Card>
-        </div>
+        </section>
 
         {/* Net Worth Trend */}
-        <Card className="p-6 card-hover slide-up border border-border">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Net Worth Trend
-            </h2>
-          </div>
-          <DashboardCharts type="networth" />
-        </Card>
-      </div>
+        <section aria-label="Net Worth Trend">
+          <Card className="p-6 card-hover slide-in-from-bottom-4 border border-border">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-h4 font-bold flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Net Worth Trend
+              </h2>
+            </div>
+            <DashboardCharts type="networth" />
+          </Card>
+        </section>
+      </main>
     </div>
   )
 }
