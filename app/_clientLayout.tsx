@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import MobileTabBar from "@/components/mobile-tab-bar"
+import { useIsMobile } from "@/components/ui/use-mobile"
 
 export default function ClientLayout({
   children,
@@ -17,8 +18,17 @@ export default function ClientLayout({
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const isMobile = useIsMobile()
   const pathname = usePathname()
   const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false)
+    } else {
+      setSidebarOpen(true)
+    }
+  }, [isMobile])
 
   useEffect(() => {
     setMounted(true)
