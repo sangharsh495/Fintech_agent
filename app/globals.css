@@ -501,16 +501,16 @@
     @apply scale-[1.02] shadow-lg;
   }
   .alert-warning {
-    @apply alert-card bg-amber-500/10 border-amber-500/30;
+    @apply p-4 rounded-xl border transition-all duration-300 cursor-pointer bg-amber-500/10 border-amber-500/30;
   }
   .alert-success {
-    @apply alert-card bg-emerald-500/10 border-emerald-500/30;
+    @apply p-4 rounded-xl border transition-all duration-300 cursor-pointer bg-emerald-500/10 border-emerald-500/30;
   }
   .alert-info {
-    @apply alert-card bg-sky-500/10 border-sky-500/30;
+    @apply p-4 rounded-xl border transition-all duration-300 cursor-pointer bg-sky-500/10 border-sky-500/30;
   }
   .alert-destructive {
-    @apply alert-card bg-rose-500/10 border-rose-500/30;
+    @apply p-4 rounded-xl border transition-all duration-300 cursor-pointer bg-rose-500/10 border-rose-500/30;
   }
 
   /* === SEARCH OVERLAY === */
