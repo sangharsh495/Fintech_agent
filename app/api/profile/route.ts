@@ -15,6 +15,10 @@ const updateProfileSchema = z.object({
     panNumber: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
+    consentDataProcessing: z.boolean().optional(),
+    consentMLAnalytics: z.boolean().optional(),
+    consentAIAssistant: z.boolean().optional(),
+    consentMarketing: z.boolean().optional(),
     preferences: z.any().optional(), // Flexible JSON object
 })
 
@@ -53,6 +57,10 @@ export async function GET(req: NextRequest) {
         state: profile.state || "",
         occupation: profile.occupation || "",
         incomeBracket: profile.incomeBracket || "",
+        consentDataProcessing: profile.consentDataProcessing || false,
+        consentMLAnalytics: profile.consentMLAnalytics || false,
+        consentAIAssistant: profile.consentAIAssistant || false,
+        consentMarketing: profile.consentMarketing || false,
         preferences,
     })
 }
