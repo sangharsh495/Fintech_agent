@@ -172,7 +172,7 @@ export default function TaxPage() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 lg:px-8 py-8 space-y-8 max-w-7xl mx-auto w-full">
+      <div className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8 space-y-6 md:space-y-8 max-w-7xl mx-auto w-full">
         {opportunities.length > 0 && (
           <Card className="p-5 border-l-4 border-l-primary bg-primary/5 slide-up">
             <div className="flex items-start gap-4">
@@ -194,8 +194,8 @@ export default function TaxPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <Card className="p-6 card-hover slide-up border border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-4 md:p-6 card-hover slide-up border border-border">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
                 <IndianRupee className="w-6 h-6 text-white" />
@@ -245,7 +245,7 @@ export default function TaxPage() {
             </div>
           </Card>
 
-          <Card className="p-6 card-hover slide-up border border-border">
+          <Card className="p-4 md:p-6 card-hover slide-up border border-border">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
                 <Percent className="w-6 h-6 text-white" />
@@ -301,7 +301,7 @@ export default function TaxPage() {
         </div>
 
         {!isNewRegime && (
-          <Card className="p-6 card-hover slide-up border border-border">
+          <Card className="p-4 md:p-6 card-hover slide-up border border-border">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
                 <TrendingDown className="w-6 h-6 text-white" />
@@ -357,8 +357,8 @@ export default function TaxPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="p-6 card-hover slide-up flex flex-col border border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="p-4 md:p-6 card-hover slide-up flex flex-col border border-border">
             <h2 className="text-lg font-bold mb-4 text-center">Tax Breakdown</h2>
             <div className="flex-1 flex items-center justify-center">
               <ResponsiveContainer width="100%" height={220}>

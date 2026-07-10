@@ -125,7 +125,7 @@ export default function CalculatorsPage() {
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000"></div>
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>
 
-        <div className="relative z-10 px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center justify-center text-center">
+        <div className="relative z-10 px-4 md:px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center justify-center text-center">
           <div className="section-header slide-up max-w-3xl float">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <Zap className="w-4 h-4" />
@@ -142,7 +142,7 @@ export default function CalculatorsPage() {
       </div>
 
       {/* Calculator Selector */}
-      <div className="flex-1 px-6 lg:px-8 py-8 space-y-12">
+      <div className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8 space-y-6 md:space-y-12">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Essential Tools</h2>
