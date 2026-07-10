@@ -4,7 +4,7 @@ import { Menu, Search, X, User, BarChart3, Brain, Calculator, TrendingUp, Layout
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const navLinks = [
@@ -25,6 +25,19 @@ export default function Navbar({
   const [searchResults, setSearchResults] = useState<typeof navLinks>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
+
+  const getTabName = (path: string) => {
+    if (path === "/") return "Dashboard"
+    if (path === "/analytics") return "Analytics"
+    if (path === "/ai-ca") return "AI Virtual CA"
+    if (path === "/calculators") return "Tools"
+    if (path === "/tax") return "Tax Engine"
+    if (path === "/upload") return "Upload"
+    if (path === "/settings") return "Settings"
+    return ""
+  }
+  const currentTabName = getTabName(pathname)
 
   // Handle search
   useEffect(() => {
@@ -84,18 +97,18 @@ export default function Navbar({
                 <Menu className="w-5 h-5" />
               </Button>
 
-              {/* Logo */}
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="font-bold text-primary-foreground text-lg">L</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="hidden sm:block font-bold text-body-sm text-foreground group-hover:text-primary transition-colors">
-                    Legend
-                  </span>
-                  <span className="hidden sm:block text-body-xs text-muted-foreground">Financial Manager</span>
-                </div>
-              </Link>
+              {/* Logo / Title with Active Tab */}
+              <div className="flex items-center gap-1.5 select-none">
+                <Link href="/" className="font-bold text-lg text-foreground hover:text-primary transition-colors">
+                  Legend
+                </Link>
+                {currentTabName && (
+                  <>
+                    <span className="text-muted-foreground/40 font-normal">/</span>
+                    <span className="text-primary text-body-sm font-semibold">{currentTabName}</span>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Desktop Navigation */}
@@ -115,65 +128,11 @@ export default function Navbar({
               })}
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center gap-2">
-              {/* Search Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-xl text-foreground hover:bg-secondary transition-all duration-200 hover:scale-105 touch-target-comfortable"
-                onClick={() => setSearchOpen(true)}
-                aria-label="Search (⌘K)"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
-
-              <Link href="/settings">
-                <button
-                  title="Profile & Settings"
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-110 border-2 border-primary-foreground/20 touch-target-comfortable"
-                >
-                  <User className="w-5 h-5 text-primary-foreground" />
-                </button>
-              </Link>
-
-              <Link href="/settings" className="md:hidden">
-                <Button variant="ghost" size="icon" className="text-foreground hover:bg-secondary touch-target-comfortable">
-                  <User className="w-4 h-4" />
-                </Button>
-              </Link>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden text-foreground hover:bg-secondary transition-all duration-200 touch-target-comfortable"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                <Menu className="w-4 h-4" />
-              </Button>
-            </div>
+            {/* Controls - Hidden per user preference */}
+            <div className="flex items-center gap-2" />
           </div>
 
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden pb-4 mt-2 space-y-1 border-t border-border pt-4 stagger-children">
-              {navLinks.map((link) => {
-                const Icon = link.icon
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-body-sm text-foreground hover:bg-secondary transition-all duration-200 touch-target-comfortable"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {link.label}
-                  </Link>
-                )
-              })}
-            </div>
-          )}
+          {/* Mobile Menu Removed */}
         </div>
       </nav>
 
