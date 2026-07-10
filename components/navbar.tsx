@@ -100,7 +100,7 @@ export default function Navbar({
               {/* Logo / Title with Active Tab */}
               <div className="flex items-center gap-1.5 select-none">
                 <Link href="/" className="font-bold text-lg text-foreground hover:text-primary transition-colors">
-                  Legend
+                  FinWise
                 </Link>
                 {currentTabName && (
                   <>
@@ -128,8 +128,28 @@ export default function Navbar({
               })}
             </div>
 
-            {/* Controls - Hidden per user preference */}
-            <div className="flex items-center gap-2" />
+            {/* Controls */}
+            <div className="flex items-center gap-2">
+              {/* Search Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl text-foreground hover:bg-secondary transition-all duration-200 hover:scale-105 touch-target-comfortable"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search (⌘K)"
+              >
+                <Search className="w-5 h-5" />
+              </Button>
+
+              <Link href="/settings">
+                <button
+                  title="Profile & Settings"
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-110 border-2 border-primary-foreground/20 touch-target-comfortable"
+                >
+                  <User className="w-5 h-5 text-primary-foreground" />
+                </button>
+              </Link>
+            </div>
           </div>
 
           {/* Mobile Menu Removed */}
