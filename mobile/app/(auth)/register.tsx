@@ -9,14 +9,12 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
-  ScrollView,
   Animated,
   Easing,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { register } from "../../lib/auth"
 import { Ionicons } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
 import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Animation } from "../../lib/design-system"
 import * as Haptics from "expo-haptics"
 
@@ -182,7 +180,7 @@ export default function RegisterScreen() {
                 <Ionicons name="lock-closed-outline" size={22} color={Colors.textTertiary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="••••••••"
+                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                   placeholderTextColor={Colors.textTertiary}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
