@@ -302,7 +302,11 @@ export default function DashboardScreen() {
       {/* Quick Actions Sheet */}
       <Animated.View
         style={{
-          ...StyleSheet.absoluteFillObject,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           backgroundColor: showQuickActions ? "rgba(0,0,0,0.4)" : "transparent",
         }}
         pointerEvents={showQuickActions ? "auto" : "none"}
