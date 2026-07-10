@@ -4,10 +4,11 @@ import { buildUserContext } from "@/server/services/ai-context.service"
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
 
-// Groq via OpenAI-compatible API
-const groq = createOpenAI({
-  baseURL: "https://api.groq.com/openai/v1",
-  apiKey: process.env.GROQ_API_KEY || "",
+// Use custom Oracle Cloud deployment (OpenAI compatible)
+// Fallback to Groq for local testing if variables aren't set
+const aiModel = createOpenAI({
+  baseURL: process.env.ORACLE_AI_ENDPOINT || "https://api.groq.com/openai/v1",
+  apiKey: process.env.ORACLE_AI_API_KEY || process.env.GROQ_API_KEY || "",
 })
 
 export async function POST(req: NextRequest) {
