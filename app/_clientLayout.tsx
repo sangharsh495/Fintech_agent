@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
+import MobileTabBar from "@/components/mobile-tab-bar"
 
 export default function ClientLayout({
   children,
@@ -58,10 +59,11 @@ export default function ClientLayout({
         <div className="flex pt-16">
           <Sidebar isOpen={sidebarOpen} />
           <main
-            className={`flex-1 overflow-auto transition-all duration-300 ${sidebarOpen ? "md:ml-64" : "md:ml-0"}`}
+            className={`flex-1 overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-64" : "md:ml-0"}`}
           >
             {children}
           </main>
+          <MobileTabBar />
         </div>
       </>
     )
