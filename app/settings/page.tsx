@@ -155,6 +155,14 @@ export default function SettingsPage() {
     document.documentElement.classList.toggle("dark", dark)
   }
 
+  const handleToggleConnect = (id: number) => {
+    setLinkedAccounts(prev =>
+      prev.map(account =>
+        account.id === id ? { ...account, connected: !account.connected } : account
+      )
+    )
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated")
     localStorage.removeItem("userEmail")
@@ -948,6 +956,7 @@ export default function SettingsPage() {
                               variant={account.connected ? "outline" : "default"}
                               size="sm"
                               className="rounded-lg"
+                              onClick={() => handleToggleConnect(account.id)}
                             >
                               {account.connected ? (
                                 <>
