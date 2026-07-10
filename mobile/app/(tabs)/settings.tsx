@@ -35,6 +35,13 @@ export default function SettingsScreen() {
     }
   })
 
+  const [consent, setConsent] = useState({
+    consentDataProcessing: false,
+    consentMLAnalytics: false,
+    consentAIAssistant: false,
+    consentMarketing: false,
+  })
+
   const fetchData = useCallback(async () => {
     if (!token) return
     try {
@@ -63,6 +70,12 @@ export default function SettingsScreen() {
             setBiometricsEnabled(profileRes.preferences.security.biometricEnabled)
           }
         }
+        setConsent({
+          consentDataProcessing: profileRes.consentDataProcessing || false,
+          consentMLAnalytics: profileRes.consentMLAnalytics || false,
+          consentAIAssistant: profileRes.consentAIAssistant || false,
+          consentMarketing: profileRes.consentMarketing || false,
+        })
       }
       setBanks(banksRes.banks || [])
     } catch (error) {
@@ -132,6 +145,31 @@ export default function SettingsScreen() {
       }
     }
   }
+
+  const updateConsent = async (
+    key: keyof typeof consent,
+    value: boolean
+  ) => {
+    if (!token) return
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+
+    const updatedConsents = {
+      ...consent,
+      [key]: value,
+    }
+
+    setConsent(updatedConsents)
+
+    try {
+      await profileApi.update(token, {
+        [key]: value,
+      })
+    } catch (error) {
+      console.error("Failed to update consent:", error)
+      Alert.alert("Error", "Could not sync consent setting to server.")
+      setConsent(consent)
+    }
 
   const handleBiometricToggle = async (value: boolean) => {
     if (value) {
@@ -340,6 +378,62 @@ export default function SettingsScreen() {
           </View>
         </View>
       </View>
+
+      {/* Data Consents */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Data Consents</Text>
+        <View style={styles.card}>
+          <View style={styles.switchRow}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="shield-checkmark-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Core Data Processing</Text>
+            </View>
+            <Switch
+              value={consent.consentDataProcessing}
+              onValueChange={(val) => updateConsent("consentDataProcessing", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="analytics-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>ML Analytics</Text>
+            </View>
+            <Switch
+              value={consent.consentMLAnalytics}
+              onValueChange={(val) => updateConsent("consentMLAnalytics", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="chatbox-ellipses-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Gemini AI Assistant</Text>
+            </View>
+            <Switch
+              value={consent.consentAIAssistant}
+              onValueChange={(val) => updateConsent("consentAIAssistant", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+          <View style={[styles.switchRow, styles.rowBorder]}>
+            <View style={styles.switchLeft}>
+              <Ionicons name="gift-outline" size={20} color="#6366f1" />
+              <Text style={styles.switchLabel}>Personal Offers</Text>
+            </View>
+            <Switch
+              value={consent.consentMarketing}
+              onValueChange={(val) => updateConsent("consentMarketing", val)}
+              trackColor={{ false: "#334155", true: "#6366f1" }}
+              thumbColor="#f8fafc"
+            />
+          </View>
+        </View>
+      </View>
+
       {/* App Info */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>About</Text>
