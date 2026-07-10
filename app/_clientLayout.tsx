@@ -71,7 +71,9 @@ export default function ClientLayout({
           <main
             className={`flex-1 overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-64" : "md:ml-0"}`}
           >
-            {children}
+            <div className="max-w-[480px] md:max-w-none w-full mx-auto">
+              {children}
+            </div>
           </main>
           <MobileTabBar />
         </div>

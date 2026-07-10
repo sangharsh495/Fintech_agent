@@ -19,7 +19,7 @@ type DashboardData = {
   alerts: any[]
 }
 
-const bankCardColors = [
+const bankCardColors: readonly [string, string][] = [
   ["#4f46e5", "#06b6d4"], // Indigo to Cyan
   ["#10b981", "#059669"], // Emerald to Dark Green
   ["#ec4899", "#8b5cf6"], // Pink to Violet
