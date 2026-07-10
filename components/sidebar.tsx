@@ -31,26 +31,27 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
     <>
       <aside
         className={cn(
-          "fixed left-0 top-16 z-40 w-72 border-r border-border bg-card/50 backdrop-blur-lg flex-col overflow-y-auto transition-all duration-500 ease-out",
+          "fixed left-0 top-16 z-40 w-[18rem] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out",
           "h-[calc(100vh-4rem)]",
           isOpen ? "translate-x-0 opacity-100 visible" : "-translate-x-full opacity-0 invisible",
         )}
+        aria-label="Sidebar navigation"
       >
         {/* User Profile Section */}
-        <div className="p-6 border-b border-border">
+        <div className="p-5 border-b border-border">
           <Link href="/settings" className="flex items-center gap-4 group">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-105">
               <User className="w-6 h-6 text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">{userName}</p>
-              <p className="text-xs text-muted-foreground truncate">{userEmail || "Manage profile"}</p>
+              <p className="text-body-xs text-muted-foreground truncate">{userEmail || "Manage profile"}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 stagger-children">
+        <nav className="flex-1 p-4 space-y-1.5 stagger-children" aria-label="Main navigation">
           {navItems.map((item, index) => {
             const Icon = item.icon
             const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
@@ -64,7 +65,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                     : "text-foreground hover:bg-secondary",
                 )}
-                style={{ animationDelay: `${index * 0.1}s` }}
+                style={{ animationDelay: `${index * 80}ms` }}
               >
                 <div
                   className={cn(
@@ -81,7 +82,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
                 </div>
                 <div className="flex-1">
                   <span className="font-medium block">{item.label}</span>
-                  <span className={cn("text-xs", isActive ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                  <span className={cn("text-body-xs", isActive ? "text-primary-foreground/70" : "text-muted-foreground")}>
                     {item.description}
                   </span>
                 </div>
@@ -96,7 +97,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
         <div className="p-4 border-t border-border">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-destructive/10 transition-all duration-300 text-sm text-destructive group"
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-destructive/10 transition-all duration-300 text-body-sm text-destructive group touch-target-comfortable"
           >
             <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center group-hover:bg-destructive/20 transition-colors">
               <LogOut className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
@@ -105,6 +106,15 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
           </button>
         </div>
       </aside>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => window.dispatchEvent(new CustomEvent("sidebar-close"))}
+          aria-hidden="true"
+        />
+      )}
     </>
   )
 }
