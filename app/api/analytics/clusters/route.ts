@@ -12,6 +12,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as fs from "fs"
 import * as path from "path"
+import { getSession } from "@/server/lib/get-session"
+import { db } from "@/server/db"
+import { clusterMetadata, clusterRuns, transactions } from "@/server/db/schema"
+import { eq, and, desc } from "drizzle-orm"
 
 // ─── Data Loading (from ML service output) ──────────────────
 
@@ -60,6 +64,170 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type") || "all"
     const view = searchParams.get("view") || "summary"
 
+    const session = await getSession(request)
+    const userId = session?.user?.id
+
+    // Check if database contains real computed ML clustering for this user
+    if (userId) {
+      const userMeta = await db
+        .select()
+        .from(clusterMetadata)
+        .where(eq(clusterMetadata.userId, userId))
+
+      if (userMeta.length > 0) {
+        console.log(`[Clusters API] Serving dynamic DB-backed ML insights for user ${userId}`)
+
+        const userRunsList = await db
+          .select()
+          .from(clusterRuns)
+          .where(eq(clusterRuns.userId, userId))
+          .orderBy(desc(clusterRuns.runAt))
+
+        const userAnomalies = await db
+          .select()
+          .from(transactions)
+          .where(and(eq(transactions.userId, userId), eq(transactions.isAnomaly, true)))
+          .orderBy(desc(transactions.date))
+          .limit(50)
+
+        // 1. Build cluster distributions
+        const distributions: Record<string, any> = {}
+        const clusterTypes = ["spending_behavior", "transaction_size", "temporal", "category_affinity"]
+
+        for (const cType of clusterTypes) {
+          const typeMeta = userMeta.filter((m) => m.clusterType === cType)
+          const clusters = typeMeta.map((m) => ({
+            cluster_id: m.clusterId,
+            label: m.label,
+            description: m.description,
+            color: m.color,
+            centroid: m.centroid ? JSON.parse(m.centroid) : [],
+            transaction_count: m.transactionCount || 0,
+            total_amount: m.totalAmount || 0,
+            avg_amount: m.avgAmount || 0,
+            min_amount: m.minAmount,
+            max_amount: m.maxAmount,
+            dominant_category: m.dominantCategory,
+            dominant_payment_method: m.dominantPaymentMethod,
+            percentage_of_total: m.percentageOfTotal,
+          }))
+
+          distributions[cType] = {
+            chart_data: clusters.map((c) => ({
+              name: c.label,
+              value: c.transaction_count,
+            })),
+            clusters,
+          }
+        }
+
+        // 2. Build anomaly summary
+        const totalTxns = userMeta.reduce((sum, m) => sum + (m.transactionCount || 0), 0)
+        const anomalySummary = {
+          total_anomalies: userAnomalies.length,
+          percentage_anomalies: totalTxns > 0 ? parseFloat(((userAnomalies.length / totalTxns) * 100).toFixed(2)) : 0,
+          top_anomalies: userAnomalies.map((a) => ({
+            transaction_id: a.id,
+            amount: parseFloat(a.amount),
+            category: a.category,
+            date: a.date.toISOString(),
+            description: a.description || a.rawDescription || "",
+          })),
+        }
+
+        // 3. Build run history
+        const runHistory = userRunsList.map((r) => ({
+          cluster_type: r.clusterType,
+          algorithm: r.algorithm,
+          n_clusters: r.nClusters,
+          silhouette_score: r.silhouetteScore || 0,
+          inertia: r.inertia || 0,
+          total_transactions: r.totalTransactions,
+          status: r.status,
+          run_at: r.runAt.toISOString(),
+        }))
+
+        // ── View: Summary ──
+        if (view === "summary") {
+          const summary: Record<string, any> = {
+            generated_at: userRunsList[0]?.runAt.toISOString() || new Date().toISOString(),
+            total_cluster_types: Object.keys(distributions).length,
+            anomaly_summary: anomalySummary,
+            run_history: runHistory,
+          }
+
+          if (type === "all") {
+            summary.distributions = distributions
+          } else if (distributions[type]) {
+            summary.distributions = { [type]: distributions[type] }
+          } else {
+            return NextResponse.json({ error: `Unknown cluster type: ${type}` }, { status: 400 })
+          }
+
+          return NextResponse.json(summary)
+        }
+
+        // ── View: Distributions (chart data) ──
+        if (view === "distributions") {
+          if (type === "all") {
+            return NextResponse.json(distributions)
+          }
+          if (distributions[type]) {
+            return NextResponse.json(distributions[type])
+          }
+          return NextResponse.json({ error: `Unknown cluster type: ${type}` }, { status: 400 })
+        }
+
+        // ── View: Trends (monthly) ──
+        if (view === "trends") {
+          const staticTrends = getTrends() || {}
+          if (type === "all") {
+            return NextResponse.json(staticTrends)
+          }
+          if (staticTrends[type]) {
+            return NextResponse.json(staticTrends[type])
+          }
+          return NextResponse.json({ error: `Unknown cluster type: ${type}` }, { status: 400 })
+        }
+
+        // ── View: Metadata (detailed cluster info) ──
+        if (view === "metadata") {
+          const allMetadata = userMeta.map((m) => ({
+            cluster_type: m.clusterType,
+            cluster_id: m.clusterId,
+            label: m.label,
+            description: m.description,
+            color: m.color,
+            transaction_count: m.transactionCount || 0,
+            total_amount: m.totalAmount || 0,
+            avg_amount: m.avgAmount || 0,
+            min_amount: m.minAmount,
+            max_amount: m.maxAmount,
+            dominant_category: m.dominantCategory,
+            dominant_payment_method: m.dominantPaymentMethod,
+            percentage_of_total: m.percentageOfTotal,
+          }))
+
+          if (type === "all") {
+            return NextResponse.json(allMetadata)
+          }
+          const filtered = allMetadata.filter((m: any) => m.cluster_type === type)
+          return NextResponse.json(filtered)
+        }
+
+        // ── View: Anomalies ──
+        if (view === "anomalies") {
+          return NextResponse.json({
+            ...anomalySummary,
+            anomalous_transactions: anomalySummary.top_anomalies,
+          })
+        }
+
+        return NextResponse.json({ error: "Invalid view parameter" }, { status: 400 })
+      }
+    }
+
+    // ─── Fallback to pre-computed static JSON files (Demo Seed Data) ───
     const metadata = getMetadata()
     const trends = getTrends()
 
@@ -82,7 +250,6 @@ export async function GET(request: NextRequest) {
       const distributions = metadata.cluster_distributions || {}
       const anomalySummary = metadata.anomaly_summary || {}
 
-      // Build a comprehensive summary
       const summary: Record<string, any> = {
         generated_at: metadata.generated_at,
         total_cluster_types: Object.keys(distributions).length,
@@ -147,7 +314,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         ...anomalySummary,
-        anomalous_transactions: anomalies.slice(0, 50), // limit to 50
+        anomalous_transactions: anomalies.slice(0, 50),
       })
     }
 
