@@ -151,7 +151,6 @@ export default function LoginScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
-                  fontFamily={Typography.fontFamilies.regular}
                   onBlur={() => { if (!email.trim()) setEmailError(true) }}
                 />
               </View>
@@ -192,7 +191,6 @@ export default function LoginScreen() {
                   }}
                   secureTextEntry
                   autoComplete="password"
-                  fontFamily={Typography.fontFamilies.regular}
                   onBlur={() => { if (!password) setPasswordError(true) }}
                 />
               </View>

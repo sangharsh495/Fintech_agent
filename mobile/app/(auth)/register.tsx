@@ -130,7 +130,6 @@ export default function RegisterScreen() {
                   onChangeText={setName}
                   autoComplete="name"
                   autoCapitalize="words"
-                  fontFamily={Typography.fontFamilies.regular}
                 />
               </View>
             </View>
@@ -148,7 +147,6 @@ export default function RegisterScreen() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
-                  fontFamily={Typography.fontFamilies.regular}
                 />
               </View>
             </View>
@@ -166,7 +164,6 @@ export default function RegisterScreen() {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
-                  fontFamily={Typography.fontFamilies.regular}
                 />
               </View>
               <Text style={styles.passwordHint}>
@@ -185,7 +182,6 @@ export default function RegisterScreen() {
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
-                  fontFamily={Typography.fontFamilies.regular}
                 />
               </View>
             </View>
