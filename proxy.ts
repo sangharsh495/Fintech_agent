@@ -15,11 +15,17 @@ const PUBLIC_ROUTES = [
 ]
 
 export default auth(async function middleware(req) {
-    const { nextUrl, auth: session } = req as NextRequest & { auth: { user?: { id: string } } | null }
+    const { nextUrl, auth: session } = req as NextRequest & { auth: { user?: { id: string; onboardingComplete?: boolean } } | null }
     const pathname = nextUrl.pathname
 
     // Allow public routes
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
+    
+    // Redirect authenticated users away from auth pages
+    if (session?.user && pathname.startsWith("/auth/")) {
+        return NextResponse.redirect(new URL("/", nextUrl))
+    }
+
     if (isPublicRoute) return NextResponse.next()
 
     // Allow API routes - they handle their own authentication (Bearer tokens for mobile, NextAuth for web)
@@ -32,6 +38,18 @@ export default auth(async function middleware(req) {
         const loginUrl = new URL("/auth/login", nextUrl)
         loginUrl.searchParams.set("callbackUrl", pathname)
         return NextResponse.redirect(loginUrl)
+    }
+
+    // Enforce onboarding flow
+    const onboardingComplete = session.user.onboardingComplete === true
+    const isOnboardingRoute = pathname.startsWith('/onboarding')
+
+    if (!onboardingComplete && !isOnboardingRoute) {
+        return NextResponse.redirect(new URL('/onboarding', nextUrl))
+    }
+
+    if (onboardingComplete && isOnboardingRoute) {
+        return NextResponse.redirect(new URL('/', nextUrl))
     }
 
     return NextResponse.next()
