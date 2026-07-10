@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { CredentialsSignin } from "next-auth"
 import { db } from "@/server/db"
-import { users } from "@/server/db/schema"
+import { users, userProfiles } from "@/server/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
@@ -41,11 +41,18 @@ export const authConfig: NextAuthConfig = {
             throw new EmailNotVerifiedError()
           }
 
+          const profile = await db
+            .select({ onboardingComplete: userProfiles.onboardingComplete })
+            .from(userProfiles)
+            .where(eq(userProfiles.userId, user.id))
+            .limit(1)
+
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             image: user.image,
+            onboardingComplete: profile[0]?.onboardingComplete ?? false,
           }
         } catch (error) {
           if (error instanceof EmailNotVerifiedError) {
@@ -65,12 +72,16 @@ export const authConfig: NextAuthConfig = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.email = user.email
         token.name = user.name
         token.image = user.image ?? null
+        token.onboardingComplete = user.onboardingComplete
+      }
+      if (trigger === "update" && session?.onboardingComplete !== undefined) {
+        token.onboardingComplete = session.onboardingComplete
       }
       return token
     },
@@ -80,6 +91,7 @@ export const authConfig: NextAuthConfig = {
         session.user.email = token.email as string
         session.user.name = token.name as string
         session.user.image = (token.image as string) ?? null
+        session.user.onboardingComplete = token.onboardingComplete as boolean
       }
       return session
     },
