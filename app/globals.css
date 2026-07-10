@@ -457,22 +457,22 @@
            hover:border-border/80;
   }
   .input-error {
-    @apply input-base border-destructive focus:border-destructive focus:ring-destructive/20;
+    @apply w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground transition-all duration-200 ease-out focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 hover:border-border/80 border-destructive focus:border-destructive focus:ring-2 focus:ring-destructive/20;
   }
   .input-success {
-    @apply input-base border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/20;
+    @apply w-full rounded-lg border border-input bg-background px-4 py-3 text-sm placeholder:text-muted-foreground transition-all duration-200 ease-out focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 hover:border-border/80 border-emerald-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20;
   }
 
   /* === BADGE VARIANTS === */
   .badge-base {
     @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border;
   }
-  .badge-primary { @apply badge-base bg-primary/10 text-primary border-primary/20; }
-  .badge-success { @apply badge-base bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20; }
-  .badge-warning { @apply badge-base bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20; }
-  .badge-destructive { @apply badge-base bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20; }
-  .badge-info { @apply badge-base bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20; }
-  .badge-muted { @apply badge-base bg-muted text-muted-foreground border-border; }
+  .badge-primary { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-primary/10 text-primary border-primary/20; }
+  .badge-success { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20; }
+  .badge-warning { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20; }
+  .badge-destructive { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20; }
+  .badge-info { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20; }
+  .badge-muted { @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-muted text-muted-foreground border-border; }
 
   /* === TAB VARIANTS === */
   .tab-base {
@@ -480,17 +480,17 @@
            border-2 border-transparent;
   }
   .tab-default {
-    @apply tab-base text-foreground hover:bg-secondary hover:border-border/50;
+    @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-out border-2 border-transparent text-foreground hover:bg-secondary hover:border-border/50;
   }
   .tab-active {
-    @apply tab-base bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20;
+    @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-out border-2 border-transparent bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20;
   }
   .tab-pill {
     @apply px-4 py-2 rounded-full font-medium transition-all duration-200
            text-muted-foreground hover:text-foreground hover:bg-secondary;
   }
   .tab-pill-active {
-    @apply tab-pill bg-primary text-primary-foreground shadow-md shadow-primary/30;
+    @apply px-4 py-2 rounded-full font-medium transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-secondary bg-primary text-primary-foreground shadow-md shadow-primary/30;
   }
 
   /* === ALERT CARD === */
