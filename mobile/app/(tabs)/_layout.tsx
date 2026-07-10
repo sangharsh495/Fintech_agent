@@ -18,7 +18,7 @@ export default function TabLayout() {
           borderTopWidth: StyleSheet.hairlineWidth,
           paddingBottom: Spacing.sm,
           paddingTop: Spacing.xs,
-          height: ComponentSizes.tabBar.mobile,
+          height: ComponentSizes.tabBar.height,
           position: "absolute",
           bottom: 0,
           left: Spacing.screenPaddingHorizontal,
