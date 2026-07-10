@@ -251,7 +251,7 @@ function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: number; p
   }, [value])
 
   return (
-    <span>
+    <span className="font-mono tabular-nums">
       {prefix}
       {displayValue.toLocaleString()}
       {suffix}
@@ -322,22 +322,22 @@ export default function AnalyticsPage() {
   const expenseTotal = expenseBreakdown.reduce((sum, item) => sum + item.value, 0)
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col pt-16">
-      <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
-        {/* Decorative Blurs */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000"></div>
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
+        <div className="absolute top-0 right-1/4 w-[24rem] h-[24rem] bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000" />
+        <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300" />
 
-        <div className="relative z-10 px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center text-center">
-          <div className="section-header slide-up max-w-3xl float">
+        <div className="relative z-10 px-6 lg:px-8 py-10 md:py-14 flex flex-col items-center text-center">
+          <div className="section-header slide-in-from-bottom-4 max-w-3xl float">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <BarChart3 className="w-4 h-4" />
               Smart Analytics
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-foreground drop-shadow-sm">
-              Financial <span className="gradient-text">Analytics</span>
+            <h1 className="text-h1 md:text-display-md font-extrabold tracking-tight mb-4 text-foreground drop-shadow-sm">
+              Financial <span className="text-gradient">Analytics</span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-body-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Deep dive into your spending patterns, track budgets, monitor savings goals, and discover AI-powered
               insights to optimize your financial health.
             </p>
@@ -358,52 +358,51 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="flex-1 px-6 lg:px-8 py-6 space-y-6">
+      {/* Main Content */}
+      <main className="flex-1 px-6 lg:px-8 py-8 space-y-8">
         {/* KPI Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
-          {kpiStats.map((stat, index) => {
-            const Icon = stat.icon
-            return (
-              <div key={index} className="stat-card group">
-                <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={cn(
+        <section aria-label="Key Performance Indicators">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
+            {kpiStats.map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <div key={index} className="stat-card group" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="relative z-10 p-5 md:p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={cn(
                         "w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br shadow-lg transition-transform duration-300 group-hover:scale-110",
                         stat.color,
-                      )}
-                    >
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div
-                      className={cn(
+                      )}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className={cn(
                         "inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border",
                         stat.changeType === "positive" && "text-emerald-600 bg-emerald-500/10 border-emerald-500/20",
                         stat.changeType === "negative" && "text-rose-600 bg-rose-500/10 border-rose-500/20",
-                      )}
-                    >
-                      {stat.changeType === "positive" ? (
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      ) : (
-                        <ArrowDownRight className="w-3.5 h-3.5" />
-                      )}
-                      <span>{stat.change}</span>
+                      )}>
+                        {stat.changeType === "positive" ? (
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        ) : (
+                          <ArrowDownRight className="w-3.5 h-3.5" />
+                        )}
+                        <span>{stat.change}</span>
+                      </div>
                     </div>
+                    <p className="text-body-sm text-muted-foreground mb-1">{stat.label}</p>
+                    <h3 className="text-numeric-lg font-bold text-gradient">
+                      <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
+                    </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                  <h3 className="text-2xl md:text-3xl font-bold gradient-text">
-                    <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
-                  </h3>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        </section>
 
         {/* Main Charts Row */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section aria-label="Main Charts" className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card className="p-6 border border-border card-hover relative overflow-hidden bg-card">
             <div
               className="absolute inset-0 opacity-5"
@@ -415,8 +414,8 @@ export default function AnalyticsPage() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Expense Breakdown</h2>
-                  <p className="text-sm text-muted-foreground">Category-wise spending analysis</p>
+                  <h2 className="text-h4 font-bold text-foreground">Expense Breakdown</h2>
+                  <p className="text-body-sm text-muted-foreground">Category-wise spending analysis</p>
                 </div>
                 <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 rounded-xl">
                   View Details <ChevronRight className="w-4 h-4 ml-1" />
@@ -453,8 +452,8 @@ export default function AnalyticsPage() {
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Total</p>
-                      <p className="text-2xl font-bold text-foreground">₹{(expenseTotal / 1000).toFixed(0)}K</p>
+                      <p className="text-body-xs text-muted-foreground">Total</p>
+                      <p className="text-numeric-md font-bold text-foreground">₹{(expenseTotal / 1000).toFixed(0)}K</p>
                     </div>
                   </div>
                 </div>
@@ -464,7 +463,7 @@ export default function AnalyticsPage() {
                     return (
                       <div
                         key={index}
-                        className="flex items-center gap-3 text-sm px-3 py-2.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors border border-transparent hover:border-border"
+                        className="flex items-center gap-3 text-body-sm px-3 py-2.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors border border-transparent hover:border-border"
                       >
                         <div
                           className="w-3 h-3 rounded-full"
@@ -472,7 +471,7 @@ export default function AnalyticsPage() {
                         />
                         <span className="text-muted-foreground flex-1">{item.name}</span>
                         <span className="font-bold text-foreground">₹{(item.value / 1000).toFixed(0)}K</span>
-                        <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                        <span className="text-body-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
                           {percentage}%
                         </span>
                       </div>
@@ -497,14 +496,14 @@ export default function AnalyticsPage() {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-foreground">Monthly Cash Flow</h2>
-                  <p className="text-sm text-muted-foreground">Income vs Expense comparison</p>
+                  <h2 className="text-h5 font-bold text-foreground">Monthly Cash Flow</h2>
+                  <p className="text-body-sm text-muted-foreground">Income vs Expense comparison</p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-2 text-body-xs px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-medium border border-emerald-500/30">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Income
                   </span>
-                  <span className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 font-medium border border-rose-500/30">
+                  <span className="inline-flex items-center gap-2 text-body-xs px-3 py-1.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 font-medium border border-rose-500/30">
                     <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Expense
                   </span>
                 </div>
@@ -541,7 +540,7 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </div>
           </Card>
-        </div>
+        </section>
 
         <Card className="p-6 border border-border relative overflow-hidden bg-card">
           <div
@@ -557,8 +556,8 @@ export default function AnalyticsPage() {
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Expense Trend Analysis</h2>
-                <p className="text-sm text-muted-foreground">Track your spending behavior over time</p>
+                <h2 className="text-h5 font-bold text-foreground">Expense Trend Analysis</h2>
+                <p className="text-body-sm text-muted-foreground">Track your spending behavior over time</p>
               </div>
               <TimeFilterToggle
                 value={trendView}
@@ -688,8 +687,8 @@ export default function AnalyticsPage() {
           />
           <div className="relative z-10">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-foreground">Category-wise Trends</h2>
-              <p className="text-sm text-muted-foreground">Detect spending patterns across all categories</p>
+              <h2 className="text-h5 font-bold text-foreground">Category-wise Trends</h2>
+              <p className="text-body-sm text-muted-foreground">Detect spending patterns across all categories</p>
             </div>
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={categoryTrendData}>
@@ -762,22 +761,22 @@ export default function AnalyticsPage() {
           </div>
         </Card>
 
-        {/* ── ML Cluster Analytics Section ── */}
-        <div className="pt-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 text-sm font-medium mb-4">
+        {/* ML Cluster Analytics Section */}
+        <section className="pt-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 text-body-sm font-medium mb-4">
             <Brain className="w-4 h-4" />
             ML-Powered Clustering
           </div>
           <ClusterAnalytics />
-        </div>
+        </section>
 
         {/* Budget vs Actual + Savings Goals */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section aria-label="Budget & Goals" className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card className="p-6 border border-border bg-card">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Budget vs Actual</h2>
-                <p className="text-sm text-muted-foreground">Track your spending against limits</p>
+                <h2 className="text-h5 font-bold text-foreground">Budget vs Actual</h2>
+                <p className="text-body-sm text-muted-foreground">Track your spending against limits</p>
               </div>
             </div>
             <div className="space-y-5">
@@ -786,7 +785,7 @@ export default function AnalyticsPage() {
                 const isOverBudget = item.spent > item.budget
                 return (
                   <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-body-sm">
                       <div className="flex items-center gap-2">
                         <div
                           className="w-3 h-3 rounded-full"
@@ -812,7 +811,7 @@ export default function AnalyticsPage() {
                         style={{ width: `${Math.min(percentage, 100)}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                    <div className="flex justify-between text-body-xs text-muted-foreground">
                       <span>{percentage}% used</span>
                       <span className={cn(isOverBudget ? "text-rose-500" : "text-emerald-500")}>
                         {isOverBudget
@@ -829,8 +828,8 @@ export default function AnalyticsPage() {
           <Card className="p-6 border border-border bg-card">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Savings Goals</h2>
-                <p className="text-sm text-muted-foreground">Track progress toward your goals</p>
+                <h2 className="text-h5 font-bold text-foreground">Savings Goals</h2>
+                <p className="text-body-sm text-muted-foreground">Track progress toward your goals</p>
               </div>
             </div>
             <div className="space-y-6">
@@ -841,15 +840,7 @@ export default function AnalyticsPage() {
                   <div key={index} className="flex items-center gap-5">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="42"
-                          fill="none"
-                          stroke="#e5e7eb"
-                          strokeWidth="10"
-                          strokeOpacity="0.3"
-                        />
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="10" strokeOpacity="0.3" />
                         <circle
                           cx="50"
                           cy="50"
@@ -864,15 +855,15 @@ export default function AnalyticsPage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-bold text-foreground">{percentage}%</span>
+                        <span className="text-body-sm font-bold text-foreground">{percentage}%</span>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-sm text-foreground">{goal.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-body-sm text-foreground truncate">{goal.name}</p>
+                      <p className="text-body-xs text-muted-foreground mt-1">
                         ₹{(goal.current / 100000).toFixed(2)}L of ₹{(goal.target / 100000).toFixed(2)}L
                       </p>
-                      <p className="text-xs mt-2 font-medium" style={{ color: goal.color }}>
+                      <p className="text-body-xs mt-2 font-medium" style={{ color: goal.color }}>
                         ₹{(remaining / 1000).toFixed(0)}K remaining
                       </p>
                     </div>
@@ -881,18 +872,18 @@ export default function AnalyticsPage() {
               })}
             </div>
           </Card>
-        </div>
+        </section>
 
         {/* AI Insights + Alerts */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section aria-label="AI Insights & Alerts" className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <Card className="p-6 border border-border bg-card">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
                 <Brain className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground">AI Insights</h2>
-                <p className="text-sm text-muted-foreground">Smart recommendations for you</p>
+                <h2 className="text-h5 font-bold text-foreground">AI Insights</h2>
+                <p className="text-body-sm text-muted-foreground">Smart recommendations for you</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -910,28 +901,24 @@ export default function AnalyticsPage() {
                     )}
                   >
                     <div className="flex gap-3">
-                      <div
-                        className={cn(
-                          "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                          insight.type === "warning" && "bg-amber-500/20",
-                          insight.type === "info" && "bg-blue-500/20",
-                          insight.type === "success" && "bg-emerald-500/20",
-                          insight.type === "tip" && "bg-purple-500/20",
-                        )}
-                      >
-                        <Icon
-                          className={cn(
-                            "w-5 h-5",
-                            insight.type === "warning" && "text-amber-500",
-                            insight.type === "info" && "text-blue-500",
-                            insight.type === "success" && "text-emerald-500",
-                            insight.type === "tip" && "text-purple-500",
-                          )}
-                        />
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                        insight.type === "warning" && "bg-amber-500/20",
+                        insight.type === "info" && "bg-blue-500/20",
+                        insight.type === "success" && "bg-emerald-500/20",
+                        insight.type === "tip" && "bg-purple-500/20",
+                      )}>
+                        <Icon className={cn(
+                          "w-5 h-5",
+                          insight.type === "warning" && "text-amber-500",
+                          insight.type === "info" && "text-blue-500",
+                          insight.type === "success" && "text-emerald-500",
+                          insight.type === "tip" && "text-purple-500",
+                        )} />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-foreground">{insight.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{insight.desc}</p>
+                        <p className="font-semibold text-body-sm text-foreground">{insight.title}</p>
+                        <p className="text-body-xs text-muted-foreground mt-1">{insight.desc}</p>
                       </div>
                     </div>
                   </div>
@@ -946,8 +933,8 @@ export default function AnalyticsPage() {
                 <Bell className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-foreground">Alerts & Reminders</h2>
-                <p className="text-sm text-muted-foreground">Important notifications</p>
+                <h2 className="text-h5 font-bold text-foreground">Alerts & Reminders</h2>
+                <p className="text-body-sm text-muted-foreground">Important notifications</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -962,35 +949,31 @@ export default function AnalyticsPage() {
                   )}
                 >
                   <div className="flex gap-3">
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                        alert.type === "warning" && "bg-amber-500/20",
-                        alert.type === "info" && "bg-blue-500/20",
-                        alert.type === "success" && "bg-emerald-500/20",
-                      )}
-                    >
-                      <Bell
-                        className={cn(
-                          "w-5 h-5",
-                          alert.type === "warning" && "text-amber-500",
-                          alert.type === "info" && "text-blue-500",
-                          alert.type === "success" && "text-emerald-500",
-                        )}
-                      />
+                    <div className={cn(
+                      "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
+                      alert.type === "warning" && "bg-amber-500/20",
+                      alert.type === "info" && "bg-blue-500/20",
+                      alert.type === "success" && "bg-emerald-500/20",
+                    )}>
+                      <Bell className={cn(
+                        "w-5 h-5",
+                        alert.type === "warning" && "text-amber-500",
+                        alert.type === "info" && "text-blue-500",
+                        alert.type === "success" && "text-emerald-500",
+                      )} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-sm text-foreground">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{alert.desc}</p>
+                      <p className="font-semibold text-body-sm text-foreground">{alert.title}</p>
+                      <p className="text-body-xs text-muted-foreground mt-1">{alert.desc}</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground self-center" />
                   </div>
                 </div>
               ))}
             </div>
           </Card>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   )
 }
