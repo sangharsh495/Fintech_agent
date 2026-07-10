@@ -99,6 +99,14 @@ export default function SettingsPage() {
     sessionTimeout: "30",
   })
 
+  const [regional, setRegional] = useState({
+    language: "en-in",
+    currency: "INR",
+    timezone: "IST",
+    dateFormat: "dd/mm/yyyy",
+    financialYear: "apr-mar",
+  })
+
   const [linkedAccounts, setLinkedAccounts] = useState([
     { id: 1, name: "HDFC Bank", type: "Savings", number: "XXXX1234", connected: true, icon: Building2 },
     { id: 2, name: "ICICI Bank", type: "Current", number: "XXXX5678", connected: true, icon: Building2 },
@@ -135,6 +143,7 @@ export default function SettingsPage() {
           if (data.preferences.security) setSecurity(s => ({ ...s, ...data.preferences.security }))
           if (data.preferences.privacy) setPrivacy(p => ({ ...p, ...data.preferences.privacy }))
           if (data.preferences.notifications) setNotifications(n => ({ ...n, ...data.preferences.notifications }))
+          if (data.preferences.regional) setRegional(r => ({ ...r, ...data.preferences.regional }))
         }
       })
       .catch((err) => console.error("Error fetching profile:", err))
@@ -170,6 +179,7 @@ export default function SettingsPage() {
           security,
           privacy,
           notifications,
+          regional,
         }
       }
 
@@ -1226,7 +1236,11 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                         <Languages className="w-4 h-4" /> Language
                       </label>
-                      <select className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground">
+                      <select
+                        value={regional.language}
+                        onChange={(e) => setRegional({ ...regional, language: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
+                      >
                         <option value="en">English (US)</option>
                         <option value="en-in">English (India)</option>
                         <option value="hi">हिंदी (Hindi)</option>
@@ -1238,7 +1252,11 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                         <IndianRupee className="w-4 h-4" /> Currency
                       </label>
-                      <select className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground">
+                      <select
+                        value={regional.currency}
+                        onChange={(e) => setRegional({ ...regional, currency: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
+                      >
                         <option value="INR">Indian Rupee (₹)</option>
                         <option value="USD">US Dollar ($)</option>
                         <option value="EUR">Euro (€)</option>
@@ -1249,7 +1267,11 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                         <Clock className="w-4 h-4" /> Timezone
                       </label>
-                      <select className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground">
+                      <select
+                        value={regional.timezone}
+                        onChange={(e) => setRegional({ ...regional, timezone: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
+                      >
                         <option value="IST">IST (UTC+5:30)</option>
                         <option value="EST">EST (UTC-5)</option>
                         <option value="PST">PST (UTC-8)</option>
@@ -1260,7 +1282,11 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                         <Calendar className="w-4 h-4" /> Date Format
                       </label>
-                      <select className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground">
+                      <select
+                        value={regional.dateFormat}
+                        onChange={(e) => setRegional({ ...regional, dateFormat: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
+                      >
                         <option value="dd/mm/yyyy">DD/MM/YYYY</option>
                         <option value="mm/dd/yyyy">MM/DD/YYYY</option>
                         <option value="yyyy-mm-dd">YYYY-MM-DD</option>
@@ -1270,12 +1296,37 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                         <Calendar className="w-4 h-4" /> Financial Year
                       </label>
-                      <select className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground">
+                      <select
+                        value={regional.financialYear}
+                        onChange={(e) => setRegional({ ...regional, financialYear: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
+                      >
                         <option value="apr-mar">April - March (India)</option>
                         <option value="jan-dec">January - December</option>
                         <option value="jul-jun">July - June</option>
                       </select>
                     </div>
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <Button
+                      onClick={handleSave}
+                      className="w-full md:w-auto btn-interactive rounded-xl"
+                      disabled={saveStatus === "saving"}
+                    >
+                      {saveStatus === "saving" ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : saveStatus === "saved" ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Changes Saved!
+                        </>
+                      ) : (
+                        "Save Preferences"
+                      )}
+                    </Button>
                   </div>
                 </Card>
               </div>
