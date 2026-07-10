@@ -559,5 +559,3 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamilies.regular,
   },
 })
-
-export default UploadScreen

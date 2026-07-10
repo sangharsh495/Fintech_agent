@@ -848,5 +848,3 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
 })
-
-export default DashboardScreen
