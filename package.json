@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "test:pipeline": "node --experimental-strip-types scripts/test-pipeline.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
