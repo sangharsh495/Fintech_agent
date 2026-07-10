@@ -1,5 +1,8 @@
-import { speakeasy } from 'speakeasy';
-const prisma = {} as any; // TODO: Replace Prisma with Drizzle ORM
+import speakeasy from 'speakeasy';
+import { db } from '@/server/db';
+import { userTotpSecrets, user2faBackupCodes } from '@/server/db/schema';
+import { eq, and } from 'drizzle-orm';
+import crypto from 'crypto';
 
 export class TOTPService {
   /**
@@ -12,18 +15,19 @@ export class TOTPService {
     });
 
     // Store the secret temporarily (user must verify before it's activated)
-    await prisma.userTOTPSecret.upsert({
-      where: { userId },
-      update: {
-        secret: secret.base32,
-        isVerified: false,
-      },
-      create: {
+    await db.insert(userTotpSecrets)
+      .values({
         userId,
         secret: secret.base32,
         isVerified: false,
-      },
-    });
+      })
+      .onConflictDoUpdate({
+        target: userTotpSecrets.userId,
+        set: {
+          secret: secret.base32,
+          isVerified: false,
+        }
+      });
 
     return {
       secret: secret.base32,
@@ -35,9 +39,10 @@ export class TOTPService {
    * Verify a TOTP token for a user
    */
   static async verifyToken(userId: string, token: string): Promise<boolean> {
-    const userSecret = await prisma.userTOTPSecret.findUnique({
-      where: { userId },
-    });
+    const [userSecret] = await db
+      .select()
+      .from(userTotpSecrets)
+      .where(eq(userTotpSecrets.userId, userId));
 
     if (!userSecret || !userSecret.secret) {
       return false;
@@ -52,10 +57,10 @@ export class TOTPService {
 
     if (verified && !userSecret.isVerified) {
       // Mark as verified on first successful verification
-      await prisma.userTOTPSecret.update({
-        where: { userId },
-        data: { isVerified: true },
-      });
+      await db
+        .update(userTotpSecrets)
+        .set({ isVerified: true })
+        .where(eq(userTotpSecrets.userId, userId));
     }
 
     return verified;
@@ -65,18 +70,17 @@ export class TOTPService {
    * Disable 2FA for a user
    */
   static async disable2FA(userId: string) {
-    await prisma.userTOTPSecret.delete({
-      where: { userId },
-    });
+    await db.delete(userTotpSecrets).where(eq(userTotpSecrets.userId, userId));
   }
 
   /**
    * Check if 2FA is enabled and verified for a user
    */
   static async is2FAEnabled(userId: string): Promise<boolean> {
-    const userSecret = await prisma.userTOTPSecret.findUnique({
-      where: { userId },
-    });
+    const [userSecret] = await db
+      .select()
+      .from(userTotpSecrets)
+      .where(eq(userTotpSecrets.userId, userId));
 
     return !!userSecret?.isVerified;
   }
@@ -90,22 +94,20 @@ export class TOTPService {
       Math.random().toString(36).substring(2, 10).toUpperCase()
     );
 
-    // Hash and store the codes (in practice, you'd bcrypt these)
+    // Hash and store the codes
     const hashedCodes = codes.map(code => 
-      require('crypto').createHash('sha256').update(code).digest('hex')
+      crypto.createHash('sha256').update(code).digest('hex')
     );
 
-    await prisma.user2FABackupCodes.deleteMany({
-      where: { userId }
-    });
+    await db.delete(user2faBackupCodes).where(eq(user2faBackupCodes.userId, userId));
 
-    await prisma.user2FABackupCodes.createMany({
-      data: codes.map((code, index) => ({
+    await db.insert(user2faBackupCodes).values(
+      codes.map((code, index) => ({
         userId,
         code: hashedCodes[index],
         used: false,
       }))
-    });
+    );
 
     return codes;
   }
@@ -114,25 +116,29 @@ export class TOTPService {
    * Verify a backup code
    */
   static async verifyBackupCode(userId: string, code: string): Promise<boolean> {
-    const hashedCode = require('crypto')
+    const hashedCode = crypto
       .createHash('sha256')
       .update(code.toUpperCase())
       .digest('hex');
 
-    const backupCode = await prisma.user2FABackupCodes.findFirst({
-      where: {
-        userId,
-        code: hashedCode,
-        used: false,
-      }
-    });
+    const [backupCode] = await db
+      .select()
+      .from(user2faBackupCodes)
+      .where(
+        and(
+          eq(user2faBackupCodes.userId, userId),
+          eq(user2faBackupCodes.code, hashedCode),
+          eq(user2faBackupCodes.used, false)
+        )
+      )
+      .limit(1);
 
     if (backupCode) {
       // Mark as used
-      await prisma.user2FABackupCodes.update({
-        where: { id: backupCode.id },
-        data: { used: true },
-      });
+      await db
+        .update(user2faBackupCodes)
+        .set({ used: true })
+        .where(eq(user2faBackupCodes.id, backupCode.id));
       return true;
     }
 
