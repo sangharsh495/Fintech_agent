@@ -122,11 +122,11 @@ class OracleAccessControlService {
     return {
       allowed: record.isEnabled,
       model: process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b",
-      maxTokens: record.maxTokensPerRequest,
+      maxTokens: record.maxTokensPerRequest ?? 2000,
       allowedContextTypes: record.allowedContextTypes as string[],
       rateLimit: {
-        requestsPerMinute: record.maxDailyRequests / 24 / 60, // Approximate per-minute from daily
-        tokensPerMinute: record.maxDailyTokens / 24 / 60,
+        requestsPerMinute: (record.maxDailyRequests ?? 50) / 24 / 60, // Approximate per-minute from daily
+        tokensPerMinute: (record.maxDailyTokens ?? 50000) / 24 / 60,
       },
     }
   }
