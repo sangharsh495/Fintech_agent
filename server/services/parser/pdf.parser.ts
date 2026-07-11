@@ -14,6 +14,9 @@ import { extractTransactions } from "./pdf.table"
 import type { PDFParseOptions, ParsedStatementResult, PositionedPage, PositionedTextItem } from "./pdf.types"
 // Removed dependency on pdf.js-extract to avoid worker issues; we now use pdfjs-dist directly.
 
+// Import canvas polyfill FIRST to provide DOMMatrix, Path2D, etc. for pdfjs-dist
+import "./canvas-polyfill"
+
 interface PDFExtractItem {
   str: string
   x: number
@@ -118,6 +121,8 @@ export async function parsePDFStatement(
  * This implementation avoids the worker used by pdf.js-extract, eliminating the need for the optional `dommatrix` polyfill.
  */
 async function extractPages(buffer: Buffer): Promise<PositionedPage[]> {
+  // Canvas polyfill (DOMMatrix, Path2D, etc.) is loaded at module import via ./canvas-polyfill
+
   // Dynamic import to keep bundle size low
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });

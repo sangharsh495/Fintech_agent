@@ -14,6 +14,9 @@ import type { PDFDecryptResult } from "./pdf.types"
 import { detectBank } from "./bank-profiles"
 import type { BankProfile } from "./bank-profiles"
 
+// Import canvas polyfill FIRST to provide DOMMatrix, Path2D, etc. for pdfjs-dist
+import "./canvas-polyfill"
+
 const execFileAsync = promisify(execFile)
 
 // ─── Public API ─────────────────────────────────────────────
@@ -130,6 +133,8 @@ async function tryPdfjsDecrypt(
   password: string
 ): Promise<PDFDecryptResult> {
   try {
+    // Canvas polyfill (DOMMatrix, Path2D, etc.) is loaded at module import via ./canvas-polyfill
+
     // Dynamic import — pdfjs-dist is a heavy dependency,
     // only loaded when qpdf is unavailable
     const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs")

@@ -6,6 +6,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Ensure @napi-rs/canvas (native canvas polyfill for pdfjs-dist) is not bundled
+  // but available as an external dependency in serverless environments (Vercel)
+  serverExternalPackages: ["@napi-rs/canvas"],
   async headers() {
     return [
       {
