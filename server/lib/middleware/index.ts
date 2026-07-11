@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { withErrorHandling, ApiError, ErrorCodes, handleRouteError } from "./error-handler"
 import { withCors, mobileCorsConfig, publicApiCorsConfig, CorsConfig } from "./cors"
 import { withRequestLogging } from "@/server/lib/monitoring/logger"
-import { validateRequest, validateQuery, validateParams, validateBody, commonSchemas } from "./validation"
+import { validateQuery, validateParams, validateBody, commonSchemas } from "./validation"
 import { incrementCounter, recordHistogram, Metrics } from "@/server/lib/monitoring/logger"
 import { getCache, setCache, deleteCache, getOrSetCache, CacheNamespaces, CacheTags, CacheTTL } from "@/server/lib/cache/redis"
 
@@ -40,16 +40,20 @@ const defaultOptions: MiddlewareOptions = {
   metrics: true,
 }
 
+type MiddlewareWrapper = (handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse>) => (req: NextRequest, ...args: any[]) => Promise<NextResponse>
+
 /**
- * Compose multiple middleware functions
+ * Compose multiple middleware wrappers
  */
 function composeMiddleware(
-  handler: (req: NextRequest) => Promise<NextResponse>,
-  middlewares: Array<(req: NextRequest) => Promise<NextResponse>>
-): (req: NextRequest) => Promise<NextResponse> {
-  return middlewares.reduceRight(
-    (next, middleware) => async (req) => middleware(req).then((res) => next(req)),
-    handler
+  handler: (req: NextRequest, context: RouteContext) => Promise<NextResponse>,
+  wrappers: MiddlewareWrapper[]
+): (req: NextRequest, ...args: any[]) => Promise<NextResponse> {
+  // We need to cast the handler to accept any args to satisfy the wrapper signature, 
+  // since the context is passed as an argument.
+  return wrappers.reduceRight(
+    (next, wrapper) => wrapper(next),
+    handler as unknown as (req: NextRequest, ...args: any[]) => Promise<NextResponse>
   )
 }
 
@@ -62,44 +66,53 @@ export function createApiHandler(
 ): (req: NextRequest) => Promise<NextResponse> {
   const config = { ...defaultOptions, ...options }
   
-  const middlewares: Array<(req: NextRequest) => Promise<NextResponse>> = []
+  const wrappers: MiddlewareWrapper[] = []
   
   // 1. Request logging (outermost - captures everything)
   if (config.logging) {
-    middlewares.push(withRequestLogging)
+    wrappers.push(withRequestLogging as unknown as MiddlewareWrapper)
   }
   
   // 2. CORS handling
   if (config.cors !== false) {
     const corsConfig = config.cors || mobileCorsConfig
-    middlewares.push(withCors(async (req) => NextResponse.next(), corsConfig))
+    wrappers.push((next) => (req, ...args) => withCors(next as any, corsConfig)(req) as any)
   }
   
   // 3. Rate limiting (if configured)
   if (config.rateLimit) {
-    middlewares.push(createRateLimitMiddleware(config.rateLimit))
+    wrappers.push(createRateLimitWrapper(config.rateLimit))
   }
   
   // 4. Validation (if configured)
   if (config.validation) {
     if (config.validation.body) {
-      middlewares.push(async (req) => { await validateBody(req, config.validation!.body); return NextResponse.next(); })
+      wrappers.push((next) => async (req, ...args) => {
+        await validateBody(req, config.validation!.body)
+        return next(req, ...args)
+      })
     }
     if (config.validation.query) {
-      middlewares.push(async (req) => { validateQuery(req, config.validation!.query); return NextResponse.next(); })
+      wrappers.push((next) => async (req, ...args) => {
+        validateQuery(req, config.validation!.query)
+        return next(req, ...args)
+      })
     }
     if (config.validation.params) {
-      middlewares.push(async (req) => { validateParams({}, config.validation!.params); return NextResponse.next(); })
+      wrappers.push((next) => async (req, ...args) => {
+        validateParams({}, config.validation!.params)
+        return next(req, ...args)
+      })
     }
   }
   
   // 5. Cache check (if configured)
   if (config.cache) {
-    middlewares.push(createCacheMiddleware(config.cache))
+    wrappers.push(createCacheWrapper(config.cache))
   }
   
-  // Wrap the actual handler with error handling
-  const wrappedHandler = withErrorHandling(async (req: NextRequest) => {
+  // Wrap the actual handler with error handling and context injection
+  const wrappedHandler = withErrorHandling(async (req: NextRequest, ...args: any[]) => {
     const startTime = Date.now()
     
     // Build context object
@@ -160,10 +173,10 @@ export function createApiHandler(
       }
       throw error
     }
-  })
+  }) as unknown as (req: NextRequest, context: RouteContext) => Promise<NextResponse>
   
-  // Apply all middlewares
-  return composeMiddleware(wrappedHandler, middlewares)
+  // Apply all wrappers
+  return composeMiddleware(wrappedHandler, wrappers)
 }
 
 /**
@@ -188,12 +201,12 @@ export interface RouteContext {
 }
 
 /**
- * Create rate limiting middleware
+ * Create rate limiting wrapper
  */
-function createRateLimitMiddleware(config: { max: number; windowMs: number }) {
+function createRateLimitWrapper(config: { max: number; windowMs: number }): MiddlewareWrapper {
   const requests = new Map<string, { count: number; resetTime: number }>()
   
-  return async (req: NextRequest): Promise<NextResponse> => {
+  return (next) => async (req: NextRequest, ...args: any[]): Promise<NextResponse> => {
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
     const key = `ratelimit:${ip}:${new URL(req.url).pathname}`
     const now = Date.now()
@@ -233,8 +246,9 @@ function createRateLimitMiddleware(config: { max: number; windowMs: number }) {
       )
     }
     
+    const response = await next(req, ...args)
+    
     // Add rate limit headers to response
-    const response = NextResponse.next()
     response.headers.set("X-RateLimit-Limit", config.max.toString())
     response.headers.set("X-RateLimit-Remaining", (config.max - record.count).toString())
     response.headers.set("X-RateLimit-Reset", Math.ceil(record.resetTime / 1000).toString())
@@ -244,13 +258,13 @@ function createRateLimitMiddleware(config: { max: number; windowMs: number }) {
 }
 
 /**
- * Create cache middleware
+ * Create cache wrapper
  */
-function createCacheMiddleware(config: { namespace: string; keyGenerator: (req: NextRequest) => string; ttl?: number; tags?: string[] }) {
-  return async (req: NextRequest): Promise<NextResponse> => {
+function createCacheWrapper(config: { namespace: string; keyGenerator: (req: NextRequest) => string; ttl?: number; tags?: string[] }): MiddlewareWrapper {
+  return (next) => async (req: NextRequest, ...args: any[]): Promise<NextResponse> => {
     // Only cache GET requests
     if (req.method !== "GET") {
-      return NextResponse.next()
+      return next(req, ...args)
     }
     
     const key = config.keyGenerator(req)
@@ -263,13 +277,10 @@ function createCacheMiddleware(config: { namespace: string; keyGenerator: (req: 
       return response
     }
     
-    // Continue to handler, cache will be set after
-    const response = NextResponse.next()
+    const response = await next(req, ...args)
     response.headers.set("X-Cache", "MISS")
     response.headers.set("X-Cache-Key", key)
     
-    // We need to intercept the response to cache it
-    // This is a simplified version - in production you'd use a more sophisticated approach
     return response
   }
 }
