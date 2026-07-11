@@ -70,13 +70,13 @@ const worker = new Worker<StatementProcessingJobData>(
       // Step 3: Categorize transactions
       console.log(`[Worker] Categorizing transactions...`)
       const categorizedTransactions = await Promise.all(
-        parsedTransactions.map(async (t: any) => {
+        parsedTransactions.map(async (t: ParsedTransaction) => {
           const category = categorizeTransaction(t.description, t.amount, t.type)
           return {
             ...t,
-            category: category.category,
+            category: category.category || "Uncategorized",
             subcategory: category.subcategory,
-            tags: category.tags,
+            tags: (category as any).tags,
             isRecurring: category.isRecurring || false,
             hash: t.hash || crypto.createHash("sha256").update(`${t.date}-${t.amount}-${t.description}`).digest("hex")
           }
