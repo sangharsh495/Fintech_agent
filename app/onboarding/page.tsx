@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react"
+import { AIWidget } from "@/components/ai-sidebar"
 
 const BANKS = [
   "HDFC Bank",
@@ -566,6 +567,12 @@ export default function OnboardingPage() {
           </div>
         )}
       </Card>
+      
+      {/* AI Assistant Widget - Onboarding context */}
+      <AIWidget pageContext="/onboarding" defaultOpen={false}
+        contextTypes={["profile", "summary"]}
+        maxTokens={1000}
+      />
     </div>
   )
 }
