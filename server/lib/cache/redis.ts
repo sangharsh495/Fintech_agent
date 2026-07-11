@@ -63,7 +63,7 @@ export async function getCache<T>(
     const value = await client.get<string>(key)
     if (value === null) return null
     
-    return deserialize(value)
+    return deserialize(value) as T
   } catch (error) {
     console.error(`Cache get error for key ${key}:`, error)
     return null
@@ -131,7 +131,7 @@ export async function invalidateByTags(tags: string[]): Promise<number> {
   try {
     for (const tag of tags) {
       const tagKey = `finflow:tags:${tag}`
-      const keys = await client.smembers<string>(tagKey)
+      const keys = await client.smembers(tagKey) as string[]
       
       if (keys.length > 0) {
         await client.del(...keys)
@@ -253,12 +253,11 @@ export async function getCacheStats(): Promise<{
   if (!client) return { connected: false }
 
   try {
-    const info = await client.info("memory")
     const dbSize = await client.dbsize()
     
     return {
       connected: true,
-      memoryUsage: info,
+      memoryUsage: "N/A", // Not supported by Upstash Redis SDK directly
       keyCount: dbSize,
     }
   } catch (error) {
