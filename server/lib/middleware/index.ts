@@ -4,7 +4,7 @@ import { withCors, mobileCorsConfig, publicApiCorsConfig, CorsConfig } from "./c
 import { withRequestLogging } from "@/server/lib/monitoring/logger"
 import { validateRequest, validateQuery, validateParams, validateBody, commonSchemas } from "./validation"
 import { incrementCounter, recordHistogram, Metrics } from "@/server/lib/monitoring/logger"
-import { getOrSetCache, CacheNamespaces, CacheTags, CacheTTL } from "@/server/lib/cache/redis"
+import { getCache, setCache, deleteCache, getOrSetCache, CacheNamespaces, CacheTags, CacheTTL } from "@/server/lib/cache/redis"
 
 /**
  * Comprehensive middleware composition for API routes
@@ -14,7 +14,7 @@ import { getOrSetCache, CacheNamespaces, CacheTags, CacheTTL } from "@/server/li
 export interface MiddlewareOptions {
   cors?: CorsConfig | false
   auth?: boolean
-  rateLimit?: { max: number; windowMs: number }
+  rateLimit?: { max: number; windowMs: number } | false
   validation?: {
     body?: any
     query?: any
@@ -83,13 +83,13 @@ export function createApiHandler(
   // 4. Validation (if configured)
   if (config.validation) {
     if (config.validation.body) {
-      middlewares.push(validateBody(config.validation.body))
+      middlewares.push(async (req) => { await validateBody(req, config.validation!.body); return NextResponse.next(); })
     }
     if (config.validation.query) {
-      middlewares.push(validateQuery(config.validation.query))
+      middlewares.push(async (req) => { validateQuery(req, config.validation!.query); return NextResponse.next(); })
     }
     if (config.validation.params) {
-      middlewares.push(validateParams(config.validation.params))
+      middlewares.push(async (req) => { validateParams({}, config.validation!.params); return NextResponse.next(); })
     }
   }
   
@@ -282,7 +282,7 @@ export { getCache, setCache, deleteCache, getOrSetCache, CacheNamespaces, CacheT
 /**
  * Validation helpers (re-exported for convenience)
  */
-export { validateRequest, validateQuery, validateParams, validateBody, commonSchemas } from "./validation"
+export { validateQuery, validateParams, validateBody, commonSchemas } from "./validation"
 export { z } from "zod"
 
 /**
@@ -368,7 +368,7 @@ export const handlers = {
   // POST with body validation
   post: (
     handler: (req: NextRequest, context: RouteContext) => Promise<NextResponse>,
-    options: MiddlewareOptions & { body: any } = {}
+    options: MiddlewareOptions & { body?: any } = {}
   ) => createApiHandler(handler, {
     ...handlerConfigs.protected,
     validation: { body: options.body },
