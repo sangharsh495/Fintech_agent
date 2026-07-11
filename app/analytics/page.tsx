@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import ClusterAnalytics from "@/components/cluster-analytics"
+import { AIWidget } from "@/components/ai-sidebar"
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -432,6 +433,12 @@ export default function AnalyticsPage() {
         </section>
 
       </main>
+      
+      {/* AI Assistant Widget - Analytics context */}
+      <AIWidget pageContext="/analytics" defaultOpen={false}
+        contextTypes={["profile", "transactions", "analytics", "ml-clusters", "full-context"]}
+        maxTokens={4000}
+      />
     </div>
   )
 }
