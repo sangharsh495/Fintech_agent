@@ -3,6 +3,7 @@ import { getSession } from "@/server/lib/get-session"
 import { buildUserContext } from "@/server/services/ai-context.service"
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
+import { oracleAccessControl } from "@/server/services/oracle-access-control.service"
 
 export const dynamic = "force-dynamic"
 
@@ -26,8 +27,55 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { messages, currentPath } = await req.json()
-    const userContext = await buildUserContext(session.user.id, currentPath || "/")
+    const { messages, currentPath, contextTypes, maxTokens } = await req.json()
+    const userId = session.user.id
+    const userEmail = session.user.email || ""
+
+    // Build user context with page-level access control via Oracle Cloud
+    const { context, accessContext, pagePolicy } = await buildUserContext(userId, currentPath || "/", userEmail)
+
+    // Log AI chat access attempt
+    await oracleAccessControl.logAccessAttempt(
+      userId,
+      userEmail,
+      "ai_chat",
+      currentPath || "/",
+      pagePolicy.allowed
+    )
+
+    if (!pagePolicy.allowed) {
+      return NextResponse.json({ 
+        error: "Access to AI chat on this page is restricted", 
+        restrictions: pagePolicy.restrictions 
+      }, { status: 403 })
+    }
+
+    // Verify AI model access
+    const requestedContextTypes = contextTypes || ["profile", "transactions", "tax", "analytics", "summary"]
+    const requestedTokens = maxTokens || pagePolicy.allowedOperations.includes("full-context") ? 4000 : 2000
+    
+    const aiAccess = await oracleAccessControl.verifyAIModelAccess(
+      userId,
+      userEmail,
+      requestedContextTypes,
+      requestedTokens
+    )
+
+    if (!aiAccess.allowed) {
+      return NextResponse.json({ 
+        error: "AI model access denied", 
+        reason: aiAccess.reason 
+      }, { status: 403 })
+    }
+
+    // Check rate limits
+    const rateLimit = await oracleAccessControl.checkRateLimit(userId, requestedTokens)
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ 
+        error: "Rate limit exceeded", 
+        retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+      }, { status: 429 })
+    }
 
     const modelName = process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 
@@ -44,14 +92,40 @@ PROACTIVE FINANCIAL PLANNING DIRECTIVES:
 5. Always keep responses concise, premium, actionable, and formatted in clear bullet points.
 6. Enforce strict privacy: Never discuss other users' data. Keep recommendations private.
 
-${userContext}`,
+PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operations: ${pagePolicy.allowedOperations.join(", ")})
+
+${context}`,
       messages,
-      maxTokens: 1000,
+      maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
     })
 
-    return result.toDataStreamResponse()
+    // Log AI usage for rate limiting and billing
+    const streamResponse = result.toDataStreamResponse()
+    
+    // We need to intercept the stream to count tokens, for now log basic usage
+    // In production, use AI SDK's onFinish callback
+    await oracleAccessControl.logAIUsage(
+      userId,
+      userEmail,
+      modelName,
+      requestedTokens, // Estimate, actual will be counted in production
+      requestedContextTypes,
+      currentPath || "/",
+      true
+    )
+
+    return streamResponse
   } catch (error) {
     console.error("[AI CHAT]", error)
+    await oracleAccessControl.logAIUsage(
+      session.user.id,
+      session.user.email || "",
+      process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b",
+      0,
+      [],
+      currentPath || "/",
+      false
+    )
     return NextResponse.json({ error: "AI service unavailable" }, { status: 500 })
   }
 }
