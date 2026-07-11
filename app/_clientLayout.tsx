@@ -9,6 +9,7 @@ import Navbar from "@/components/navbar"
 import Sidebar from "@/components/sidebar"
 import MobileTabBar from "@/components/mobile-tab-bar"
 import { useIsMobile } from "@/components/ui/use-mobile"
+import LaunchScreen from "@/components/launch-screen"
 
 export default function ClientLayout({
   children,
@@ -18,6 +19,7 @@ export default function ClientLayout({
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [showLaunchScreen, setShowLaunchScreen] = useState(true)
   const isMobile = useIsMobile()
   const pathname = usePathname()
   const { data: session, status } = useSession()
@@ -35,6 +37,12 @@ export default function ClientLayout({
     const savedTheme = localStorage.getItem("theme") || "light"
     setIsDark(savedTheme === "dark")
     document.documentElement.classList.toggle("dark", savedTheme === "dark")
+
+    // Check session storage to only show launch screen once per session
+    const isLaunchComplete = sessionStorage.getItem("launch_complete") === "true"
+    if (isLaunchComplete) {
+      setShowLaunchScreen(false)
+    }
   }, [])
 
   const toggleTheme = () => {
