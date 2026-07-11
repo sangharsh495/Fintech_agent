@@ -4,11 +4,17 @@ import { buildUserContext } from "@/server/services/ai-context.service"
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
 
-// Use custom Oracle Cloud deployment (OpenAI compatible)
-// Fallback to Groq for local testing if variables aren't set
+// Configure OpenAI-compatible provider with Oracle Cloud endpoint
+const endpoint = process.env.ORACLE_AI_ENDPOINT;
+const apiKey = process.env.ORACLE_AI_API_KEY;
+
+if (!endpoint || !apiKey) {
+  console.warn("[AI CHAT] ORACLE_AI_ENDPOINT or ORACLE_AI_API_KEY is not defined in environment variables. Running with local development configuration.");
+}
+
 const aiModel = createOpenAI({
-  baseURL: process.env.ORACLE_AI_ENDPOINT || "https://api.groq.com/openai/v1",
-  apiKey: process.env.ORACLE_AI_API_KEY || process.env.GROQ_API_KEY || "",
+  baseURL: endpoint || "https://api.groq.com/openai/v1",
+  apiKey: apiKey || process.env.GROQ_API_KEY || "",
 })
 
 export async function POST(req: NextRequest) {
@@ -21,17 +27,20 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json()
     const userContext = await buildUserContext(session.user.id)
 
-    const modelName = process.env.ORACLE_AI_MODEL || "llama-3.1-8b-instant"
+    const modelName = process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 
     const result = streamText({
       model: aiModel(modelName),
-      system: `You are FinFlow AI, a personal financial assistant for Indian users.
-You have comprehensive access to the user's real financial data below, including their dashboard metrics, tax estimation, profile settings, and linked bank accounts.
-Give specific, actionable answers using actual numbers from their data.
-For tax questions, reference Indian Income Tax Act sections and use the provided Tax Estimation to give exact figures.
-Format currency as ₹X,XX,XXX (Indian numbering).
-Keep responses concise. Use bullet points for lists.
-Never discuss other users data.
+      system: `You are FinWise AI, a premium personal financial assistant for Indian users.
+You have comprehensive access to the user's real financial context (Profile details, KYC status, Active bank accounts, spending habits, monthly trend metrics, and tax calculation breakdown).
+
+PROACTIVE FINANCIAL PLANNING DIRECTIVES:
+1. Cross-reference the user's tax liability and 80C opportunities with their top spending categories and monthly savings rate.
+2. If they have discretionary spending room (e.g. heavy shopping/entertainment expenses) and remaining 80C limits, suggest channeling a portion of that spend into tax-saving instruments (ELSS, PPF, or LIC) to maximize tax optimization.
+3. Reference specific sections of the Indian Income Tax Act (e.g. Section 80C, 80D, 80CCD(1B)) using exact numbers from their context.
+4. Format all currency amounts as ₹X,XX,XXX (Indian numbering scale).
+5. Always keep responses concise, premium, actionable, and formatted in clear bullet points.
+6. Enforce strict privacy: Never discuss other users' data. Keep recommendations private.
 
 ${userContext}`,
       messages,
