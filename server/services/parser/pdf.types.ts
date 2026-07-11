@@ -1,4 +1,4 @@
-import type { ParsedTransaction } from "./deduplicator"
+export type { ParsedTransaction } from "./deduplicator"
 
 // ─── Statement Metadata ────────────────────────────────────
 
