@@ -96,7 +96,7 @@ export interface ParameterObject {
   style?: string
   explode?: boolean
   allowReserved?: boolean
-  schema?: SchemaObject
+  schema?: SchemaObject | ReferenceObject
   example?: unknown
   examples?: Record<string, ExampleObject>
   content?: Record<string, MediaTypeObject>
@@ -116,7 +116,7 @@ export interface RequestBodyObject {
 }
 
 export interface MediaTypeObject {
-  schema?: SchemaObject
+  schema?: SchemaObject | ReferenceObject
   example?: unknown
   examples?: Record<string, ExampleObject>
   encoding?: Record<string, EncodingObject>
@@ -138,7 +138,7 @@ export interface HeaderObject {
   style?: string
   explode?: boolean
   allowReserved?: boolean
-  schema?: SchemaObject
+  schema?: SchemaObject | ReferenceObject
   example?: unknown
   examples?: Record<string, ExampleObject>
 }
@@ -228,6 +228,7 @@ export interface SchemaObject {
   anyOf?: (SchemaObject | ReferenceObject)[]
   not?: SchemaObject | ReferenceObject
   items?: SchemaObject | ReferenceObject
+  format?: string
   properties?: Record<string, SchemaObject | ReferenceObject>
   additionalProperties?: boolean | SchemaObject | ReferenceObject
   required?: string[]
@@ -246,9 +247,9 @@ export interface SchemaObject {
   default?: unknown
   multipleOf?: number
   maximum?: number
-  exclusiveMaximum?: number
+  exclusiveMaximum?: number | boolean
   minimum?: number
-  exclusiveMinimum?: number
+  exclusiveMinimum?: number | boolean
   maxLength?: number
   minLength?: number
   pattern?: string
@@ -402,7 +403,7 @@ export function zodToOpenAPI(schema: z.ZodSchema, name?: string): SchemaObject {
     
     case "ZodUnion": {
       return {
-        anyOf: def.options.map((opt) => zodToOpenAPI(opt)),
+        anyOf: def.options.map((opt: any) => zodToOpenAPI(opt)),
       }
     }
     
