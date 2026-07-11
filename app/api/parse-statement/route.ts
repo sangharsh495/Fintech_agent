@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
+    const formData = (await req.formData()) as FormData;
     const file = formData.get("file") as File | null;
 
     if (!file) {
