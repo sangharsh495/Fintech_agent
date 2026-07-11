@@ -6,6 +6,7 @@ import DashboardCharts from "@/components/dashboard-charts"
 import { TrendingUp, AlertCircle, PieChart, ArrowUpRight, Wallet, DollarSign, BarChart3, Target } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { AIWidget } from "@/components/ai-sidebar"
 
 interface DashboardData {
   totalBalance: number
