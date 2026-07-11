@@ -1,818 +1,2469 @@
 # Professional UI/UX Design Guide
-## Industry Standard Design System for Fintech Application
+## Industry-Standard Design System Implementation
 
 ---
 
 ## 📋 TABLE OF CONTENTS
-1. [Design Philosophy](#-design-philosophy)
-2. [Color System](#-color-system)
-3. [Typography](#-typography)
-4. [Spacing & Layout](#-spacing--layout)
-5. [Component Dimensions](#-component-dimensions)
-6. [Page Layouts](#-page-layouts)
-7. [Responsive Design](#-responsive-design)
-8. [Accessibility Standards](#-accessibility-standards)
-9. [Interaction Patterns](#-interaction-patterns)
-10. [Implementation Checklist](#-implementation-checklist)
+1. [Design Philosophy](#design-philosophy)
+2. [Layout System](#layout-system)
+3. [Component Architecture](#component-architecture)
+4. [Page-Specific Designs](#page-specific-designs)
+5. [User Experience Guidelines](#user-experience-guidelines)
+6. [Accessibility Standards](#accessibility-standards)
+7. [Responsive Design Rules](#responsive-design-rules)
 
 ---
 
 ## 🎨 DESIGN PHILOSOPHY
 
 ### Core Principles
-- **Clarity First**: Every element must have a clear purpose
-- **Consistency**: Unified experience across all pages
-- **Accessibility**: WCAG 2.1 AA compliance minimum
-- **Performance**: Optimized for fast loading and smooth interactions
-- **Modern Aesthetics**: Clean, professional fintech appearance
+- **Consistency**: Uniform patterns across all pages
+- **Clarity**: Clear hierarchy and purpose for every element
+- **Efficiency**: Minimal clicks to complete tasks
+- **Aesthetics**: Professional, modern, trustworthy
+- **Accessibility**: WCAG 2.1 AA compliance
 
-### Design Tokens Strategy
-- 8px base grid system
-- Fluid typography with responsive scaling
-- OKLCH color space for better color consistency
-- Elevation-based shadow system
-
----
-
-## 🎨 COLOR SYSTEM
-
-### Primary Palette
-```css
-/* Primary Brand Colors */
---primary-500: oklch(0.45 0.24 260)  /* Main brand color */
---primary-600: oklch(0.40 0.22 260)  /* Darker variant */
---primary-400: oklch(0.50 0.26 260)  /* Lighter variant */
---primary-300: oklch(0.55 0.28 260)  /* Lightest variant */
-
-/* Semantic Colors */
---success: oklch(0.65 0.20 142)     /* Green - Success states */
---warning: oklch(0.77 0.18 70)      /* Orange - Warning states */
---error: oklch(0.58 0.24 27)        /* Red - Error states */
---info: oklch(0.55 0.18 210)        /* Blue - Info states */
-```
-
-### Surface Colors
-```css
-/* Light Mode */
---surface-primary: oklch(1 0 0)       /* Pure white */
---surface-secondary: oklch(0.98 0.01 30)
---surface-tertiary: oklch(0.96 0.01 30)
-
-/* Dark Mode */
---surface-primary-dark: oklch(0.16 0.02 30)
---surface-secondary-dark: oklch(0.20 0.02 30)
---surface-tertiary-dark: oklch(0.24 0.02 30)
-```
-
-### Usage Guidelines
-- **Primary Actions**: Use --primary-500 for buttons, links
-- **Secondary Actions**: Use --secondary-500 for less important actions
-- **Success States**: Green for completed actions, positive balance
-- **Warning States**: Orange for attention-required items
-- **Error States**: Red for errors, destructive actions
-- **Neutral Backgrounds**: Use surface colors for cards, containers
+### Design Tokens Usage
+All designs use the existing `lib/design-system.ts` tokens:
+- **Colors**: OKLCH-based semantic palette
+- **Spacing**: 8px base scale
+- **Typography**: Fluid scaling system
+- **Border Radius**: 4-32px scale
+- **Shadows**: Elevation-based system
 
 ---
 
-## 📝 TYPOGRAPHY
+## 🏗️ LAYOUT SYSTEM
 
-### Font Families
-```css
---font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif
---font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace
---font-numeric: 'Roboto Mono', 'JetBrains Mono', monospace
-```
-
-### Type Scale (Fluid Responsive)
-
-#### Display (Hero/Title)
-```css
---text-display-xl: clamp(2.5rem, 5vw, 4.5rem)  /* 40px → 72px */
---text-display-lg: clamp(2rem, 4vw, 3.5rem)    /* 32px → 56px */
---text-display-md: clamp(1.75rem, 3.5vw, 3rem) /* 28px → 48px */
---text-display-sm: clamp(1.5rem, 3vw, 2.25rem)  /* 24px → 36px */
-```
-
-#### Headings
-```css
---text-h1: clamp(1.75rem, 3vw, 2.5rem)    /* 28px → 40px */
---text-h2: clamp(1.5rem, 2.5vw, 2rem)     /* 24px → 32px */
---text-h3: clamp(1.25rem, 2vw, 1.5rem)    /* 20px → 24px */
---text-h4: clamp(1.125rem, 1.8vw, 1.25rem) /* 18px → 20px */
---text-h5: clamp(1rem, 1.5vw, 1.125rem)   /* 16px → 18px */
---text-h6: clamp(0.875rem, 1.2vw, 1rem)   /* 14px → 16px */
-```
-
-#### Body
-```css
---text-body-xl: clamp(1.125rem, 1vw, 1.25rem) /* 18px → 20px */
---text-body-lg: clamp(1rem, 0.8vw, 1.125rem)  /* 16px → 18px */
---text-body-md: clamp(0.875rem, 0.6vw, 1rem) /* 14px → 16px */
---text-body-sm: clamp(0.8125rem, 0.5vw, 0.875rem) /* 13px → 14px */
---text-body-xs: clamp(0.75rem, 0.4vw, 0.8125rem) /* 12px → 13px */
-```
-
-#### Numeric (For financial data)
-```css
---text-numeric-xl: clamp(2rem, 3.5vw, 2.5rem)   /* 32px → 40px */
---text-numeric-lg: clamp(1.5rem, 2.5vw, 1.75rem) /* 24px → 28px */
---text-numeric-md: clamp(1.25rem, 2vw, 1.5rem)  /* 20px → 24px */
---text-numeric-sm: clamp(1rem, 1.5vw, 1.125rem) /* 16px → 18px */
-```
-
-### Font Weights
-```css
---font-light: 300
---font-normal: 400
---font-medium: 500
---font-semibold: 600
---font-bold: 700
---font-extrabold: 800
-```
-
-### Line Heights
-```css
---leading-tight: 1.1
---leading-snug: 1.25
---leading-normal: 1.5
---leading-relaxed: 1.625
---leading-loose: 2
-```
-
-### Letter Spacing
-```css
---tracking-tighter: -0.05em
---tracking-tight: -0.025em
---tracking-normal: 0
---tracking-wide: 0.025em
---tracking-wider: 0.05em
---tracking-widest: 0.1em
-```
-
----
-
-## 📏 SPACING & LAYOUT
-
-### Base Grid: 8px System
-```css
-:root {
-  --space-0: 0;
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-7: 1.75rem;  /* 28px */
-  --space-8: 2rem;     /* 32px */
-  --space-9: 2.25rem;  /* 36px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-11: 2.75rem; /* 44px */
-  --space-12: 3rem;    /* 48px */
-  --space-14: 3.5rem;  /* 56px */
-  --space-16: 4rem;    /* 64px */
-  --space-20: 5rem;    /* 80px */
-  --space-24: 6rem;    /* 96px */
+### 1. Grid System
+```typescript
+// 12-column grid with 8px base
+const Grid = {
+  columns: 12,
+  gutter: DesignTokens.spacing.md, // 16px
+  margin: DesignTokens.layout.containerPadding,
+  maxWidth: DesignTokens.layout.maxWidth.xl, // 1280px
 }
 ```
 
-### Layout Containers
-```css
-/* Mobile: 20px padding */
---container-mobile: 1.25rem /* 20px */
-
-/* Tablet: 24px padding */
---container-tablet: 1.5rem /* 24px */
-
-/* Desktop: 32px padding */
---container-desktop: 2rem /* 32px */
-
-/* Wide: 48px padding */
---container-wide: 3rem /* 48px */
+### 2. Page Structure
 ```
-
-### Section Spacing
-```css
-/* Vertical rhythm */
---section-gap-mobile: 2rem /* 32px */
---section-gap-tablet: 3rem /* 48px */
---section-gap-desktop: 4rem /* 64px */
-```
-
-### Component Spacing
-```css
---component-gap-xs: 0.5rem /* 8px */
---component-gap-sm: 0.75rem /* 12px */
---component-gap-md: 1rem /* 16px */
---component-gap-lg: 1.25rem /* 20px */
---component-gap-xl: 1.5rem /* 24px */
-```
-
----
-
-## 🪟 COMPONENT DIMENSIONS
-
-### Buttons
-```css
-/* Heights */
---button-height-xs: 2rem /* 32px */
---button-height-sm: 2.5rem /* 40px */
---button-height-md: 3rem /* 48px */
---button-height-lg: 3.5rem /* 56px */
---button-height-xl: 4rem /* 64px */
-
-/* Icon Button Sizes */
---button-icon-xs: 2rem /* 32px */
---button-icon-sm: 2.5rem /* 40px */
---button-icon-md: 3rem /* 48px */
---button-icon-lg: 3.5rem /* 56px */
-
-/* Padding */
---button-padding-horizontal-xs: 0.75rem /* 12px */
---button-padding-horizontal-sm: 1rem /* 16px */
---button-padding-horizontal-md: 1.5rem /* 24px */
---button-padding-horizontal-lg: 2rem /* 32px */
---button-padding-horizontal-xl: 2.5rem /* 40px */
-```
-
-### Form Inputs
-```css
-/* Heights */
---input-height-xs: 2.25rem /* 36px */
---input-height-sm: 2.5rem /* 40px */
---input-height-md: 3rem /* 48px */
---input-height-lg: 3.5rem /* 56px */
-
-/* Padding */
---input-padding-vertical-xs: 0.5rem /* 8px */
---input-padding-vertical-sm: 0.75rem /* 12px */
---input-padding-vertical-md: 1rem /* 16px */
---input-padding-vertical-lg: 1.25rem /* 20px */
-
---input-padding-horizontal: 1rem /* 16px */
-```
-
-### Cards
-```css
-/* Border Radius */
---card-radius-sm: 0.5rem /* 8px */
---card-radius-md: 0.75rem /* 12px */
---card-radius-lg: 1rem /* 16px */
---card-radius-xl: 1.25rem /* 20px */
-
-/* Padding */
---card-padding-xs: 0.75rem /* 12px */
---card-padding-sm: 1rem /* 16px */
---card-padding-md: 1.25rem /* 20px */
---card-padding-lg: 1.5rem /* 24px */
---card-padding-xl: 2rem /* 32px */
-
-/* Shadows */
---card-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05)
---card-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)
---card-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)
---card-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)
---card-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)
-```
-
-### Avatars
-```css
-/* Sizes */
---avatar-xs: 1.5rem /* 24px */
---avatar-sm: 2rem /* 32px */
---avatar-md: 2.5rem /* 40px */
---avatar-lg: 3rem /* 48px */
---avatar-xl: 4rem /* 64px */
---avatar-2xl: 5rem /* 80px */
---avatar-3xl: 7.5rem /* 120px */
-```
-
-### Icons
-```css
-/* Sizes */
---icon-xs: 0.75rem /* 12px */
---icon-sm: 1rem /* 16px */
---icon-md: 1.25rem /* 20px */
---icon-lg: 1.5rem /* 24px */
---icon-xl: 1.75rem /* 28px */
---icon-2xl: 2rem /* 32px */
---icon-3xl: 2.5rem /* 40px */
-```
-
-### Touch Targets (Mobile-First)
-```css
-/* Minimum touch target: 44x44px (iOS) */
---touch-minimum: 2.75rem /* 44px */
-
-/* Comfortable touch target: 48x48px */
---touch-comfortable: 3rem /* 48px */
-
-/* Generous touch target: 56x56px */
---touch-generous: 3.5rem /* 56px */
-```
-
----
-
-## 🏗️ PAGE LAYOUTS
-
-### 1. Authentication Pages (Login, Signup, OTP)
-```css
-Layout Structure:
 ┌─────────────────────────────────────────────────────────┐
-│                    HEADER (Optional)                     │
+│                    HEADER (56-64px)                     │
 ├─────────────────────────────────────────────────────────┤
-│                                                         │
-│      ┌─────────────────────────────────────────────┐    │
-│      │                                             │    │
-│      │            AUTH FORM CONTAINER             │    │
-│      │    ┌─────────────────────────────────┐     │    │
-│      │    │                                     │     │    │
-│      │    │   LOGO/ILLUSTRATION (80px-120px)│     │    │
-│      │    │                                     │     │    │
-│      │    │   TITLE (H1 - 28px-40px)         │     │    │
-│      │    │   SUBTITLE (Body LG - 16px-18px) │     │    │
-│      │    │                                     │     │    │
-│      │    │   FORM FIELDS (48px height)      │     │    │
-│      │    │   - Label (14px, Medium)         │     │    │
-│      │    │   - Input (48px tall)            │     │    │
-│      │    │   - Helper Text (12px-13px)      │     │    │
-│      │    │   - Gap: 16px between fields     │     │    │
-│      │    │                                     │     │    │
-│      │    │   PRIMARY BUTTON (48px-56px)     │     │    │
-│      │    │   SECONDARY LINK (14px-16px)      │     │    │
-│      │    │                                     │     │    │
-│      │    │   DIVIDER (1px line, 16px margin)│     │    │
-│      │    │   SOCIAL LOGIN BUTTONS           │     │    │
-│      │    └─────────────────────────────────┘     │    │
-│      │                                             │    │
-│      └─────────────────────────────────────────────┘    │
-│                                                         │
-│                    FOOTER LINKS (Optional)              │
-└─────────────────────────────────────────────────────────┘
-
-Dimensions:
-- Container Max Width: 480px (for mobile, full width - 20px padding)
-- Form Width: 100% of container
-- Illustration Size: 80px-120px (responsive)
-- Form Field Height: 48px (56px for touch devices)
-- Button Height: 48px (minimum)
-- Vertical Gap: 16px between form elements
-- Page Padding: 20px (mobile), 24px (tablet+)
+│  SIDEBAR (288px)  │  MAIN CONTENT (flexible)          │
+│  - Collapsible    │  - Min width: 320px               │
+│  - Sticky         │  - Max width: 1280px              │
+│                   │  - Auto-scroll                    │
+└─────────────────┴──────────────────────────────────────┘
+                    TAB BAR (88px mobile)
 ```
 
-### 2. Dashboard Layout
-```css
-Layout Structure:
-┌─────────────────────────────────────────────────────────────────┐
-│                        HEADER (64px)                            │
-│  ┌─────────────┐  ┌──────────────────────────┐  ┌────────────┐ │
-│  │ LOGO (32x32)│  │ SEARCH BAR (40px height)  │  │ AVATAR     │ │
-│  └─────────────┘  └──────────────────────────┘  └────────────┘ │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────────────┐  ┌──────────────────────────────────┐ │
-│  │                      │  │                                  │ │
-│  │   SIDEBAR (288px)    │  │         MAIN CONTENT            │ │
-│  │                      │  │                                  │ │
-│  │  ┌────────────────┐  │  │  ┌──────────────────────────┐  │ │
-│  │  │ NAV ITEM       │  │  │  │ PAGE HEADER              │  │ │
-│  │  │ - Icon (20x20) │  │  │  │ - Title (H1 - 32px)      │  │ │
-│  │  │ - Label (14px) │  │  │  │ - Description (16px)     │  │ │
-│  │  │ - Height: 44px │  │  │  │ - Actions (Buttons)      │  │ │
-│  │  └────────────────┘  │  │  └──────────────────────────┘  │ │
-│  │                      │  │                                  │ │
-│  │  ┌────────────────┐  │  │  ┌──────────────────────────┐  │ │
-│  │  │ ACTIVE NAV ITEM│  │  │  │ CONTENT SECTIONS          │  │ │
-│  │  │ - Primary color │  │  │  │ - Cards (16px radius)    │  │ │
-│  │  │ - Height: 44px  │  │  │  │ - Gap: 24px between       │  │ │
-│  │  └────────────────┘  │  │  │ - Padding: 24px inside    │  │ │
-│  │                      │  │  └──────────────────────────┘  │ │
-│  │  ┌────────────────┐  │  │                                  │ │
-│  │  │ SECTION HEADER │  │  │                                  │ │
-│  │  │ (12px, Upper)  │  │  │                                  │ │
-│  │  └────────────────┘  │  │                                  │ │
-│  │                      │  │                                  │ │
-│  └──────────────────────┘  └──────────────────────────────────┘ │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+### 3. Spacing Rules
+```typescript
+// Vertical Rhythm
+const verticalSpacing = {
+  sectionToSection: DesignTokens.spacing.section.desktop, // 64px
+  componentToComponent: DesignTokens.spacing.lg, // 24px
+  elementToElement: DesignTokens.spacing.md, // 16px
+  tight: DesignTokens.spacing.sm, // 8px
+}
 
-Dimensions:
-- Header Height: 64px (desktop), 56px (mobile)
-- Sidebar Width: 288px (default), 200px (compact), 64px (collapsed)
-- Main Content Width: Calc(100% - 288px)
-- Page Padding: 32px (desktop), 24px (tablet), 20px (mobile)
-- Card Radius: 16px
-- Card Padding: 24px
-- Gap Between Cards: 24px
-- Navigation Item Height: 44px (minimum touch target)
-```
-
-### 3. Data Dashboard (Analytics, Reports)
-```css
-Layout Structure:
-┌─────────────────────────────────────────────────────────┐
-│                    PAGE HEADER                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ TITLE (H1 - 32px-48px)                            │   │
-│  │ DESCRIPTION (Body LG - 16px-18px)                 │   │
-│  │ ACTIONS (Primary Button + Secondary Button)       │   │
-│  └──────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ FILTERS / CONTROLS                               │   │
-│  │ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ │   │
-│  │ │ Date Range  │ │ Category    │ │ Search      │ │   │
-│  │ │ (40px)      │ │ (40px)      │ │ (40px)      │ │   │
-│  │ └─────────────┘ └─────────────┘ └─────────────┘ │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────┐  ┌──────────────────────────┐  │
-│  │                      │  │                          │  │
-│  │   STATS CARDS        │  │   MAIN CHART             │  │
-│  │   (Grid: 1-4 cols)   │  │   (60-70% width)         │  │
-│  │                      │  │                          │  │
-│  │  ┌────────────┐      │  │  ┌────────────────────┐  │  │
-│  │  │ STAT CARD  │      │  │  │ Chart Container     │  │  │
-│  │  │ - Value    │      │  │  │ - Height: 300-400px │  │  │
-│  │  │   (32px-48px)│     │  │  │ - Padding: 24px     │  │  │
-│  │  │ - Label    │      │  │  │ - Radius: 16px      │  │  │
-│  │  │   (14px-16px)│     │  │  └────────────────────┘  │  │
-│  │  │ - Icon     │      │  │                          │  │
-│  │  │   (24x24)  │      │  │                          │  │
-│  │  └────────────┘      │  │                          │  │
-│  │                      │  │                          │  │
-│  └──────────────────────┘  └──────────────────────────┘  │
-│                                                         │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ DETAILED TABLE / LIST                            │   │
-│  │ ┌─────────────────────────────────────────────┐ │   │
-│  │ │ HEADER ROW (14px-16px, Semibold)             │ │   │
-│  │ ├─────────────────────────────────────────────┤ │   │
-│  │ │ DATA ROWS (14px-16px)                         │ │   │
-│  │ │ - Height: 56px per row                       │ │   │
-│  │ │ - Padding: 16px horizontal, 12px vertical   │ │   │
-│  │ └─────────────────────────────────────────────┘ │   │
-│  │ PAGINATION (Below table)                       │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-
-Dimensions:
-- Stats Grid: 1 column (mobile), 2 columns (tablet), 4 columns (desktop)
-- Chart Container: 100% width (mobile), 60-70% width (desktop)
-- Chart Height: 300px (mobile), 400px (desktop)
-- Table Row Height: 56px
-- Table Header: 14px-16px, Semibold
-- Table Cell: 14px-16px
-```
-
-### 4. Form Pages (Onboarding, Settings)
-```css
-Layout Structure:
-┌─────────────────────────────────────────────────────────┐
-│                    PAGE HEADER                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ TITLE (H1 - 28px-36px)                            │   │
-│  │ DESCRIPTION (Body MD - 14px-16px)                 │   │
-│  └──────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ FORM CONTAINER                                   │   │
-│  │ Max Width: 768px (centered)                       │   │
-│  │                                                         │
-│  │  ┌────────────────────────────────────────────┐  │   │
-│  │  │ FORM SECTION                                 │  │   │
-│  │  │ ┌──────────────────────────────────────┐    │  │   │
-│  │  │ │ SECTION HEADER (H2 - 20px-24px)      │    │  │   │
-│  │  │ │ SECTION DESCRIPTION (14px-16px)      │    │  │   │
-│  │  │ └──────────────────────────────────────┘    │  │   │
-│  │  │                                              │  │   │
-│  │  │ ┌──────────────────────────────────────┐    │  │   │
-│  │  │ │ FORM GROUP                             │    │  │   │
-│  │  │ │ ┌────────────────────────────────┐   │    │  │   │
-│  │  │ │ │ LABEL (14px, Medium)            │   │    │  │   │
-│  │  │ │ INPUT (48px height)               │   │    │  │   │
-│  │  │ │ HELPER TEXT (12px-13px)          │   │    │  │   │
-│  │  │ │ ERROR MESSAGE (12px-13px, Red)   │   │    │  │   │
-│  │  │ │                                      │   │    │  │   │
-│  │  │ │ Gap between fields: 20px          │   │    │  │   │
-│  │  │ │ Gap between groups: 24px          │   │    │  │   │
-│  │  │ └────────────────────────────────┘   │    │  │   │
-│  │  │                                              │  │   │
-│  │  │ ┌──────────────────────────────────────┐    │  │   │
-│  │  │ │ ACTION BUTTONS                       │    │  │   │
-│  │  │ │ - Primary: 48px-56px height         │    │  │   │
-│  │  │ │ - Secondary: 48px-56px height       │    │  │   │
-│  │  │ │ - Gap: 12px-16px                    │    │  │   │
-│  │  │ └──────────────────────────────────────┘    │  │   │
-│  │  └────────────────────────────────────────────┘  │   │
-│  │                                                         │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-
-Dimensions:
-- Form Container Max Width: 768px
-- Section Gap: 32px (mobile), 48px (desktop)
-- Form Group Gap: 24px
-- Field Gap: 20px
-- Input Height: 48px (56px for touch)
-- Label Size: 14px, Medium weight
-- Helper/Error Text: 12px-13px
-```
-
-### 5. Upload/Processing Pages
-```css
-Layout Structure:
-┌─────────────────────────────────────────────────────────┐
-│                    PAGE HEADER                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ TITLE (H1 - 28px-36px)                            │   │
-│  │ DESCRIPTION (Body MD - 14px-16px)                 │   │
-│  └──────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ UPLOAD ZONE                                       │   │
-│  │ ┌─────────────────────────────────────────────┐ │   │
-│  │ │                                                 │ │   │
-│  │ │  ┌─────────────────────────────────────┐     │ │   │
-│  │ │  │                                     │     │ │   │
-│  │ │  │    DRAG & DROP AREA                   │     │ │   │
-│  │ │  │    (Min Height: 200px)               │     │ │   │
-│  │ │  │                                     │     │ │   │
-│  │ │  │    ICON (48x48)                       │     │ │   │
-│  │ │  │    TITLE (18px-20px, Bold)           │     │ │   │
-│  │ │  │    SUBTITLE (14px-16px, Muted)       │     │ │   │
-│  │ │  │                                     │     │ │   │
-│  │ │  │    BUTTON (48px height)              │     │ │   │
-│  │ │  │    "Select Files"                    │     │ │   │
-│  │ │  │                                     │     │ │   │
-│  │ │  └─────────────────────────────────────┘     │ │   │
-│  │ │                                                 │ │   │
-│  │ │    Border: 2px dashed (Primary color)         │ │   │
-│  │ │    Radius: 16px                                  │ │   │
-│  │ │    Background: Surface Secondary               │ │   │
-│  │ └─────────────────────────────────────────────┘ │   │
-│  │                                                         │
-│  │ FILE LIST (Below upload zone)                       │   │
-│  │ ┌─────────────────────────────────────────────┐ │   │
-│  │ │ FILE ITEM (56px height)                      │ │   │
-│  │ │ - Icon (24x24)                                 │ │   │
-│  │ │ - Name (14px-16px)                             │ │   │
-│  │ │ - Size (12px-13px, Muted)                     │ │   │
-│  │ │ - Status (12px-13px)                          │ │   │
-│  │ │ - Actions (Icon buttons)                      │ │   │
-│  │ └─────────────────────────────────────────────┘ │   │
-│  │                                                         │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ PROCESSING STATUS (When active)                  │   │
-│  │ ┌─────────────────────────────────────────────┐ │   │
-│  │ │ PROGRESS BAR (4px height)                    │ │   │
-│  │ │ STATUS TEXT (14px-16px)                      │ │   │
-│  │ │ ESTIMATED TIME (12px-13px, Muted)            │ │   │
-│  │ └─────────────────────────────────────────────┘ │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-
-Dimensions:
-- Upload Zone Min Height: 200px (mobile), 250px (desktop)
-- Upload Zone Border Radius: 16px
-- Upload Zone Border: 2px dashed
-- File Item Height: 56px
-- Progress Bar Height: 4px
-```
-
-### 6. Calculator Pages
-```css
-Layout Structure:
-┌─────────────────────────────────────────────────────────┐
-│                    PAGE HEADER                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ TITLE (H1 - 28px-36px)                            │   │
-│  │ SUBTITLE (Body MD - 14px-16px)                    │   │
-│  └──────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌────────────────────────────────┐  ┌────────────────┐ │
-│  │                                    │                  │ │
-│  │   INPUTS SECTION                  │   RESULTS        │ │
-│  │   (40-50% width)                  │   (50-60% width) │ │
-│  │                                    │                  │ │
-│  │  ┌────────────────────────────┐  │  ┌────────────┐ │ │
-│  │  │ INPUT GROUP                 │  │  │ RESULT CARD│ │ │
-│  │  │ ┌──────────────────────┐   │  │  │            │ │ │
-│  │  │ │ LABEL (14px, Medium)  │   │  │  │ TITLE      │ │ │
-│  │  │ │ INPUT (48px)          │   │  │  │ (16px-18px)│ │ │
-│  │  │ │ SLIDER (Optional)     │   │  │  │            │ │ │
-│  │  │ │ VALUE DISPLAY         │   │  │  │ VALUE     │ │ │
-│  │  │ │ (24px-32px, Bold)     │   │  │  │ (32px-48px)│ │ │
-│  │  │ └──────────────────────┘   │  │  │            │ │ │
-│  │  │                              │  │  │ BREAKDOWN  │ │ │
-│  │  │ Gap: 20px between inputs    │  │  │ (Optional) │ │ │
-│  │  └────────────────────────────┘  │  │  │            │ │ │
-│  │                                    │  │  └────────────┘ │ │
-│  │  ┌────────────────────────────┐  │  │                  │ │
-│  │  │ ACTION BUTTONS               │  │  │ CHART       │ │ │
-│  │  │ - Calculate (Primary)       │  │  │ (Optional)  │ │ │
-│  │  │ - Reset (Secondary)         │  │  │             │ │ │
-│  │  └────────────────────────────┘  │  │             │ │ │
-│  │                                    │  │             │ │ │
-│  └────────────────────────────────┘  └────────────────┘ │
-│                                                         │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ DETAILED BREAKDOWN (Optional)                    │   │
-│  │ ┌─────────────────────────────────────────────┐ │   │
-│  │ │ TABLE / LIST (56px per row)                 │ │   │
-│  │ └─────────────────────────────────────────────┘ │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-
-Dimensions:
-- Inputs Section: 40-50% width (desktop), 100% (mobile)
-- Results Section: 50-60% width (desktop), 100% (mobile)
-- Input Height: 48px
-- Input Label: 14px, Medium
-- Value Display: 24px-32px, Bold
-- Result Value: 32px-48px, Bold
-- Chart Height: 200px-300px
-- Gap Between Inputs: 20px
+// Horizontal Alignment
+const horizontalSpacing = {
+  containerPadding: DesignTokens.layout.containerPadding.desktop, // 32px
+  componentPadding: DesignTokens.componentSizes.card.md, // 20px
+}
 ```
 
 ---
 
-## 📱 RESPONSIVE DESIGN
+## 🧩 COMPONENT ARCHITECTURE
 
-### Breakpoints
-```css
-/* Mobile-first approach */
-:root {
-  --breakpoint-mobile: 0px;
-  --breakpoint-mobile-sm: 320px;
-  --breakpoint-mobile-md: 375px;
-  --breakpoint-mobile-lg: 428px;
-  --breakpoint-tablet: 640px;
-  --breakpoint-laptop: 1024px;
-  --breakpoint-desktop: 1280px;
-  --breakpoint-wide: 1536px;
-}
-```
+### 1. Card System
+All content containers follow this structure:
 
-### Media Queries
-```css
-/* Mobile (Default) */
-@media screen { ... }
-
-/* Tablet and up */
-@media (min-width: 640px) { ... }
-
-/* Laptop and up */
-@media (min-width: 1024px) { ... }
-
-/* Desktop and up */
-@media (min-width: 1280px) { ... }
-
-/* Wide screens */
-@media (min-width: 1536px) { ... }
-```
-
-### Responsive Layout Patterns
-
-#### 1. Stack to Row
-```css
-/* Mobile: Stacked */
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Desktop: Side by side */
-@media (min-width: 1024px) {
-  .container {
-    flex-direction: row;
-    gap: 2rem;
+```typescript
+// Standard Card Dimensions
+const Card = {
+  borderRadius: DesignTokens.borderRadius.card, // 16px
+  shadow: DesignTokens.shadows.web.md,
+  padding: {
+    xs: DesignTokens.componentSizes.card.xs, // 12px
+    sm: DesignTokens.componentSizes.card.sm, // 16px
+    md: DesignTokens.componentSizes.card.md, // 20px
+    lg: DesignTokens.componentSizes.card.lg, // 24px
+  },
+  // Variants
+  variants: {
+    default: {
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+    },
+    elevated: {
+      background: DesignTokens.colors.card,
+      shadow: DesignTokens.shadows.web.lg,
+      border: '1px solid ' + DesignTokens.colors.border,
+    },
+    glass: {
+      background: DesignTokens.glass.light.background,
+      backdropFilter: `blur(${DesignTokens.glass.light.blur}px)`,
+      border: '1px solid ' + DesignTokens.glass.light.border,
+    },
   }
 }
 ```
 
-#### 2. Grid Columns
-```css
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-```
-
-#### 3. Hide/Show Elements
-```css
-/* Mobile: Show hamburger, hide desktop nav */
-.hamburger { display: block; }
-.desktop-nav { display: none; }
-
-@media (min-width: 1024px) {
-  .hamburger { display: none; }
-  .desktop-nav { display: block; }
-}
-```
-
-#### 4. Font Size Scaling
-```css
-.title {
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-}
-```
-
-#### 5. Container Width
-```css
-.container {
-  width: 100%;
-  padding: 0 1.25rem; /* 20px mobile */
-  margin: 0 auto;
-}
-
-@media (min-width: 640px) {
-  .container {
-    padding: 0 1.5rem; /* 24px tablet */
-    max-width: 640px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 2rem; /* 32px desktop */
-    max-width: 1024px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1280px;
+### 2. Button System
+```typescript
+const Button = {
+  // Sizes
+  sizes: {
+    xs: { height: 32, padding: '0 12px', fontSize: DesignTokens.typography.scale.body.xs },
+    sm: { height: 40, padding: '0 16px', fontSize: DesignTokens.typography.scale.body.sm },
+    md: { height: 48, padding: '0 20px', fontSize: DesignTokens.typography.scale.body.md },
+    lg: { height: 56, padding: '0 24px', fontSize: DesignTokens.typography.scale.body.lg },
+  },
+  // Variants
+  variants: {
+    primary: {
+      background: DesignTokens.colors.primary,
+      color: DesignTokens.colors.primaryForeground,
+      hover: DesignTokens.colors.primary,
+      opacity: 0.9,
+    },
+    secondary: {
+      background: DesignTokens.colors.secondary,
+      color: DesignTokens.colors.secondaryForeground,
+      border: '1px solid ' + DesignTokens.colors.border,
+    },
+    outline: {
+      background: 'transparent',
+      color: DesignTokens.colors.foreground,
+      border: '1px solid ' + DesignTokens.colors.border,
+    },
+    ghost: {
+      background: 'transparent',
+      color: DesignTokens.colors.foreground,
+    },
+    destructive: {
+      background: DesignTokens.colors.destructive,
+      color: DesignTokens.colors.destructiveForeground,
+    },
+  },
+  // States
+  states: {
+    disabled: { opacity: 0.5, cursor: 'not-allowed' },
+    loading: { opacity: 0.7, cursor: 'wait' },
+  },
+  // Touch Targets
+  touchTarget: {
+    minimum: DesignTokens.componentSizes.touchTarget.minimum, // 44px
+    comfortable: DesignTokens.componentSizes.touchTarget.comfortable, // 48px
   }
 }
 ```
 
-### Touch vs Desktop Considerations
-
-#### Touch Targets
-```css
-/* Minimum 44x44px for touch */
-.touch-button {
-  min-width: 2.75rem; /* 44px */
-  min-height: 2.75rem; /* 44px */
-}
-
-/* Comfortable 48x48px */
-.touch-button-comfortable {
-  min-width: 3rem; /* 48px */
-  min-height: 3rem; /* 48px */
-}
-```
-
-#### Hover States
-```css
-/* Desktop only hover effects */
-@media (hover: hover) {
-  .button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+### 3. Form Components
+```typescript
+const Form = {
+  input: {
+    height: {
+      xs: 36,
+      sm: 40,
+      md: 48,
+      lg: 56,
+    },
+    padding: '0 14px',
+    borderRadius: DesignTokens.borderRadius.input, // 12px
+    border: '1px solid ' + DesignTokens.colors.input,
+    background: DesignTokens.colors.background,
+    // States
+    focus: {
+      borderColor: DesignTokens.colors.ring,
+      boxShadow: DesignTokens.shadows.web.primarySm,
+    },
+    error: {
+      borderColor: DesignTokens.colors.destructive,
+    },
+    disabled: {
+      background: DesignTokens.colors.muted,
+      opacity: 0.6,
+    },
+  },
+  label: {
+    fontSize: DesignTokens.typography.scale.body.sm,
+    fontWeight: DesignTokens.typography.fontWeights.medium,
+    color: DesignTokens.colors.foreground,
+    marginBottom: DesignTokens.spacing.xs, // 4px
+  },
+  helperText: {
+    fontSize: DesignTokens.typography.scale.body.xs,
+    color: DesignTokens.colors.mutedForeground,
+    marginTop: DesignTokens.spacing.xs, // 4px
+  },
+  // Spacing between form elements
+  spacing: {
+    vertical: DesignTokens.spacing.md, // 16px
+    horizontal: DesignTokens.spacing.lg, // 24px
   }
 }
 ```
 
-#### Focus States
-```css
-/* Always show focus for keyboard navigation */
-.button:focus-visible {
-  outline: 2px solid var(--primary-500);
-  outline-offset: 2px;
+### 4. Typography Hierarchy
+```typescript
+const Typography = {
+  // Headings
+  h1: {
+    fontSize: DesignTokens.typography.scale.heading.h1,
+    fontWeight: DesignTokens.typography.fontWeights.bold,
+    lineHeight: DesignTokens.typography.lineHeights.tight,
+    letterSpacing: DesignTokens.typography.letterSpacing.tighter,
+    color: DesignTokens.colors.foreground,
+    marginBottom: DesignTokens.spacing.lg, // 24px
+  },
+  h2: {
+    fontSize: DesignTokens.typography.scale.heading.h2,
+    fontWeight: DesignTokens.typography.fontWeights.semibold,
+    lineHeight: DesignTokens.typography.lineHeights.snug,
+    color: DesignTokens.colors.foreground,
+    marginBottom: DesignTokens.spacing.md, // 16px
+  },
+  h3: {
+    fontSize: DesignTokens.typography.scale.heading.h3,
+    fontWeight: DesignTokens.typography.fontWeights.semibold,
+    lineHeight: DesignTokens.typography.lineHeights.normal,
+    color: DesignTokens.colors.foreground,
+    marginBottom: DesignTokens.spacing.sm, // 8px
+  },
+  // Body
+  body: {
+    lg: {
+      fontSize: DesignTokens.typography.scale.body.lg,
+      lineHeight: DesignTokens.typography.lineHeights.relaxed,
+      color: DesignTokens.colors.foreground,
+    },
+    md: {
+      fontSize: DesignTokens.typography.scale.body.md,
+      lineHeight: DesignTokens.typography.lineHeights.normal,
+      color: DesignTokens.colors.foreground,
+    },
+    sm: {
+      fontSize: DesignTokens.typography.scale.body.sm,
+      lineHeight: DesignTokens.typography.lineHeights.snug,
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+  // Special
+  numeric: {
+    xl: {
+      fontSize: DesignTokens.typography.scale.numeric.xl,
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      fontVariantNumeric: 'tabular-nums',
+      color: DesignTokens.colors.foreground,
+    },
+  },
+  code: {
+    fontFamily: DesignTokens.typography.fontFamilies.mono,
+    fontSize: DesignTokens.typography.scale.body.sm,
+    background: DesignTokens.colors.muted,
+    padding: '2px 6px',
+    borderRadius: DesignTokens.borderRadius.xs,
+  },
+}
+```
+
+---
+
+## 📄 PAGE-SPECIFIC DESIGNS
+
+### 1. Dashboard Page (`app/page.tsx`)
+```typescript
+// Layout Structure
+const DashboardLayout = {
+  // Header
+  header: {
+    height: DesignTokens.layout.header.desktop, // 64px
+    background: DesignTokens.colors.background,
+    borderBottom: '1px solid ' + DesignTokens.colors.border,
+    padding: `0 ${DesignTokens.layout.containerPadding.desktop}px`,
+    // Navigation items spacing
+    navItemSpacing: DesignTokens.spacing.lg, // 24px
+  },
+
+  // Hero Section
+  hero: {
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+    maxWidth: DesignTokens.layout.maxWidth.xl, // 1280px
+    margin: '0 auto',
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.display.lg.desktop, // 72px
+      fontWeight: DesignTokens.typography.fontWeights.extrabold,
+      lineHeight: DesignTokens.typography.lineHeights.tight,
+      marginBottom: DesignTokens.spacing.md, // 16px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+      maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+      marginBottom: DesignTokens.spacing.xl, // 32px
+    },
+  },
+
+  // Stats Grid
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: DesignTokens.spacing.lg, // 24px
+    marginBottom: DesignTokens.spacing.section.desktop, // 64px
+    // Stat Card
+    statCard: {
+      padding: DesignTokens.componentSizes.card.lg, // 24px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon.xl, // 28px
+        marginBottom: DesignTokens.spacing.sm, // 8px
+        color: DesignTokens.colors.primary,
+      },
+      // Value
+      value: {
+        fontSize: DesignTokens.typography.scale.numeric.lg.desktop, // 40px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        color: DesignTokens.colors.foreground,
+        marginBottom: DesignTokens.spacing.xs, // 4px
+      },
+      // Label
+      label: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+  },
+
+  // Features Section
+  features: {
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+    // Section Header
+    sectionHeader: {
+      textAlign: 'center',
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+    },
+    // Features Grid
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+      gap: DesignTokens.spacing.lg, // 24px
+      // Feature Card
+      card: {
+        padding: DesignTokens.componentSizes.card.lg, // 24px
+        borderRadius: DesignTokens.borderRadius.card, // 16px
+        background: DesignTokens.colors.card,
+        border: '1px solid ' + DesignTokens.colors.border,
+        transition: `transform ${DesignTokens.animation.duration.normal}ms ${DesignTokens.animation.easing.easeOut}`,
+        hover: {
+          transform: 'translateY(-4px)',
+          boxShadow: DesignTokens.shadows.web.lg,
+        },
+        // Icon
+        icon: {
+          size: DesignTokens.componentSizes.icon['2xl'], // 32px
+          marginBottom: DesignTokens.spacing.sm, // 8px
+          color: DesignTokens.colors.primary,
+        },
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+          fontWeight: DesignTokens.typography.fontWeights.semibold,
+          marginBottom: DesignTokens.spacing.sm, // 8px
+        },
+        // Description
+        description: {
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          color: DesignTokens.colors.mutedForeground,
+          lineHeight: DesignTokens.typography.lineHeights.relaxed,
+        },
+      },
+    },
+  },
+
+  // CTA Section
+  cta: {
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+    background: DesignTokens.colors.primary,
+    color: DesignTokens.colors.primaryForeground,
+    borderRadius: DesignTokens.borderRadius['3xl'], // 32px
+    margin: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+    textAlign: 'center',
+    // Content
+    content: {
+      maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+      margin: '0 auto',
+      padding: DesignTokens.spacing.xl, // 32px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Description
+      description: {
+        fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+        marginBottom: DesignTokens.spacing.xl, // 32px
+        opacity: 0.9,
+      },
+    },
+    // Button
+    button: {
+      size: 'lg',
+      variant: 'secondary',
+      minWidth: 200,
+    },
+  },
+}
+```
+
+### 2. Analytics Page (`app/analytics/page.tsx`)
+```typescript
+const AnalyticsLayout = {
+  // Header
+  header: {
+    marginBottom: DesignTokens.spacing.lg, // 24px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.xs, // 4px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.lg.desktop, // 18px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // Filter Bar
+  filterBar: {
+    display: 'flex',
+    gap: DesignTokens.spacing.md, // 16px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    // Filter Input
+    filterInput: {
+      flex: 1,
+      minWidth: 240,
+    },
+    // Date Range Picker
+    dateRange: {
+      width: 320,
+    },
+  },
+
+  // Charts Grid
+  chartsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(12, 1fr)',
+    gap: DesignTokens.spacing.lg, // 24px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Chart Card (spans 12 columns on mobile, 6 on tablet, 4 on desktop)
+    chartCard: {
+      gridColumn: {
+        mobile: 'span 12',
+        tablet: 'span 6',
+        desktop: 'span 4',
+      },
+      padding: DesignTokens.componentSizes.card.md, // 20px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+      // Header
+      header: {
+        marginBottom: DesignTokens.spacing.md, // 16px
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h4.desktop, // 18px
+          fontWeight: DesignTokens.typography.fontWeights.semibold,
+          marginBottom: DesignTokens.spacing.xs, // 4px
+        },
+        // Subtitle
+        subtitle: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+        },
+      },
+      // Chart Container
+      chart: {
+        height: 280,
+        position: 'relative',
+      },
+    },
+  },
+
+  // Data Table
+  dataTable: {
+    background: DesignTokens.colors.card,
+    borderRadius: DesignTokens.borderRadius.card, // 16px
+    border: '1px solid ' + DesignTokens.colors.border,
+    overflow: 'hidden',
+    // Header
+    header: {
+      background: DesignTokens.colors.muted,
+      padding: DesignTokens.spacing.md, // 16px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+      },
+    },
+    // Table
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      // Header Row
+      headerRow: {
+        background: DesignTokens.colors.muted,
+        // Cell
+        cell: {
+          padding: DesignTokens.spacing.md, // 16px
+          textAlign: 'left',
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          fontWeight: DesignTokens.typography.fontWeights.medium,
+          color: DesignTokens.colors.mutedForeground,
+          borderBottom: '1px solid ' + DesignTokens.colors.border,
+        },
+      },
+      // Body Row
+      bodyRow: {
+        borderBottom: '1px solid ' + DesignTokens.colors.border,
+        transition: `background ${DesignTokens.animation.duration.fast}ms`,
+        hover: {
+          background: DesignTokens.colors.muted,
+        },
+        // Cell
+        cell: {
+          padding: DesignTokens.spacing.md, // 16px
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          color: DesignTokens.colors.foreground,
+        },
+      },
+    },
+    // Pagination
+    pagination: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: DesignTokens.spacing.md, // 16px
+      gap: DesignTokens.spacing.sm, // 8px
+    },
+  },
+}
+```
+
+### 3. Upload Page (`app/upload/page.tsx`)
+```typescript
+const UploadLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Header
+  header: {
+    textAlign: 'center',
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // Upload Zone
+  uploadZone: {
+    border: `2px dashed ${DesignTokens.colors.border}`,
+    borderRadius: DesignTokens.borderRadius.card, // 16px
+    padding: DesignTokens.spacing.xl, // 32px
+    textAlign: 'center',
+    background: DesignTokens.colors.muted,
+    marginBottom: DesignTokens.spacing.lg, // 24px
+    transition: `all ${DesignTokens.animation.duration.normal}ms`,
+    // States
+    hover: {
+      borderColor: DesignTokens.colors.primary,
+      background: DesignTokens.colors.primary,
+      color: DesignTokens.colors.primaryForeground,
+    },
+    active: {
+      borderColor: DesignTokens.colors.primary,
+      background: DesignTokens.colors.primary,
+      color: DesignTokens.colors.primaryForeground,
+      opacity: 0.9,
+    },
+    disabled: {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
+    // Icon
+    icon: {
+      size: DesignTokens.componentSizes.icon['3xl'], // 40px
+      marginBottom: DesignTokens.spacing.md, // 16px
+      color: DesignTokens.colors.primary,
+    },
+    // Label
+    label: {
+      fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+      fontWeight: DesignTokens.typography.fontWeights.semibold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Description
+    description: {
+      fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // File List
+  fileList: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // File Item
+    fileItem: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: DesignTokens.spacing.md, // 16px
+      background: DesignTokens.colors.card,
+      borderRadius: DesignTokens.borderRadius.md, // 12px
+      border: '1px solid ' + DesignTokens.colors.border,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon.lg, // 24px
+        marginRight: DesignTokens.spacing.md, // 16px
+        color: DesignTokens.colors.primary,
+      },
+      // Info
+      info: {
+        flex: 1,
+        // Name
+        name: {
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          fontWeight: DesignTokens.typography.fontWeights.medium,
+          marginBottom: DesignTokens.spacing.xs, // 4px
+        },
+        // Size
+        size: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+        },
+      },
+      // Status
+      status: {
+        marginLeft: DesignTokens.spacing.md, // 16px
+      },
+      // Actions
+      actions: {
+        display: 'flex',
+        gap: DesignTokens.spacing.sm, // 8px
+        marginLeft: DesignTokens.spacing.md, // 16px
+      },
+    },
+  },
+
+  // Progress
+  progress: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Overall Progress
+    overall: {
+      marginBottom: DesignTokens.spacing.lg, // 24px
+      // Label
+      label: {
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        fontWeight: DesignTokens.typography.fontWeights.medium,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Bar
+      bar: {
+        height: 8,
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.muted,
+        overflow: 'hidden',
+        // Fill
+        fill: {
+          height: '100%',
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.primary,
+          transition: `width ${DesignTokens.animation.duration.slow}ms ${DesignTokens.animation.easing.easeOut}`,
+        },
+      },
+      // Percentage
+      percentage: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+        marginTop: DesignTokens.spacing.xs, // 4px
+      },
+    },
+    // File Progress
+    fileProgress: {
+      marginBottom: DesignTokens.spacing.sm, // 8px
+      // Container
+      container: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: DesignTokens.spacing.md, // 16px
+      },
+      // Name
+      name: {
+        flex: 1,
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+      },
+      // Bar
+      bar: {
+        width: 160,
+        height: 6,
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.muted,
+        overflow: 'hidden',
+        // Fill
+        fill: {
+          height: '100%',
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.primary,
+        },
+      },
+      // Percentage
+      percentage: {
+        width: 50,
+        fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+        color: DesignTokens.colors.mutedForeground,
+        textAlign: 'right',
+      },
+    },
+  },
+
+  // Actions
+  actions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: DesignTokens.spacing.md, // 16px
+    marginTop: DesignTokens.spacing.xl, // 32px
+  },
+}
+```
+
+### 4. AI Chat Page (`app/ai-ca/page.tsx`)
+```typescript
+const AIChatLayout = {
+  // Container
+  container: {
+    display: 'flex',
+    height: 'calc(100vh - 64px)', // Full viewport minus header
+    maxWidth: DesignTokens.layout.maxWidth.xl, // 1280px
+    margin: '0 auto',
+    borderRadius: DesignTokens.borderRadius.card, // 16px
+    border: '1px solid ' + DesignTokens.colors.border,
+    overflow: 'hidden',
+    background: DesignTokens.colors.card,
+  },
+
+  // Sidebar
+  sidebar: {
+    width: DesignTokens.layout.sidebar.default, // 288px
+    background: DesignTokens.colors.background,
+    borderRight: '1px solid ' + DesignTokens.colors.border,
+    padding: DesignTokens.spacing.lg, // 24px
+    // Header
+    header: {
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Subtitle
+      subtitle: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+    // New Chat Button
+    newChatButton: {
+      width: '100%',
+      marginBottom: DesignTokens.spacing.xl, // 32px
+    },
+    // Chat History
+    chatHistory: {
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        fontWeight: DesignTokens.typography.fontWeights.medium,
+        color: DesignTokens.colors.mutedForeground,
+        marginBottom: DesignTokens.spacing.md, // 16px
+        textTransform: 'uppercase',
+        letterSpacing: DesignTokens.typography.letterSpacing.wide,
+      },
+      // List
+      list: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: DesignTokens.spacing.sm, // 8px
+        maxHeight: 'calc(100% - 200px)',
+        overflowY: 'auto',
+      },
+      // History Item
+      historyItem: {
+        padding: DesignTokens.spacing.md, // 16px
+        borderRadius: DesignTokens.borderRadius.md, // 12px
+        cursor: 'pointer',
+        transition: `background ${DesignTokens.animation.duration.fast}ms`,
+        // States
+        hover: {
+          background: DesignTokens.colors.muted,
+        },
+        active: {
+          background: DesignTokens.colors.primary,
+          color: DesignTokens.colors.primaryForeground,
+        },
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          fontWeight: DesignTokens.typography.fontWeights.normal,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+        // Date
+        date: {
+          fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+          color: DesignTokens.colors.mutedForeground,
+          marginTop: DesignTokens.spacing.xs, // 4px
+        },
+      },
+    },
+  },
+
+  // Main Chat Area
+  mainChat: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    // Header
+    header: {
+      padding: DesignTokens.spacing.lg, // 24px
+      borderBottom: '1px solid ' + DesignTokens.colors.border,
+      background: DesignTokens.colors.background,
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+      },
+    },
+    // Messages
+    messages: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: DesignTokens.spacing.xl, // 32px
+      display: 'flex',
+      flexDirection: 'column',
+      gap: DesignTokens.spacing.md, // 16px
+      // Message
+      message: {
+        maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+        padding: DesignTokens.spacing.md, // 16px
+        borderRadius: DesignTokens.borderRadius.lg, // 16px
+        // User Message
+        user: {
+          alignSelf: 'flex-end',
+          background: DesignTokens.colors.primary,
+          color: DesignTokens.colors.primaryForeground,
+          borderTopRightRadius: DesignTokens.borderRadius.xs, // 4px
+        },
+        // Assistant Message
+        assistant: {
+          alignSelf: 'flex-start',
+          background: DesignTokens.colors.muted,
+          color: DesignTokens.colors.foreground,
+          borderTopLeftRadius: DesignTokens.borderRadius.xs, // 4px
+        },
+        // Content
+        content: {
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          lineHeight: DesignTokens.typography.lineHeights.relaxed,
+          // Code Block
+          codeBlock: {
+            background: DesignTokens.colors.background,
+            padding: DesignTokens.spacing.md, // 16px
+            borderRadius: DesignTokens.borderRadius.md, // 12px
+            margin: `${DesignTokens.spacing.md}px 0`, // 16px
+            overflowX: 'auto',
+            fontFamily: DesignTokens.typography.fontFamilies.mono,
+            fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+            // Header
+            header: {
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: DesignTokens.spacing.sm, // 8px
+              // Language
+              language: {
+                fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+                color: DesignTokens.colors.mutedForeground,
+              },
+              // Copy Button
+              copyButton: {
+                padding: DesignTokens.spacing.xs, // 4px
+                fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+              },
+            },
+          },
+          // Link
+          link: {
+            color: DesignTokens.colors.primary,
+            textDecoration: 'underline',
+            fontWeight: DesignTokens.typography.fontWeights.medium,
+          },
+        },
+        // Timestamp
+        timestamp: {
+          fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+          color: DesignTokens.colors.mutedForeground,
+          marginTop: DesignTokens.spacing.sm, // 8px
+          display: 'flex',
+          justifyContent: 'flex-end',
+        },
+      },
+    },
+    // Input Area
+    inputArea: {
+      padding: DesignTokens.spacing.xl, // 32px
+      borderTop: '1px solid ' + DesignTokens.colors.border,
+      background: DesignTokens.colors.background,
+      // Container
+      container: {
+        maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+        margin: '0 auto',
+        display: 'flex',
+        gap: DesignTokens.spacing.md, // 16px
+        alignItems: 'flex-end',
+      },
+      // Input
+      input: {
+        flex: 1,
+        minHeight: 48,
+        maxHeight: 160,
+        padding: DesignTokens.spacing.md, // 16px
+        borderRadius: DesignTokens.borderRadius.input, // 12px
+        border: '1px solid ' + DesignTokens.colors.input,
+        background: DesignTokens.colors.card,
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        resize: 'none',
+        // Placeholder
+        placeholder: {
+          color: DesignTokens.colors.mutedForeground,
+        },
+        // Focus
+        focus: {
+          borderColor: DesignTokens.colors.ring,
+          boxShadow: DesignTokens.shadows.web.primarySm,
+          outline: 'none',
+        },
+      },
+      // Send Button
+      sendButton: {
+        height: 48,
+        width: 48,
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.primary,
+        color: DesignTokens.colors.primaryForeground,
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: `transform ${DesignTokens.animation.duration.fast}ms, background ${DesignTokens.animation.duration.fast}ms`,
+        // States
+        hover: {
+          background: DesignTokens.colors.primary,
+          opacity: 0.9,
+          transform: 'scale(1.05)',
+        },
+        disabled: {
+          background: DesignTokens.colors.muted,
+          color: DesignTokens.colors.mutedForeground,
+          cursor: 'not-allowed',
+          opacity: 0.5,
+        },
+        // Icon
+        icon: {
+          size: DesignTokens.componentSizes.icon.md, // 20px
+        },
+      },
+    },
+  },
+}
+```
+
+### 5. Calculators Page (`app/calculators/page.tsx`)
+```typescript
+const CalculatorsLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.xl, // 1280px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Header
+  header: {
+    textAlign: 'center',
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+      maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+      margin: '0 auto',
+    },
+  },
+
+  // Calculator Grid
+  calculatorGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gap: DesignTokens.spacing.lg, // 24px
+    // Calculator Card
+    calculatorCard: {
+      padding: DesignTokens.componentSizes.card.lg, // 24px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+      transition: `transform ${DesignTokens.animation.duration.normal}ms, box-shadow ${DesignTokens.animation.duration.normal}ms`,
+      cursor: 'pointer',
+      // States
+      hover: {
+        transform: 'translateY(-4px)',
+        boxShadow: DesignTokens.shadows.web.lg,
+      },
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon['2xl'], // 32px
+        marginBottom: DesignTokens.spacing.md, // 16px
+        color: DesignTokens.colors.primary,
+      },
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Description
+      description: {
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        color: DesignTokens.colors.mutedForeground,
+        lineHeight: DesignTokens.typography.lineHeights.relaxed,
+        marginBottom: DesignTokens.spacing.md, // 16px
+      },
+      // Tag
+      tag: {
+        display: 'inline-block',
+        padding: `${DesignTokens.spacing.xs}px ${DesignTokens.spacing.sm}px`, // 4px 8px
+        borderRadius: DesignTokens.borderRadius.chip, // 20px
+        fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+        fontWeight: DesignTokens.typography.fontWeights.medium,
+        background: DesignTokens.colors.primary,
+        color: DesignTokens.colors.primaryForeground,
+      },
+    },
+  },
+
+  // Featured Calculator
+  featuredCalculator: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Container
+    container: {
+      display: 'grid',
+      gridTemplateColumns: {
+        mobile: '1fr',
+        tablet: '1fr 1fr',
+      },
+      gap: DesignTokens.spacing.xl, // 32px
+      padding: DesignTokens.componentSizes.card.xl, // 32px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.primary,
+      color: DesignTokens.colors.primaryForeground,
+      border: '1px solid ' + DesignTokens.colors.primary,
+    },
+    // Content
+    content: {
+      // Label
+      label: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        fontWeight: DesignTokens.typography.fontWeights.medium,
+        color: 'rgba(255, 255, 255, 0.8)',
+        marginBottom: DesignTokens.spacing.sm, // 8px
+        textTransform: 'uppercase',
+        letterSpacing: DesignTokens.typography.letterSpacing.wide,
+      },
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.md, // 16px
+      },
+      // Description
+      description: {
+        fontSize: DesignTokens.typography.scale.body.lg.desktop, // 18px
+        lineHeight: DesignTokens.typography.lineHeights.relaxed,
+        opacity: 0.9,
+        marginBottom: DesignTokens.spacing.xl, // 32px
+      },
+      // Button
+      button: {
+        size: 'lg',
+        variant: 'secondary',
+      },
+    },
+    // Image
+    image: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon['3xl'], // 40px
+      },
+    },
+  },
+
+  // Categories
+  categories: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.xl, // 32px
+    },
+    // Grid
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+      gap: DesignTokens.spacing.md, // 16px
+    },
+    // Category Card
+    categoryCard: {
+      padding: DesignTokens.componentSizes.card.md, // 20px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+      transition: `transform ${DesignTokens.animation.duration.normal}ms`,
+      cursor: 'pointer',
+      // States
+      hover: {
+        transform: 'translateY(-2px)',
+        boxShadow: DesignTokens.shadows.web.md,
+      },
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon.xl, // 28px
+        marginBottom: DesignTokens.spacing.sm, // 8px
+        color: DesignTokens.colors.primary,
+      },
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h4.desktop, // 18px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+      },
+      // Count
+      count: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+        marginTop: DesignTokens.spacing.xs, // 4px
+      },
+    },
+  },
+}
+
+const CalculatorFormLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Header
+  header: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Back Button
+    backButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: DesignTokens.spacing.xs, // 4px
+      padding: `${DesignTokens.spacing.sm}px ${DesignTokens.spacing.md}px`, // 8px 16px
+      borderRadius: DesignTokens.borderRadius.md, // 12px
+      border: '1px solid ' + DesignTokens.colors.border,
+      background: DesignTokens.colors.card,
+      fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+      fontWeight: DesignTokens.typography.fontWeights.medium,
+      color: DesignTokens.colors.foreground,
+      cursor: 'pointer',
+      transition: `background ${DesignTokens.animation.duration.fast}ms`,
+      // States
+      hover: {
+        background: DesignTokens.colors.muted,
+      },
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon.sm, // 16px
+      },
+    },
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+      marginTop: DesignTokens.spacing.md, // 16px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // Form
+  form: {
+    background: DesignTokens.colors.card,
+    borderRadius: DesignTokens.borderRadius.card, // 16px
+    border: '1px solid ' + DesignTokens.colors.border,
+    padding: DesignTokens.spacing.xl, // 32px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Field
+    field: {
+      marginBottom: DesignTokens.spacing.lg, // 24px
+      // Label
+      label: {
+        display: 'block',
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        fontWeight: DesignTokens.typography.fontWeights.medium,
+        color: DesignTokens.colors.foreground,
+        marginBottom: DesignTokens.spacing.xs, // 4px
+      },
+      // Input
+      input: {
+        width: '100%',
+        padding: DesignTokens.spacing.md, // 16px
+        borderRadius: DesignTokens.borderRadius.input, // 12px
+        border: '1px solid ' + DesignTokens.colors.input,
+        background: DesignTokens.colors.background,
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        transition: `border-color ${DesignTokens.animation.duration.fast}ms, box-shadow ${DesignTokens.animation.duration.fast}ms`,
+        // States
+        focus: {
+          borderColor: DesignTokens.colors.ring,
+          boxShadow: DesignTokens.shadows.web.primarySm,
+          outline: 'none',
+        },
+        error: {
+          borderColor: DesignTokens.colors.destructive,
+        },
+      },
+      // Helper Text
+      helperText: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+        marginTop: DesignTokens.spacing.xs, // 4px
+      },
+      // Error Text
+      errorText: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.destructive,
+        marginTop: DesignTokens.spacing.xs, // 4px
+      },
+      // Select
+      select: {
+        width: '100%',
+        padding: DesignTokens.spacing.md, // 16px
+        borderRadius: DesignTokens.borderRadius.input, // 12px
+        border: '1px solid ' + DesignTokens.colors.input,
+        background: DesignTokens.colors.background,
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        cursor: 'pointer',
+        // States
+        focus: {
+          borderColor: DesignTokens.colors.ring,
+          boxShadow: DesignTokens.shadows.web.primarySm,
+          outline: 'none',
+        },
+      },
+      // Checkbox
+      checkbox: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: DesignTokens.spacing.sm, // 8px
+        marginBottom: DesignTokens.spacing.xs, // 4px
+        // Input
+        input: {
+          width: DesignTokens.componentSizes.icon.md, // 20px
+          height: DesignTokens.componentSizes.icon.md, // 20px
+          borderRadius: DesignTokens.borderRadius.xs, // 4px
+          border: '1px solid ' + DesignTokens.colors.border,
+          appearance: 'none',
+          cursor: 'pointer',
+          transition: `background ${DesignTokens.animation.duration.fast}ms, border-color ${DesignTokens.animation.duration.fast}ms`,
+          // States
+          checked: {
+            background: DesignTokens.colors.primary,
+            borderColor: DesignTokens.colors.primary,
+          },
+          focus: {
+            outline: `2px solid ${DesignTokens.colors.ring}`,
+            outlineOffset: 2,
+          },
+        },
+        // Label
+        label: {
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          color: DesignTokens.colors.foreground,
+          cursor: 'pointer',
+        },
+      },
+      // Radio Group
+      radioGroup: {
+        display: 'flex',
+        gap: DesignTokens.spacing.lg, // 24px
+        marginBottom: DesignTokens.spacing.xs, // 4px
+        // Radio
+        radio: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: DesignTokens.spacing.sm, // 8px
+          // Input
+          input: {
+            width: DesignTokens.componentSizes.icon.md, // 20px
+            height: DesignTokens.componentSizes.icon.md, // 20px
+            borderRadius: DesignTokens.borderRadius.full,
+            border: '1px solid ' + DesignTokens.colors.border,
+            appearance: 'none',
+            cursor: 'pointer',
+            transition: `background ${DesignTokens.animation.duration.fast}ms, border-color ${DesignTokens.animation.duration.fast}ms`,
+            // States
+            checked: {
+              background: DesignTokens.colors.primary,
+              borderColor: DesignTokens.colors.primary,
+            },
+          },
+          // Label
+          label: {
+            fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+            color: DesignTokens.colors.foreground,
+            cursor: 'pointer',
+          },
+        },
+      },
+      // Slider
+      slider: {
+        width: '100%',
+        height: 6,
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.muted,
+        outline: 'none',
+        margin: `${DesignTokens.spacing.md}px 0`, // 16px
+        // Thumb
+        thumb: {
+          width: DesignTokens.componentSizes.icon.lg, // 24px
+          height: DesignTokens.componentSizes.icon.lg, // 24px
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.primary,
+          cursor: 'pointer',
+          transition: `transform ${DesignTokens.animation.duration.fast}ms`,
+          // States
+          hover: {
+            transform: 'scale(1.1)',
+          },
+          active: {
+            transform: 'scale(1.2)',
+          },
+        },
+        // Value Display
+        valueDisplay: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+          marginTop: DesignTokens.spacing.xs, // 4px
+        },
+      },
+    },
+  },
+
+  // Results
+  results: {
+    background: DesignTokens.colors.card,
+    borderRadius: DesignTokens.borderRadius.card, // 16px
+    border: '1px solid ' + DesignTokens.colors.border,
+    padding: DesignTokens.spacing.xl, // 32px
+    // Header
+    header: {
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Subtitle
+      subtitle: {
+        fontSize: DesignTokens.typography.scale.body.lg.desktop, // 18px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+    // Result Grid
+    resultGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+      gap: DesignTokens.spacing.lg, // 24px
+      // Result Card
+      resultCard: {
+        padding: DesignTokens.componentSizes.card.md, // 20px
+        borderRadius: DesignTokens.borderRadius.md, // 12px
+        background: DesignTokens.colors.background,
+        // Label
+        label: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+          marginBottom: DesignTokens.spacing.xs, // 4px
+        },
+        // Value
+        value: {
+          fontSize: DesignTokens.typography.scale.numeric.md.desktop, // 28px
+          fontWeight: DesignTokens.typography.fontWeights.bold,
+          color: DesignTokens.colors.foreground,
+        },
+      },
+    },
+    // Chart
+    chart: {
+      height: 320,
+      marginTop: DesignTokens.spacing.xl, // 32px
+      padding: DesignTokens.spacing.md, // 16px
+      borderRadius: DesignTokens.borderRadius.md, // 12px
+      background: DesignTokens.colors.background,
+    },
+    // Summary
+    summary: {
+      marginTop: DesignTokens.spacing.xl, // 32px
+      paddingTop: DesignTokens.spacing.xl, // 32px
+      borderTop: '1px solid ' + DesignTokens.colors.border,
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+        marginBottom: DesignTokens.spacing.md, // 16px
+      },
+      // List
+      list: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: DesignTokens.spacing.sm, // 8px
+        // Item
+        item: {
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: DesignTokens.spacing.sm, // 8px
+          // Icon
+          icon: {
+            size: DesignTokens.componentSizes.icon.sm, // 16px
+            marginTop: 2,
+            color: DesignTokens.colors.primary,
+          },
+          // Text
+          text: {
+            fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+            color: DesignTokens.colors.foreground,
+          },
+        },
+      },
+    },
+  },
+
+  // Actions
+  actions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: DesignTokens.spacing.md, // 16px
+    marginTop: DesignTokens.spacing.xl, // 32px
+    paddingTop: DesignTokens.spacing.xl, // 32px
+    borderTop: '1px solid ' + DesignTokens.colors.border,
+  },
+}
+```
+
+### 6. Onboarding Page (`app/onboarding/page.tsx`)
+```typescript
+const OnboardingLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Stepper
+  stepper: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Step
+    step: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: DesignTokens.spacing.sm, // 8px
+      // Dot
+      dot: {
+        width: DesignTokens.componentSizes.icon.sm, // 16px
+        height: DesignTokens.componentSizes.icon.sm, // 16px
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.muted,
+        transition: `background ${DesignTokens.animation.duration.normal}ms`,
+        // States
+        active: {
+          background: DesignTokens.colors.primary,
+        },
+        completed: {
+          background: DesignTokens.colors.success,
+        },
+      },
+      // Line
+      line: {
+        width: 40,
+        height: 2,
+        background: DesignTokens.colors.border,
+        marginBottom: DesignTokens.spacing.md, // 16px
+      },
+      // Label
+      label: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+  },
+
+  // Step Content
+  stepContent: {
+    // Header
+    header: {
+      textAlign: 'center',
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        marginBottom: DesignTokens.spacing.sm, // 8px
+      },
+      // Subtitle
+      subtitle: {
+        fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+    // Form
+    form: {
+      background: DesignTokens.colors.card,
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      border: '1px solid ' + DesignTokens.colors.border,
+      padding: DesignTokens.spacing.xl, // 32px
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Field (same as CalculatorFormLayout.field)
+    },
+    // Progress
+    progress: {
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      // Bar
+      bar: {
+        height: 6,
+        borderRadius: DesignTokens.borderRadius.full,
+        background: DesignTokens.colors.muted,
+        overflow: 'hidden',
+        // Fill
+        fill: {
+          height: '100%',
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.primary,
+          transition: `width ${DesignTokens.animation.duration.slow}ms ${DesignTokens.animation.easing.easeOut}`,
+        },
+      },
+      // Percentage
+      percentage: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+        marginTop: DesignTokens.spacing.xs, // 4px
+        textAlign: 'right',
+      },
+    },
+  },
+
+  // Actions
+  actions: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: DesignTokens.spacing.md, // 16px
+    marginTop: DesignTokens.spacing.xl, // 32px
+    // Previous Button
+    previousButton: {
+      variant: 'outline',
+    },
+    // Next Button
+    nextButton: {
+      variant: 'primary',
+    },
+    // Submit Button
+    submitButton: {
+      variant: 'primary',
+    },
+  },
+
+  // Success
+  success: {
+    textAlign: 'center',
+    padding: DesignTokens.spacing.xl, // 32px
+    // Icon
+    icon: {
+      size: DesignTokens.componentSizes.icon['3xl'], // 40px
+      marginBottom: DesignTokens.spacing.md, // 16px
+      color: DesignTokens.colors.success,
+    },
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+      marginBottom: DesignTokens.spacing.xl, // 32px
+    },
+    // Button
+    button: {
+      size: 'lg',
+      variant: 'primary',
+    },
+  },
+}
+```
+
+### 7. Authentication Pages (`app/auth/login/page.tsx`, `app/auth/signup/page.tsx`)
+```typescript
+const AuthLayout = {
+  // Container
+  container: {
+    display: 'grid',
+    gridTemplateColumns: {
+      mobile: '1fr',
+      tablet: '1fr 1fr',
+    },
+    minHeight: '100vh',
+  },
+
+  // Left Side (Form)
+  leftSide: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    padding: DesignTokens.spacing.section.desktop, // 64px
+    // Content
+    content: {
+      maxWidth: DesignTokens.layout.maxWidth.sm, // 480px
+      margin: '0 auto',
+      width: '100%',
+      // Logo
+      logo: {
+        marginBottom: DesignTokens.spacing.xl, // 32px
+        // Image
+        image: {
+          width: 64,
+          height: 64,
+          marginBottom: DesignTokens.spacing.md, // 16px
+        },
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+          fontWeight: DesignTokens.typography.fontWeights.bold,
+        },
+      },
+      // Header
+      header: {
+        marginBottom: DesignTokens.spacing.xl, // 32px
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+          fontWeight: DesignTokens.typography.fontWeights.bold,
+          marginBottom: DesignTokens.spacing.sm, // 8px
+        },
+        // Subtitle
+        subtitle: {
+          fontSize: DesignTokens.typography.scale.body.lg.desktop, // 18px
+          color: DesignTokens.colors.mutedForeground,
+        },
+      },
+      // Form
+      form: {
+        // Field (same as CalculatorFormLayout.field)
+      },
+      // Divider
+      divider: {
+        display: 'flex',
+        alignItems: 'center',
+        margin: `${DesignTokens.spacing.xl}px 0`, // 32px
+        // Line
+        line: {
+          flex: 1,
+          height: 1,
+          background: DesignTokens.colors.border,
+        },
+        // Text
+        text: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+          padding: `0 ${DesignTokens.spacing.md}px`, // 16px
+        },
+      },
+      // Social Buttons
+      socialButtons: {
+        display: 'flex',
+        gap: DesignTokens.spacing.md, // 16px
+        marginBottom: DesignTokens.spacing.lg, // 24px
+        // Button
+        button: {
+          flex: 1,
+          padding: DesignTokens.spacing.md, // 16px
+          borderRadius: DesignTokens.borderRadius.md, // 12px
+          border: '1px solid ' + DesignTokens.colors.border,
+          background: DesignTokens.colors.card,
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          fontWeight: DesignTokens.typography.fontWeights.medium,
+          color: DesignTokens.colors.foreground,
+          cursor: 'pointer',
+          transition: `background ${DesignTokens.animation.duration.fast}ms`,
+          // States
+          hover: {
+            background: DesignTokens.colors.muted,
+          },
+          // Icon
+          icon: {
+            size: DesignTokens.componentSizes.icon.md, // 20px
+            marginRight: DesignTokens.spacing.sm, // 8px
+          },
+        },
+      },
+      // Footer
+      footer: {
+        textAlign: 'center',
+        marginTop: DesignTokens.spacing.xl, // 32px
+        // Text
+        text: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+          marginBottom: DesignTokens.spacing.sm, // 8px
+        },
+        // Link
+        link: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.primary,
+          fontWeight: DesignTokens.typography.fontWeights.medium,
+          textDecoration: 'none',
+          cursor: 'pointer',
+          transition: `color ${DesignTokens.animation.duration.fast}ms`,
+          // States
+          hover: {
+            color: DesignTokens.colors.primary,
+            opacity: 0.8,
+            textDecoration: 'underline',
+          },
+        },
+      },
+    },
+  },
+
+  // Right Side (Image)
+  rightSide: {
+    display: 'none', // Hidden on mobile
+    // Show on tablet and above
+    tablet: {
+      display: 'block',
+      background: DesignTokens.colors.primary,
+      padding: DesignTokens.spacing.xl, // 32px
+      // Content
+      content: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: DesignTokens.colors.primaryForeground,
+        textAlign: 'center',
+        // Image
+        image: {
+          maxWidth: '100%',
+          height: 'auto',
+          marginBottom: DesignTokens.spacing.xl, // 32px
+        },
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+          fontWeight: DesignTokens.typography.fontWeights.bold,
+          marginBottom: DesignTokens.spacing.md, // 16px
+        },
+        // Description
+        description: {
+          fontSize: DesignTokens.typography.scale.body.lg.desktop, // 18px
+          opacity: 0.9,
+          lineHeight: DesignTokens.typography.lineHeights.relaxed,
+        },
+      },
+    },
+  },
+}
+```
+
+### 8. Settings Page (`app/settings/page.tsx`)
+```typescript
+const SettingsLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.md, // 768px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Header
+  header: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // Navigation
+  navigation: {
+    display: 'flex',
+    gap: DesignTokens.spacing.md, // 16px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    borderBottom: '1px solid ' + DesignTokens.colors.border,
+    overflowX: 'auto',
+    // Nav Item
+    navItem: {
+      padding: `${DesignTokens.spacing.md}px ${DesignTokens.spacing.lg}px`, // 16px 24px
+      borderBottom: '2px solid transparent',
+      fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+      fontWeight: DesignTokens.typography.fontWeights.medium,
+      color: DesignTokens.colors.mutedForeground,
+      cursor: 'pointer',
+      transition: `all ${DesignTokens.animation.duration.fast}ms`,
+      whiteSpace: 'nowrap',
+      // States
+      hover: {
+        color: DesignTokens.colors.foreground,
+      },
+      active: {
+        color: DesignTokens.colors.primary,
+        borderBottomColor: DesignTokens.colors.primary,
+      },
+    },
+  },
+
+  // Section
+  section: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Header
+    header: {
+      marginBottom: DesignTokens.spacing.lg, // 24px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+        marginBottom: DesignTokens.spacing.xs, // 4px
+      },
+      // Description
+      description: {
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        color: DesignTokens.colors.mutedForeground,
+      },
+    },
+    // Card
+    card: {
+      background: DesignTokens.colors.card,
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      border: '1px solid ' + DesignTokens.colors.border,
+      overflow: 'hidden',
+      // Content
+      content: {
+        padding: DesignTokens.spacing.xl, // 32px
+      },
+      // List
+      list: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: DesignTokens.spacing.md, // 16px
+        // Item
+        item: {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: DesignTokens.spacing.md, // 16px
+          borderRadius: DesignTokens.borderRadius.md, // 12px
+          transition: `background ${DesignTokens.animation.duration.fast}ms`,
+          cursor: 'pointer',
+          // States
+          hover: {
+            background: DesignTokens.colors.muted,
+          },
+          // Left
+          left: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: DesignTokens.spacing.md, // 16px
+            // Icon
+            icon: {
+              size: DesignTokens.componentSizes.icon.md, // 20px
+              color: DesignTokens.colors.primary,
+            },
+            // Content
+            content: {
+              // Title
+              title: {
+                fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+                fontWeight: DesignTokens.typography.fontWeights.medium,
+              },
+              // Description
+              description: {
+                fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+                color: DesignTokens.colors.mutedForeground,
+              },
+            },
+          },
+          // Right
+          right: {
+            // Icon
+            icon: {
+              size: DesignTokens.componentSizes.icon.sm, // 16px
+              color: DesignTokens.colors.mutedForeground,
+            },
+          },
+        },
+      },
+    },
+  },
+
+  // Profile Section
+  profileSection: {
+    // Card
+    card: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      padding: DesignTokens.spacing.xl, // 32px
+      // Avatar
+      avatar: {
+        width: DesignTokens.componentSizes.avatar.xl, // 64px
+        height: DesignTokens.componentSizes.avatar.xl, // 64px
+        borderRadius: DesignTokens.borderRadius.avatar, // 9999px
+        marginBottom: DesignTokens.spacing.md, // 16px
+        // Image
+        image: {
+          width: '100%',
+          height: '100%',
+          borderRadius: DesignTokens.borderRadius.avatar, // 9999px
+          objectFit: 'cover',
+        },
+        // Upload Button
+        uploadButton: {
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          width: DesignTokens.componentSizes.icon.md, // 20px
+          height: DesignTokens.componentSizes.icon.md, // 20px
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.primary,
+          color: DesignTokens.colors.primaryForeground,
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          // Icon
+          icon: {
+            size: DesignTokens.componentSizes.icon.xs, // 12px
+          },
+        },
+      },
+      // Name
+      name: {
+        fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+        marginBottom: DesignTokens.spacing.xs, // 4px
+      },
+      // Email
+      email: {
+        fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+        color: DesignTokens.colors.mutedForeground,
+        marginBottom: DesignTokens.spacing.md, // 16px
+      },
+      // Edit Button
+      editButton: {
+        variant: 'outline',
+        size: 'sm',
+      },
+    },
+  },
+
+  // Form Section
+  formSection: {
+    // Form
+    form: {
+      // Field (same as CalculatorFormLayout.field)
+    },
+  },
+
+  // Danger Zone
+  dangerZone: {
+    // Card
+    card: {
+      borderColor: DesignTokens.colors.destructive,
+      background: 'rgba(239, 68, 68, 0.05)',
+      // Header
+      header: {
+        marginBottom: DesignTokens.spacing.lg, // 24px
+        // Title
+        title: {
+          color: DesignTokens.colors.destructive,
+        },
+      },
+      // List
+      list: {
+        // Item
+        item: {
+          // Title
+          title: {
+            color: DesignTokens.colors.foreground,
+          },
+          // Description
+          description: {
+            color: DesignTokens.colors.mutedForeground,
+          },
+          // Button
+          button: {
+            variant: 'destructive',
+            size: 'sm',
+          },
+        },
+      },
+    },
+  },
+
+  // Actions
+  actions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: DesignTokens.spacing.md, // 16px
+    marginTop: DesignTokens.spacing.xl, // 32px
+  },
+}
+```
+
+### 9. Tax Page (`app/tax/page.tsx`)
+```typescript
+const TaxLayout = {
+  // Container
+  container: {
+    maxWidth: DesignTokens.layout.maxWidth.xl, // 1280px
+    margin: '0 auto',
+    padding: `${DesignTokens.spacing.section.desktop}px 0`, // 64px
+  },
+
+  // Header
+  header: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Title
+    title: {
+      fontSize: DesignTokens.typography.scale.heading.h1.desktop, // 48px
+      fontWeight: DesignTokens.typography.fontWeights.bold,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+    },
+    // Subtitle
+    subtitle: {
+      fontSize: DesignTokens.typography.scale.body.xl.desktop, // 20px
+      color: DesignTokens.colors.mutedForeground,
+    },
+  },
+
+  // Summary
+  summary: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: DesignTokens.spacing.lg, // 24px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Summary Card
+    summaryCard: {
+      padding: DesignTokens.componentSizes.card.lg, // 24px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+      // Header
+      header: {
+        marginBottom: DesignTokens.spacing.md, // 16px
+        // Icon
+        icon: {
+          size: DesignTokens.componentSizes.icon.xl, // 28px
+          marginBottom: DesignTokens.spacing.sm, // 8px
+          color: DesignTokens.colors.primary,
+        },
+        // Title
+        title: {
+          fontSize: DesignTokens.typography.scale.heading.h4.desktop, // 18px
+          fontWeight: DesignTokens.typography.fontWeights.semibold,
+          marginBottom: DesignTokens.spacing.xs, // 4px
+        },
+        // Subtitle
+        subtitle: {
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          color: DesignTokens.colors.mutedForeground,
+        },
+      },
+      // Value
+      value: {
+        fontSize: DesignTokens.typography.scale.numeric.lg.desktop, // 40px
+        fontWeight: DesignTokens.typography.fontWeights.bold,
+        color: DesignTokens.colors.foreground,
+        marginBottom: DesignTokens.spacing.xs, // 4px
+      },
+      // Label
+      label: {
+        fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+        color: DesignTokens.colors.mutedForeground,
+      },
+      // Progress
+      progress: {
+        marginTop: DesignTokens.spacing.md, // 16px
+        // Bar
+        bar: {
+          height: 8,
+          borderRadius: DesignTokens.borderRadius.full,
+          background: DesignTokens.colors.muted,
+          overflow: 'hidden',
+          // Fill
+          fill: {
+            height: '100%',
+            borderRadius: DesignTokens.borderRadius.full,
+            background: DesignTokens.colors.primary,
+          },
+        },
+        // Text
+        text: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+          color: DesignTokens.colors.mutedForeground,
+          marginTop: DesignTokens.spacing.xs, // 4px
+        },
+      },
+    },
+  },
+
+  // Breakdown
+  breakdown: {
+    marginBottom: DesignTokens.spacing.xl, // 32px
+    // Header
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: DesignTokens.spacing.lg, // 24px
+      // Title
+      title: {
+        fontSize: DesignTokens.typography.scale.heading.h2.desktop, // 36px
+        fontWeight: DesignTokens.typography.fontWeights.semibold,
+      },
+      // Filter
+      filter: {
+        display: 'flex',
+        gap: DesignTokens.spacing.sm, // 8px
+      },
+    },
+    // Chart
+    chart: {
+      height: 320,
+      marginBottom: DesignTokens.spacing.xl, // 32px
+      padding: DesignTokens.spacing.md, // 16px
+      borderRadius: DesignTokens.borderRadius.card, // 16px
+      background: DesignTokens.colors.card,
+      border: '1px solid ' + DesignTokens.colors.border,
+    },
+    // Table
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      // Header Row
+      headerRow: {
+        background: DesignTokens.colors.muted,
+        // Cell
+        cell: {
+          padding: DesignTokens.spacing.md, // 16px
+          textAlign: 'left',
+          fontSize: DesignTokens.typography.scale.body.sm.desktop, // 14px
+          fontWeight: DesignTokens.typography.fontWeights.medium,
+          color: DesignTokens.colors.mutedForeground,
+          borderBottom: '1px solid ' + DesignTokens.colors.border,
+        },
+      },
+      // Body Row
+      bodyRow: {
+        borderBottom: '1px solid ' + DesignTokens.colors.border,
+        // Cell
+        cell: {
+          padding: DesignTokens.spacing.md, // 16px
+          fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+          color: DesignTokens.colors.foreground,
+        },
+      },
+    },
+  },
+
+  // Actions
+  actions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: DesignTokens.spacing.md, // 16px
+  },
+}
+```
+
+---
+
+## 🎯 USER EXPERIENCE GUIDELINES
+
+### 1. Navigation
+- **Primary Navigation**: Sidebar with collapsible state
+- **Secondary Navigation**: Tabs within pages
+- **Breadcrumb**: Show path for nested pages
+- **Back Button**: Always available for nested views
+
+### 2. Feedback
+- **Loading States**: Show skeleton or spinner
+- **Success**: Toast notification with checkmark
+- **Error**: Toast notification with error message
+- **Empty States**: Show helpful illustration and message
+
+### 3. Micro-interactions
+- **Hover**: Lift effect on cards (4px up)
+- **Focus**: Ring with primary color
+- **Click**: Press effect (0.98 scale)
+- **Transitions**: Smooth animations (200-300ms)
+
+### 4. Loading States
+```typescript
+const Loading = {
+  // Skeleton
+  skeleton: {
+    background: DesignTokens.colors.muted,
+    borderRadius: DesignTokens.borderRadius.md, // 12px
+    // Text
+    text: {
+      height: 20,
+      marginBottom: DesignTokens.spacing.sm, // 8px
+      // Variants
+      variants: {
+        short: { width: '60%' },
+        medium: { width: '80%' },
+        long: { width: '100%' },
+      },
+    },
+    // Title
+    title: {
+      height: 28,
+      width: '80%',
+      marginBottom: DesignTokens.spacing.md, // 16px
+    },
+    // Avatar
+    avatar: {
+      width: 48,
+      height: 48,
+      borderRadius: DesignTokens.borderRadius.full,
+    },
+    // Card
+    card: {
+      height: 200,
+    },
+  },
+  // Spinner
+  spinner: {
+    width: DesignTokens.componentSizes.icon.lg, // 24px
+    height: DesignTokens.componentSizes.icon.lg, // 24px
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: DesignTokens.colors.border,
+    borderTopColor: DesignTokens.colors.primary,
+    borderRadius: DesignTokens.borderRadius.full,
+    animation: `spin ${DesignTokens.animation.duration.slow}ms linear infinite`,
+  },
+  // Progress Bar
+  progressBar: {
+    height: 4,
+    borderRadius: DesignTokens.borderRadius.full,
+    background: DesignTokens.colors.muted,
+    overflow: 'hidden',
+    // Fill
+    fill: {
+      height: '100%',
+      borderRadius: DesignTokens.borderRadius.full,
+      background: DesignTokens.colors.primary,
+      transition: `width ${DesignTokens.animation.duration.slow}ms ${DesignTokens.animation.easing.easeOut}`,
+    },
+  },
+}
+```
+
+### 5. Empty States
+```typescript
+const EmptyState = {
+  // Container
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: DesignTokens.spacing.xl, // 32px
+    textAlign: 'center',
+  },
+  // Icon
+  icon: {
+    size: DesignTokens.componentSizes.icon['3xl'], // 40px
+    marginBottom: DesignTokens.spacing.md, // 16px
+    color: DesignTokens.colors.mutedForeground,
+  },
+  // Title
+  title: {
+    fontSize: DesignTokens.typography.scale.heading.h3.desktop, // 24px
+    fontWeight: DesignTokens.typography.fontWeights.semibold,
+    color: DesignTokens.colors.foreground,
+    marginBottom: DesignTokens.spacing.sm, // 8px
+  },
+  // Description
+  description: {
+    fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+    color: DesignTokens.colors.mutedForeground,
+    maxWidth: DesignTokens.layout.maxWidth.sm, // 480px
+    marginBottom: DesignTokens.spacing.xl, // 32px
+  },
+  // Action
+  action: {
+    variant: 'primary',
+    size: 'md',
+  },
+}
+```
+
+### 6. Toast Notifications
+```typescript
+const Toast = {
+  // Container
+  container: {
+    position: 'fixed',
+    bottom: DesignTokens.spacing.xl, // 32px
+    right: DesignTokens.spacing.xl, // 32px
+    zIndex: DesignTokens.zIndex.toast, // 800
+    maxWidth: DesignTokens.layout.maxWidth.sm, // 480px
+    padding: DesignTokens.spacing.md, // 16px
+    borderRadius: DesignTokens.borderRadius.md, // 12px
+    boxShadow: DesignTokens.shadows.web.xl,
+    animation: `slideIn ${DesignTokens.animation.duration.normal}ms ${DesignTokens.animation.easing.easeOut}`,
+  },
+  // Variants
+  variants: {
+    success: {
+      background: DesignTokens.colors.success,
+      color: DesignTokens.colors.destructiveForeground,
+      icon: 'check-circle',
+    },
+    error: {
+      background: DesignTokens.colors.destructive,
+      color: DesignTokens.colors.destructiveForeground,
+      icon: 'x-circle',
+    },
+    warning: {
+      background: DesignTokens.colors.warning,
+      color: DesignTokens.colors.foreground,
+      icon: 'alert-triangle',
+    },
+    info: {
+      background: DesignTokens.colors.primary,
+      color: DesignTokens.colors.primaryForeground,
+      icon: 'info',
+    },
+  },
+  // Content
+  content: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: DesignTokens.spacing.md, // 16px
+    // Icon
+    icon: {
+      size: DesignTokens.componentSizes.icon.md, // 20px
+    },
+    // Message
+    message: {
+      flex: 1,
+      fontSize: DesignTokens.typography.scale.body.md.desktop, // 16px
+    },
+    // Close Button
+    closeButton: {
+      padding: DesignTokens.spacing.xs, // 4px
+      background: 'transparent',
+      border: 'none',
+      color: 'inherit',
+      cursor: 'pointer',
+      // Icon
+      icon: {
+        size: DesignTokens.componentSizes.icon.sm, // 16px
+      },
+    },
+  },
 }
 ```
 
@@ -820,678 +2471,303 @@ Dimensions:
 
 ## ♿ ACCESSIBILITY STANDARDS
 
-### WCAG 2.1 AA Compliance
+### 1. Color Contrast
+- **Text**: Minimum 4.5:1 ratio for normal text
+- **Large Text**: Minimum 3:1 ratio for 18px+ bold or 24px+ regular
+- **UI Components**: Minimum 3:1 ratio for interactive elements
 
-#### Color Contrast
-```css
-/* Text on light background */
-.text-dark {
-  color: oklch(0.14 0.02 30); /* 7:1 contrast with white */
-}
+### 2. Keyboard Navigation
+- **Focus Indicators**: Visible focus ring (2px, primary color)
+- **Tab Order**: Logical order matching visual layout
+- **Skip Links**: Allow skipping to main content
+- **Escape**: Close modals/dialogs with Escape key
 
-/* Text on dark background */
-.text-light {
-  color: oklch(0.985 0.005 30); /* 7:1 contrast with dark */
-}
+### 3. Screen Readers
+- **ARIA Labels**: All interactive elements have proper labels
+- **Semantic HTML**: Use proper heading hierarchy
+- **Alt Text**: All images have descriptive alt text
+- **Live Regions**: Announce dynamic content changes
 
-/* Primary text on primary background */
-.text-on-primary {
-  color: oklch(0.985 0.005 30); /* 7:1 contrast with primary */
-}
+### 4. Touch Targets
+- **Minimum Size**: 44x44px for iOS, 48x48px for Android
+- **Spacing**: Adequate space between interactive elements
 
-/* Link contrast */
-.link {
-  color: oklch(0.45 0.24 260);
-  text-decoration: underline;
-}
-
-/* Link hover/focus */
-.link:hover, .link:focus {
-  color: oklch(0.40 0.22 260);
-  text-decoration: underline;
-}
-```
-
-#### Minimum Contrast Ratios
-- **Normal Text**: 4.5:1 minimum
-- **Large Text (18.66px+)**: 3:1 minimum
-- **UI Components**: 3:1 minimum for icons, borders
-- **Focus Indicators**: 3:1 minimum
-
-#### Keyboard Navigation
-```css
-/* Visible focus for all interactive elements */
-:focus-visible {
-  outline: 2px solid var(--primary-500);
-  outline-offset: 2px;
-}
-
-/* Skip link for keyboard users */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--primary-500);
-  color: white;
-  padding: 0.5rem 1rem;
-  z-index: 9999;
-}
-
-.skip-link:focus {
-  top: 0;
-}
-```
-
-#### Screen Reader Support
-```html
-<!-- Proper labels for all form inputs -->
-<label for="email">Email Address</label>
-<input type="email" id="email" aria-describedby="email-help">
-<small id="email-help">Enter your email address</small>
-
-<!-- Icon buttons with text alternatives -->
-<button aria-label="Search">
-  <SearchIcon />
-</button>
-
-<!-- Live regions for dynamic content -->
-<div aria-live="polite" aria-atomic="true">
-  <!-- Dynamic content here -->
-</div>
-
-<!-- Semantic HTML -->
-<nav aria-label="Main navigation">
-  <ul>
-    <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/transactions">Transactions</a></li>
-  </ul>
-</nav>
-```
-
-#### Form Accessibility
-```html
-<!-- Group related form elements -->
-<fieldset>
-  <legend>Payment Method</legend>
-  <input type="radio" id="credit" name="payment" value="credit">
-  <label for="credit">Credit Card</label>
-  <input type="radio" id="debit" name="payment" value="debit">
-  <label for="debit">Debit Card</label>
-</fieldset>
-
-<!-- Error messages -->
-<input type="text" id="name" aria-invalid="true" aria-describedby="name-error">
-<small id="name-error" role="alert">Please enter your name</small>
-```
-
-#### Reduced Motion
-```css
-/* Respect user's reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
-
-#### High Contrast Mode
-```css
-/* Support Windows High Contrast Mode */
-@media (forced-colors: active) {
-  .button {
-    border: 2px solid ButtonText;
-    background: ButtonFace;
-    color: ButtonText;
-  }
-
-  .button:hover {
-    background: Highlight;
-    color: HighlightText;
-    border-color: Highlight;
-  }
-}
-```
-
-### Accessibility Checklist
-- [ ] All images have `alt` text
-- [ ] All interactive elements are keyboard accessible
-- [ ] All form inputs have associated labels
-- [ ] Color is not the only indicator of state
-- [ ] Focus indicators are visible
-- [ ] Text has sufficient contrast (4.5:1 minimum)
-- [ ] Page has a logical heading structure
-- [ ] ARIA attributes are used appropriately
-- [ ] Error messages are clearly associated with inputs
-- [ ] Skip links are provided
-- [ ] Language attribute is set on HTML element
-- [ ] Video/audio has captions/transcripts
-
----
-
-## 🎯 INTERACTION PATTERNS
-
-### Button States
-```css
-.button {
-  /* Base state */
-  background: var(--primary-500);
-  color: var(--primary-foreground);
-  border: none;
-  border-radius: 12px;
-  padding: 0 1.5rem;
-  height: 3rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 200ms ease;
-}
-
-.button:hover {
-  /* Hover state */
-  background: var(--primary-600);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-}
-
-.button:active {
-  /* Active/pressed state */
-  background: var(--primary-700);
-  transform: translateY(0);
-}
-
-.button:focus-visible {
-  /* Focus state */
-  outline: 2px solid var(--primary-500);
-  outline-offset: 2px;
-}
-
-.button:disabled {
-  /* Disabled state */
-  background: var(--muted);
-  color: var(--muted-foreground);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.button.loading {
-  /* Loading state */
-  position: relative;
-  color: transparent;
-}
-
-.button.loading::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1rem;
-  height: 1rem;
-  margin: -0.5rem 0 0 -0.5rem;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-```
-
-### Input States
-```css
-.input {
-  /* Base state */
-  background: var(--surface-secondary);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0 1rem;
-  height: 3rem;
-  font-size: 1rem;
-  transition: all 200ms ease;
-}
-
-.input:focus {
-  /* Focus state */
-  outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.input:hover {
-  /* Hover state */
-  border-color: var(--border);
-}
-
-.input:disabled {
-  /* Disabled state */
-  background: var(--surface-tertiary);
-  color: var(--muted-foreground);
-  cursor: not-allowed;
-}
-
-.input.error {
-  /* Error state */
-  border-color: var(--error);
-}
-
-.input.success {
-  /* Success state */
-  border-color: var(--success);
-}
-```
-
-### Card States
-```css
-.card {
-  /* Base state */
-  background: var(--surface-primary);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 200ms ease;
-}
-
-.card:hover {
-  /* Hover state (for clickable cards) */
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-300);
-}
-
-.card:active {
-  /* Active state */
-  transform: translateY(0);
-}
-
-.card.selected {
-  /* Selected state */
-  border-color: var(--primary-500);
-  background: var(--primary-50);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-```
-
-### Loading States
-```css
-/* Spinner */
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid var(--border);
-  border-top-color: var(--primary-500);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* Skeleton loading */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--surface-tertiary) 25%,
-    var(--surface-secondary) 50%,
-    var(--surface-tertiary) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton 1.5s infinite;
-  border-radius: 4px;
-}
-
-/* Progress bar */
-.progress-bar {
-  height: 0.25rem;
-  background: var(--surface-secondary);
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: var(--primary-500);
-  border-radius: 9999px;
-  transition: width 300ms ease;
-}
-```
-
-### Animation Patterns
-```css
-/* Fade in */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Slide up */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Scale in */
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Bounce */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-/* Pulse */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Shake */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
-```
-
-### Micro-interactions
-```css
-/* Button ripple effect */
-.button {
-  position: relative;
-  overflow: hidden;
-}
-
-.button::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
-}
-
-.button:active::after {
-  width: 200%;
-  height: 200%;
-}
-
-/* Input focus ring */
-.input {
-  position: relative;
-}
-
-.input:focus {
-  outline: none;
-}
-
-.input::after {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid var(--primary-500);
-  border-radius: 14px;
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
-
-.input:focus::after {
-  opacity: 1;
-}
-
-/* Card tilt on hover */
-.card {
-  transition: transform 300ms ease, box-shadow 300ms ease;
-}
-
-.card:hover {
-  transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-}
-
-/* Checkbox toggle */
-.checkbox {
-  position: relative;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 200ms ease;
-}
-
-.checkbox:checked {
-  background: var(--primary-500);
-  border-color: var(--primary-500);
-}
-
-.checkbox::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 6px;
-  width: 3px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
-
-.checkbox:checked::after {
-  opacity: 1;
+### 5. Reduce Motion
+```typescript
+const ReducedMotion = {
+  // Media Query
+  mediaQuery: '@media (prefers-reduced-motion: reduce)',
+  // Styles
+  styles: {
+    animation: 'none',
+    transition: 'none',
+  },
 }
 ```
 
 ---
 
-## ✅ IMPLEMENTATION CHECKLIST
+## 📱 RESPONSIVE DESIGN RULES
 
-### Phase 1: Design System Foundation
-- [ ] Create comprehensive CSS variables file
-- [ ] Define color palette with OKLCH values
-- [ ] Set up typography scale with fluid sizing
-- [ ] Implement spacing system (8px base)
-- [ ] Create responsive breakpoints
-- [ ] Define component dimensions
-- [ ] Set up animation and transition patterns
+### 1. Breakpoints
+```typescript
+const Breakpoints = {
+  mobile: `(max-width: ${DesignTokens.breakpoints.tablet - 1}px)`, // < 640px
+  tablet: `(min-width: ${DesignTokens.breakpoints.tablet}px) and (max-width: ${DesignTokens.breakpoints.laptop - 1}px)`, // 640-1023px
+  laptop: `(min-width: ${DesignTokens.breakpoints.laptop}px) and (max-width: ${DesignTokens.breakpoints.desktop - 1}px)`, // 1024-1279px
+  desktop: `(min-width: ${DesignTokens.breakpoints.desktop}px)`, // >= 1280px
+}
+```
 
-### Phase 2: Base Styles
-- [ ] Global CSS reset
-- [ ] Base typography styles
-- [ ] Form element styling
-- [ ] Button variants
-- [ ] Card styling
-- [ ] Layout containers
-- [ ] Utility classes
+### 2. Adaptive Layouts
+- **Mobile**: Single column, stacked elements
+- **Tablet**: Two columns for some sections
+- **Desktop**: Full multi-column layouts
 
-### Phase 3: Component Library
-- [ ] Buttons (Primary, Secondary, Ghost, Icon, etc.)
-- [ ] Form inputs (Text, Email, Password, Number, etc.)
-- [ ] Select dropdowns
-- [ ] Checkboxes and radios
-- [ ] Switches
-- [ ] Cards
-- [ ] Modals and dialogs
-- [ ] Tooltips
-- [ ] Toasts and notifications
-- [ ] Badges and chips
-- [ ] Avatars
-- [ ] Tabs
-- [ ] Accordions
-- [ ] Tables
-- [ ] Progress indicators
+### 3. Touch vs Desktop
+```typescript
+// Touch-specific styles
+const TouchStyles = {
+  // Larger touch targets
+  touchTarget: {
+    minHeight: DesignTokens.componentSizes.touchTarget.minimum, // 44px
+    minWidth: DesignTokens.componentSizes.touchTarget.minimum, // 44px
+  },
+  // No hover states
+  hover: {
+    display: 'none',
+  },
+}
 
-### Phase 4: Page Templates
-- [ ] Authentication template (Login, Signup, OTP)
-- [ ] Dashboard template
-- [ ] Data dashboard template (Analytics, Reports)
-- [ ] Form page template (Onboarding, Settings)
-- [ ] Upload/processing template
-- [ ] Calculator template
-- [ ] Profile page template
-- [ ] Settings page template
+// Desktop-specific styles
+const DesktopStyles = {
+  // Hover states
+  hover: {
+    transform: 'translateY(-2px)',
+    boxShadow: DesignTokens.shadows.web.md,
+  },
+  // Tooltips
+  tooltip: {
+    position: 'absolute',
+    background: DesignTokens.colors.foreground,
+    color: DesignTokens.colors.background,
+    padding: `${DesignTokens.spacing.xs}px ${DesignTokens.spacing.sm}px`, // 4px 8px
+    borderRadius: DesignTokens.borderRadius.xs, // 4px
+    fontSize: DesignTokens.typography.scale.body.xs.desktop, // 12px
+    whiteSpace: 'nowrap',
+  },
+}
+```
 
-### Phase 5: Responsive Implementation
-- [ ] Mobile-first approach
-- [ ] Tablet breakpoints
-- [ ] Desktop breakpoints
-- [ ] Wide screen optimization
-- [ ] Touch target sizing
-- [ ] Hover vs touch states
-
-### Phase 6: Accessibility
-- [ ] Color contrast audit
-- [ ] Keyboard navigation testing
-- [ ] Screen reader testing
-- [ ] Focus management
-- [ ] ARIA attributes
-- [ ] Reduced motion support
-- [ ] High contrast mode support
-
-### Phase 7: Performance
-- [ ] CSS optimization (minification, critical CSS)
-- [ ] Image optimization
-- [ ] Lazy loading
-- [ ] Animation performance
-- [ ] Font loading strategy
-
-### Phase 8: Testing
-- [ ] Cross-browser testing
-- [ ] Cross-device testing
-- [ ] Accessibility audit
-- [ ] Performance audit
-- [ ] User testing
+### 4. Responsive Typography
+```typescript
+const ResponsiveTypography = {
+  // Fluid typography using clamp()
+  h1: {
+    fontSize: `clamp(${DesignTokens.typography.scale.heading.h1.mobile}, 2.5vw, ${DesignTokens.typography.scale.heading.h1.desktop})`,
+  },
+  h2: {
+    fontSize: `clamp(${DesignTokens.typography.scale.heading.h2.mobile}, 2vw, ${DesignTokens.typography.scale.heading.h2.desktop})`,
+  },
+  body: {
+    fontSize: `clamp(${DesignTokens.typography.scale.body.md.mobile}, 1.5vw, ${DesignTokens.typography.scale.body.md.desktop})`,
+  },
+}
+```
 
 ---
 
-## 📊 SUCCESS METRICS
+## 🎨 VISUAL DESIGN RULES
 
-### Design Metrics
-- **Consistency Score**: 100% component reuse
-- **Accessibility Score**: WCAG 2.1 AA compliance
-- **Performance Score**: Lighthouse 90+
-- **Responsive Coverage**: 100% of breakpoints
-- **Color Contrast**: 4.5:1 minimum for all text
+### 1. Color Usage
+- **Primary**: Main actions, links, important elements
+- **Secondary**: Secondary actions, backgrounds
+- **Success**: Confirmation, success messages
+- **Warning**: Alerts, warnings
+- **Destructive**: Errors, destructive actions
+- **Muted**: Borders, dividers, disabled states
 
-### User Experience Metrics
-- **Task Completion Rate**: > 95%
-- **Error Rate**: < 5%
-- **User Satisfaction**: > 4.5/5
-- **Time on Task**: < 2 minutes for key flows
-- **Bounce Rate**: < 40%
+### 2. Spacing Hierarchy
+- **Section**: 64px between major sections
+- **Component**: 24px between components
+- **Element**: 16px between related elements
+- **Tight**: 8px for compact layouts
 
----
+### 3. Border Radius Usage
+- **Cards**: 16px
+- **Inputs/Buttons**: 12px
+- **Avatars/Badges**: Full (9999px)
+- **Tooltips**: 8px
+- **Chips**: 20px
 
-## 🛠️ TOOLS & RESOURCES
-
-### Design Tools
-- Figma (Design and prototyping)
-- Adobe Color (Color palette testing)
-- Contrast Checker (Accessibility)
-- Browser DevTools (Inspection and debugging)
-
-### Development Tools
-- Tailwind CSS (Utility-first CSS)
-- PostCSS (CSS processing)
-- PurgeCSS (CSS optimization)
-- Lighthouse (Performance auditing)
-- axe-core (Accessibility testing)
-
-### Testing Tools
-- BrowserStack (Cross-browser testing)
-- LambdaTest (Cross-device testing)
-- NVDA (Screen reader testing)
-- VoiceOver (Screen reader testing)
-- Chrome DevTools (Accessibility audit)
+### 4. Shadow Usage
+- **Cards**: md (0 4px 6px -1px rgba(0,0,0,0.1))
+- **Hover**: lg (0 10px 15px -3px rgba(0,0,0,0.1))
+- **Modals**: xl (0 20px 25px -5px rgba(0,0,0,0.1))
+- **Focus**: primarySm (0 4px 14px 0 primary/0.2)
 
 ---
 
-## 📚 REFERENCES
+## 📁 FILE STRUCTURE RECOMMENDATIONS
 
-### Industry Standards
-- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Material Design Guidelines](https://material.io/design)
-- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
-- [IBM Design Language](https://www.ibm.com/design/language/)
-- [AtlasKit (AtlassianDesign)](https://atlassian.design/)
-
-### Color Systems
-- [OKLCH Color Picker](https://oklch.com/)
-- [Color Contrast Analyzer](https://developer.paciellogroup.com/resources/contrastanalyser/)
-- [Adobe Color](https://color.adobe.com/)
-
-### Typography
-- [Google Fonts](https://fonts.google.com/)
-- [Font Pairings](https://fontpair.co/)
-- [Type Scale](https://type-scale.com/)
-
-### Accessibility
-- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
-- [axe DevTools](https://www.deque.com/axe/)
-- [Lighthouse](https://developers.google.com/web/tools/lighthouse)
+```
+components/
+├── layout/
+│   ├── Header.tsx
+│   ├── Sidebar.tsx
+│   ├── Footer.tsx
+│   └── Container.tsx
+├── ui/
+│   ├── Button.tsx
+│   ├── Card.tsx
+│   ├── Input.tsx
+│   ├── Select.tsx
+│   ├── Dialog.tsx
+│   ├── Toast.tsx
+│   ├── Tooltip.tsx
+│   ├── Skeleton.tsx
+│   └── ...
+├── forms/
+│   ├── Form.tsx
+│   ├── FormField.tsx
+│   ├── FormLabel.tsx
+│   └── FormError.tsx
+├── charts/
+│   ├── BarChart.tsx
+│   ├── LineChart.tsx
+│   ├── PieChart.tsx
+│   └── ChartContainer.tsx
+├── tables/
+│   ├── DataTable.tsx
+│   ├── TableCell.tsx
+│   ├── TableRow.tsx
+│   └── TableHeader.tsx
+└── pages/
+    ├── Dashboard.tsx
+    ├── Analytics.tsx
+    ├── Upload.tsx
+    ├── Calculator.tsx
+    └── ...
+```
 
 ---
 
-## 🎓 BEST PRACTICES
+## 🚀 IMPLEMENTATION CHECKLIST
 
-### 1. Start with Mobile
-- Design mobile-first, then scale up
-- Touch targets minimum 44x44px
-- Prioritize content and actions
+### Phase 1: Foundation
+- [ ] Set up design tokens in CSS variables
+- [ ] Create base styles (reset, typography, colors)
+- [ ] Implement responsive grid system
+- [ ] Create component library structure
 
-### 2. Use Consistent Spacing
-- Stick to 8px base grid
-- Use predefined spacing values
-- Maintain vertical rhythm
+### Phase 2: Core Components
+- [ ] Button component with all variants
+- [ ] Input and Form components
+- [ ] Card component
+- [ ] Dialog/Modal component
+- [ ] Toast notification component
+- [ ] Loading states (Skeleton, Spinner)
+- [ ] Empty state component
 
-### 3. Limit Color Usage
-- Primary color: 60% of UI
-- Secondary color: 30% of UI
-- Accent color: 10% of UI
-- Use semantic colors appropriately
+### Phase 3: Layout Components
+- [ ] Header component
+- [ ] Sidebar component
+- [ ] Footer component
+- [ ] Page container component
+- [ ] Responsive navigation
 
-### 4. Typography Hierarchy
-- Establish clear hierarchy
-- Limit font weights to 3-4
-- Use line height appropriately
+### Phase 4: Page Implementation
+- [ ] Dashboard page
+- [ ] Analytics page
+- [ ] Upload page
+- [ ] AI Chat page
+- [ ] Calculators page
+- [ ] Onboarding page
+- [ ] Authentication pages
+- [ ] Settings page
+- [ ] Tax page
 
-### 5. Accessibility First
-- Check contrast ratios early
-- Test keyboard navigation
-- Use semantic HTML
-- Provide text alternatives
+### Phase 5: Polish
+- [ ] Add animations and transitions
+- [ ] Implement dark mode
+- [ ] Add accessibility features
+- [ ] Optimize performance
+- [ ] Test on all devices
 
-### 6. Performance Matters
-- Minimize CSS complexity
+---
+
+## ✨ BEST PRACTICES
+
+### 1. Performance
+- Use CSS Grid and Flexbox for layouts
+- Minimize DOM depth
 - Use efficient selectors
-- Optimize animations
 - Lazy load non-critical resources
+- Optimize images and assets
 
-### 7. Test Early and Often
-- Test on multiple devices
-- Test with different browsers
-- Test with assistive technologies
-- Conduct user testing
+### 2. Maintainability
+- Follow BEM naming convention
+- Use semantic class names
+- Document component props
+- Keep styles co-located with components
+- Use consistent naming conventions
+
+### 3. Consistency
+- Reuse existing components
+- Follow design system tokens
+- Maintain consistent spacing
+- Use typography hierarchy
+- Keep color usage consistent
+
+### 4. User Experience
+- Provide clear feedback
+- Minimize cognitive load
+- Use familiar patterns
+- Ensure accessibility
+- Test with real users
 
 ---
 
-**Note**: This guide should be used as a living document. Update it as the design system evolves and new patterns emerge.
+## 📚 RESOURCES
+
+### Design Inspiration
+- [Material Design](https://material.io/design)
+- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
+- [Atlassian Design System](https://atlassian.design/)
+- [Shopify Polaris](https://polaris.shopify.com/)
+- [Carbon Design System](https://carbondesignsystem.com/)
+
+### Tools
+- [Figma](https://www.figma.com/) - Design and prototyping
+- [Storybook](https://storybook.js.org/) - Component documentation
+- [Chroma](https://www.chroma.com/) - Color accessibility checker
+- [Axe](https://www.deque.com/axe/) - Accessibility testing
+- [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) - Performance auditing
+
+### Libraries
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [Radix UI](https://www.radix-ui.com/) - Accessible primitives
+- [Recharts](https://recharts.org/) - Charting library
+- [Framer Motion](https://www.framer.com/motion/) - Animations
+- [React Hook Form](https://react-hook-form.com/) - Form handling
+
+---
+
+## 🎯 FINAL NOTES
+
+This comprehensive UI/UX design guide provides:
+1. **Consistent Design Language**: Unified approach across all pages
+2. **Industry Standards**: Follows best practices from leading design systems
+3. **Accessibility**: WCAG 2.1 AA compliant
+4. **Responsive**: Works on all devices
+5. **Maintainable**: Organized structure for easy updates
+6. **Professional**: Clean, modern, trustworthy appearance
+
+**Next Steps:**
+1. Review and approve this design guide
+2. Implement design tokens and base styles
+3. Create component library
+4. Build pages according to specifications
+5. Test and refine based on user feedback
+
+This guide ensures your fintech application has a professional, industry-standard UI/UX that provides an excellent user experience while maintaining consistency and accessibility.
