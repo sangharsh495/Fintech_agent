@@ -1,8 +1,8 @@
 "use client"
 
-import { BarChart3, Calculator, Brain, TrendingUp, Settings, LogOut, User, ChevronRight, LineChart, Upload } from "lucide-react"
+import { BarChart3, Calculator, Brain, TrendingUp, Settings, LogOut, User, ChevronRight, LineChart, Upload, ChevronUp } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 
@@ -25,92 +25,82 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
   }
 
   const userName = session?.user?.name || "User Account"
-  const userEmail = session?.user?.email || ""
+  const userEmail = session?.user?.email || "user@example.com"
 
   return (
     <>
       <aside
         className={cn(
-          "fixed left-0 top-16 z-40 w-[16rem] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out",
+          "fixed left-0 top-16 z-40 w-[16rem] border-r border-border/50 bg-background/95 backdrop-blur-xl flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
           "h-[calc(100vh-4rem)]",
           isOpen ? "translate-x-0 opacity-100 visible" : "-translate-x-full opacity-0 invisible",
         )}
         aria-label="Sidebar navigation"
       >
-        {/* User Profile Section */}
-        <div className="p-5 border-b border-border">
-          <Link href="/settings" className="flex items-center gap-4 group">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 transition-transform duration-300 group-hover:scale-105">
-              <User className="w-6 h-6 text-primary-foreground" />
+        <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar">
+          {/* Main Navigation */}
+          <nav className="flex-1 p-3 space-y-1 mt-2" aria-label="Main navigation">
+            <div className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Menu
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">{userName}</p>
-              <p className="text-body-xs text-muted-foreground truncate">{userEmail || "Manage profile"}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-          </Link>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1.5 stagger-children" aria-label="Main navigation">
-          {navItems.map((item, index) => {
-            const Icon = item.icon
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 text-sm group relative overflow-hidden",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    : "text-foreground hover:bg-secondary",
-                )}
-                style={{ animationDelay: `${index * 80}ms` }}
-              >
-                <div
+            {navItems.map((item, index) => {
+              const Icon = item.icon
+              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
                   className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
-                    isActive ? "bg-primary-foreground/20" : "bg-primary/10 group-hover:bg-primary/20",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm group relative overflow-hidden",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
                   )}
+                  style={{ transitionDelay: `${index * 15}ms` }}
                 >
                   <Icon
                     className={cn(
-                      "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
-                      isActive ? "text-primary-foreground" : "text-primary",
+                      "w-[18px] h-[18px] transition-transform duration-200 group-hover:scale-110",
+                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                     )}
                   />
-                </div>
-                <div className="flex-1">
-                  <span className="font-medium block">{item.label}</span>
-                  <span className={cn("text-body-xs", isActive ? "text-primary-foreground/70" : "text-muted-foreground")}>
-                    {item.description}
-                  </span>
-                </div>
-                {isActive && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-foreground rounded-l-full" />
-                )}
-              </Link>
-            )
-          })}
-        </nav>
+                  <span className="flex-1 tracking-tight">{item.label}</span>
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-full" />
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
 
-        <div className="p-4 border-t border-border">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-destructive/10 transition-all duration-300 text-body-sm text-destructive group touch-target-comfortable"
-          >
-            <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center group-hover:bg-destructive/20 transition-colors">
-              <LogOut className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
-            </div>
-            <span className="font-medium">Logout</span>
-          </button>
+          {/* User Profile & Actions (Bottom) */}
+          <div className="p-3 border-t border-border/40 bg-card/30">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl hover:bg-destructive/10 transition-colors duration-200 text-sm text-destructive/80 hover:text-destructive group"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+              <span className="font-medium tracking-tight">Log out</span>
+            </button>
+
+            <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/60 transition-colors duration-200 group">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex flex-shrink-0 items-center justify-center shadow-inner border border-primary/20">
+                <User className="w-[18px] h-[18px] text-primary-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{userName}</p>
+                <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+              </div>
+              <ChevronUp className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+            </Link>
+          </div>
         </div>
       </aside>
 
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden transition-opacity duration-300"
           onClick={() => window.dispatchEvent(new CustomEvent("sidebar-close"))}
           aria-hidden="true"
         />
