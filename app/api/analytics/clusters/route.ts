@@ -17,6 +17,8 @@ import { db } from "@/server/db"
 import { clusterMetadata, clusterRuns, transactions } from "@/server/db/schema"
 import { eq, and, desc } from "drizzle-orm"
 
+export const dynamic = "force-dynamic"
+
 // ─── Data Loading (from ML service output) ──────────────────
 
 const ML_DATA_DIR = path.join(process.cwd(), "ml-service", "data")
