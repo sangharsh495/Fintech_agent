@@ -4,6 +4,7 @@ import { buildUserContext } from "@/server/services/ai-context.service"
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
 import { oracleAccessControl } from "@/server/services/oracle-access-control.service"
+import { groqRotator } from "@/server/services/groq-rotator.service"
 
 export const dynamic = "force-dynamic"
 
@@ -14,11 +15,6 @@ const apiKey = process.env.ORACLE_AI_API_KEY;
 if (!endpoint || !apiKey) {
   console.warn("[AI CHAT] ORACLE_AI_ENDPOINT or ORACLE_AI_API_KEY is not defined in environment variables. Running with local development configuration.");
 }
-
-const aiModel = createOpenAI({
-  baseURL: endpoint || "https://api.groq.com/openai/v1",
-  apiKey: apiKey || process.env.GROQ_API_KEY || "",
-})
 
 export async function POST(req: NextRequest) {
   const session = await getSession(req)
@@ -80,9 +76,24 @@ export async function POST(req: NextRequest) {
   // Use the model name defined in the user's AI model access policy. Fallback to environment variable or default.
   const modelName = aiAccess.policy?.model || process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 
-    const result = streamText({
-      model: aiModel(modelName),
-      system: `You are FinWise AI, a premium personal financial assistant for Indian users.
+    // Check if Oracle AI is fully configured (not using placeholder values)
+    const isOracleConfigured =
+      apiKey &&
+      !apiKey.includes("your-deployment-ocid") &&
+      endpoint &&
+      !endpoint.includes("amaaaaaak...");
+
+    let streamResponse: Response;
+
+    if (isOracleConfigured) {
+      const oracleModel = createOpenAI({
+        baseURL: endpoint,
+        apiKey: apiKey,
+      });
+
+      const result = streamText({
+        model: oracleModel(modelName),
+        system: `You are FinWise AI, a premium personal financial assistant for Indian users.
 You have comprehensive access to the user's real financial context (Profile details, KYC status, Active bank accounts, spending habits, monthly trend metrics, and tax calculation breakdown).
 
 PROACTIVE FINANCIAL PLANNING DIRECTIVES:
@@ -96,15 +107,46 @@ PROACTIVE FINANCIAL PLANNING DIRECTIVES:
 PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operations: ${pagePolicy.allowedOperations.join(", ")})
 
 ${context}`,
-      messages,
-      maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
-    })
+        messages,
+        maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
+      });
+
+      streamResponse = result.toDataStreamResponse();
+    } else {
+      // Fallback to Groq with key rotation and automatic retry logic
+      streamResponse = await groqRotator.execute(async (currentKey) => {
+        // Use a standard Groq LLM model name if using the Groq fallback
+        const groqModelName = modelName.includes("oracle") ? "qwen2.5-coder-32b" : modelName;
+        const groqModel = createOpenAI({
+          baseURL: "https://api.groq.com/openai/v1",
+          apiKey: currentKey || "",
+        });
+
+        const result = streamText({
+          model: groqModel(groqModelName),
+          system: `You are FinWise AI, a premium personal financial assistant for Indian users.
+You have comprehensive access to the user's real financial context (Profile details, KYC status, Active bank accounts, spending habits, monthly trend metrics, and tax calculation breakdown).
+
+PROACTIVE FINANCIAL PLANNING DIRECTIVES:
+1. Cross-reference the user's tax liability and 80C opportunities with their top spending categories and monthly savings rate.
+2. If they have discretionary spending room (e.g. heavy shopping/entertainment expenses) and remaining 80C limits, suggest channeling a portion of that spend into tax-saving instruments (ELSS, PPF, or LIC) to maximize tax optimization.
+3. Reference specific sections of the Indian Income Tax Act (e.g. Section 80C, 80D, 80CCD(1B)) using exact numbers from their context.
+4. Format all currency amounts as ₹X,XX,XXX (Indian numbering scale).
+5. Always keep responses concise, premium, actionable, and formatted in clear bullet points.
+6. Enforce strict privacy: Never discuss other users' data. Keep recommendations private.
+
+PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operations: ${pagePolicy.allowedOperations.join(", ")})
+
+${context}`,
+          messages,
+          maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
+        });
+
+        return result.toDataStreamResponse();
+      });
+    }
 
     // Log AI usage for rate limiting and billing
-    const streamResponse = result.toDataStreamResponse()
-    
-    // We need to intercept the stream to count tokens, for now log basic usage
-    // In production, use AI SDK's onFinish callback
     await oracleAccessControl.logAIUsage(
       userId,
       userEmail,
