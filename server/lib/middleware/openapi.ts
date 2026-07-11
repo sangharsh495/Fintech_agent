@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
 /**
  * OpenAPI 3.1 documentation generator
@@ -276,7 +276,7 @@ export interface XMLObject {
  * Convert Zod schema to OpenAPI schema
  */
 export function zodToOpenAPI(schema: z.ZodSchema, name?: string): SchemaObject {
-  const def = schema._def
+  const def = schema._def as any
   
   switch (def.typeName) {
     case "ZodString": {
@@ -354,7 +354,7 @@ export function zodToOpenAPI(schema: z.ZodSchema, name?: string): SchemaObject {
         properties[key] = zodToOpenAPI(zodSchema)
         
         // Check if required (not optional, not nullable)
-        const valueDef = zodSchema._def
+        const valueDef = (zodSchema._def as any)
         if (valueDef.typeName !== "ZodOptional" && valueDef.typeName !== "ZodNullable") {
           required.push(key)
         }
@@ -592,7 +592,7 @@ export function generateOpenAPISpec(
       }
     }
     
-    paths[path][method as keyof PathItemObject] = operation
+    paths[path][method as "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace"] = operation
   }
   
   // Add common error schema
