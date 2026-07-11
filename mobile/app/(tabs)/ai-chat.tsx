@@ -44,7 +44,10 @@ export default function AIChatScreen() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({
+          messages: newMessages,
+          currentPath: "/mobile-app"
+        }),
       })
 
       if (!response.ok) {

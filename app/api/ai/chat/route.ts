@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { messages } = await req.json()
-    const userContext = await buildUserContext(session.user.id)
+    const { messages, currentPath } = await req.json()
+    const userContext = await buildUserContext(session.user.id, currentPath || "/")
 
     const modelName = process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 

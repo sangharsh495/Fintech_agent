@@ -19,6 +19,9 @@ export default function AICAsPage() {
   // ai SDK v6: useChat returns sendMessage + status; input is managed locally
   const { messages: chatMessages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: "/api/ai/chat" }),
+    body: {
+      currentPath: typeof window !== "undefined" ? window.location.pathname : "/ai-ca"
+    },
     messages: [
       {
         id: "1",
