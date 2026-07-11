@@ -1,151 +1,153 @@
-// ─── PDF Statement Parser — Orchestrator ────────────────────
-// Thin orchestrator that wires the three layers together:
-//   Layer 1: Decryption (pdf.decrypt)
-//   Layer 2: Header/Metadata extraction (pdf.header)
-//   Layer 3: Position-aware table extraction (pdf.table)
-//
-// All bank-specific behavior is driven by bank profiles.
-// This file contains zero bank-specific logic.
+// ─── PDF Statement Parser — Orchestrator (Groq Rotating LLM version) ────────────────────
+// Uses pdf-parse to extract plain text and Groq multi-key rotation to extract transaction JSON.
 
-import { getBankProfile, detectBank, GENERIC_PROFILE } from "./bank-profiles"
 import { decryptPDF } from "./pdf.decrypt"
-import { extractMetadata } from "./pdf.header"
-import { extractTransactions } from "./pdf.table"
-import type { PDFParseOptions, ParsedStatementResult, PositionedPage, PositionedTextItem } from "./pdf.types"
-// Removed dependency on pdf.js-extract to avoid worker issues; we now use pdfjs-dist directly.
+import { extractPdfText } from "@/lib/pdf/extractText"
+import { parseStatement } from "@/lib/parser/parseStatement"
+import { callGroq } from "@/lib/groq/client"
+import { categorizeTransaction } from "./categorizer"
+import { computeHash } from "./deduplicator"
+import type { ParsedStatementResult, ParsedTransaction } from "./pdf.types"
 
-// Canvas polyfill is now natively handled by pdfjs-dist because we externalized it.
-
-interface PDFExtractItem {
-  str: string
-  x: number
-  y: number
-  w: number
-  h: number
-  fontName?: string
+// Helper to detect payment method from description
+function detectPaymentMethod(desc: string): string {
+  const lower = desc.toLowerCase()
+  if (lower.includes("upi")) return "upi"
+  if (lower.includes("neft")) return "neft"
+  if (lower.includes("imps")) return "imps"
+  if (lower.includes("rtgs")) return "rtgs"
+  if (lower.includes("atm") || lower.includes("cash")) return "cash"
+  if (lower.includes("card") || lower.includes("pos")) return "card"
+  return "other"
 }
 
-interface PDFExtractPage {
-  pageInfo: { width: number; height: number; num: number }
-  content: PDFExtractItem[]
+// Helper to parse dates robustly
+function parseDateRobust(dateStr: string): Date {
+  let d = new Date(dateStr)
+  if (!isNaN(d.getTime())) return d
+
+  const parts = dateStr.split(/[-\/.]/)
+  if (parts.length === 3) {
+    const p0 = parseInt(parts[0], 10)
+    const p1 = parseInt(parts[1], 10) - 1 // 0-indexed month
+    const p2 = parseInt(parts[2], 10)
+
+    if (parts[2].length === 4) {
+      d = new Date(p2, p1, p0) // DD/MM/YYYY
+    } else if (parts[0].length === 4) {
+      d = new Date(p0, p1, p2) // YYYY/MM/DD
+    }
+    if (!isNaN(d.getTime())) return d
+  }
+  return new Date()
 }
 
-interface PDFExtractResult {
-  pages: PDFExtractPage[]
-  pdfInfo?: Record<string, unknown>
+// Extract metadata from statement header snippet using Groq
+async function extractMetadataWithGroq(text: string): Promise<any> {
+  const prompt = `You are a bank statement parser. Extract the metadata from the bank statement text below.
+Return ONLY a JSON object with this exact shape:
+{
+  "bankName": string|null,
+  "accountNumber": string|null,
+  "accountHolderName": string|null,
+  "ifscCode": string|null,
+  "branch": string|null,
+  "statementPeriodFrom": string|null, // ISO Date format YYYY-MM-DD
+  "statementPeriodTo": string|null    // ISO Date format YYYY-MM-DD
 }
 
-interface PDFExtractInstance {
-  extractBuffer(buffer: Buffer, options?: Record<string, unknown>): Promise<PDFExtractResult>
+Statement text snippet:
+"""
+${text.slice(0, 3000)}
+"""`
+
+  try {
+    const resStr = await callGroq(prompt)
+    const cleaned = resStr.replace(/```json|```/g, "").trim()
+    return JSON.parse(cleaned)
+  } catch (err) {
+    console.error("[METADATA EXTRACTION ERROR]", err)
+    return null
+  }
 }
 
 /**
- * Parse a PDF bank statement into structured transactions + metadata.
- *
- * @param fileBuffer - The raw PDF file buffer
- * @param options    - Optional password and/or explicit bank ID
- * @returns Enriched result with transactions, metadata, bank profile used, and encryption status
- *
- * @example
- * // Basic usage (auto-detect bank, unencrypted)
- * const result = await parsePDFStatement(buffer)
- *
- * @example
- * // With password and explicit bank
- * const result = await parsePDFStatement(buffer, { password: "01011990", bankId: "hdfc" })
+ * Parse a PDF bank statement into structured transactions + metadata using Groq key-rotating pipeline.
  */
 export async function parsePDFStatement(
   fileBuffer: Buffer,
-  options?: PDFParseOptions
+  options?: any
 ): Promise<ParsedStatementResult> {
-  // ── Layer 1: Decryption ──
+  // 1. Decrypt PDF first if needed
   const { buffer: cleanBuffer, wasEncrypted } = await decryptPDF(
     fileBuffer,
     options?.password
   )
 
-  // ── Extract positioned text from all pages ──
-  const pages = await extractPages(cleanBuffer)
+  // 2. Extract plain text and page count using pdf-parse
+  const { text, numPages } = await extractPdfText(cleanBuffer)
 
-  // ── Determine bank profile ──
-  const fullText = pages
-    .map((p) => p.content.map((item) => item.str).join(" "))
-    .join("\n")
+  // 3. Extract metadata from the header text snippet
+  const metaObj = await extractMetadataWithGroq(text)
 
-  let profile = GENERIC_PROFILE
+  const bankName = metaObj?.bankName || "Unknown Bank"
+  const accountNumber = metaObj?.accountNumber || undefined
+  const accountLast4 = accountNumber ? accountNumber.slice(-4) : undefined
+  const accountHolderName = metaObj?.accountHolderName || undefined
+  const ifscCode = metaObj?.ifscCode || undefined
+  const branch = metaObj?.branch || undefined
 
-  if (options?.bankId) {
-    // Explicit bank ID provided — use it
-    profile = getBankProfile(options.bankId) ?? GENERIC_PROFILE
-  } else {
-    // Auto-detect bank from text content
-    const detected = detectBank(fullText)
-    if (detected) {
-      profile = detected
+  let statementPeriod: { from: Date; to: Date } | undefined = undefined
+  if (metaObj?.statementPeriodFrom && metaObj?.statementPeriodTo) {
+    statementPeriod = {
+      from: new Date(metaObj.statementPeriodFrom),
+      to: new Date(metaObj.statementPeriodTo),
     }
   }
 
-  // ── Layer 2: Header/Metadata extraction ──
-  const metadata = extractMetadata(pages, profile)
-  metadata.bankProfileId = profile.id
+  // 4. Run the Groq rotating transaction extraction pipeline
+  const extractResult = await parseStatement(cleanBuffer)
 
-  // If metadata auto-detected a different bank than the profile, upgrade the profile
-  if (
-    profile.id === "generic" &&
-    metadata.bankProfileId &&
-    metadata.bankProfileId !== "generic"
-  ) {
-    const upgraded = getBankProfile(metadata.bankProfileId)
-    if (upgraded) {
-      profile = upgraded
+  // 5. Map the Zod transactions to the expected ParsedTransaction structure
+  const mappedTransactions: ParsedTransaction[] = extractResult.transactions.map((row) => {
+    const debitAmount = row.debit || 0
+    const creditAmount = row.credit || 0
+    const amount = debitAmount > 0 ? debitAmount : creditAmount
+    const type = debitAmount > 0 ? "debit" : "credit"
+    
+    const dateObj = parseDateRobust(row.date)
+    const cat = categorizeTransaction(row.description, amount, type)
+
+    return {
+      date: dateObj,
+      description: row.description,
+      rawDescription: row.description,
+      amount,
+      type,
+      balance: row.balance,
+      category: cat.category,
+      subcategory: cat.subcategory || "",
+      merchant: cat.merchant || "",
+      isRecurring: cat.isRecurring,
+      paymentMethod: detectPaymentMethod(row.description),
+      hash: computeHash(dateObj, amount, row.description),
     }
-  }
-
-  // ── Layer 3: Transaction table extraction ──
-  const transactions = extractTransactions(pages, profile)
+  })
 
   return {
-    transactions,
-    metadata,
-    bankProfile: profile.id,
-    pageCount: pages.length,
+    transactions: mappedTransactions,
+    metadata: {
+      bankName,
+      bankProfileId: "generic", // Generic profile is used since Groq extracts everything dynamically
+      accountNumber,
+      accountLast4,
+      accountHolderName,
+      ifscCode,
+      branch,
+      statementPeriod,
+    },
+    bankProfile: "generic",
+    pageCount: numPages,
     wasEncrypted,
   }
-}
-
-// ─── pdf.js-extract Wrapper ─────────────────────────────────
-
-/**
- * Extract positioned pages from a PDF buffer using pdfjs-dist.
- * This implementation avoids the worker used by pdf.js-extract, eliminating the need for the optional `dommatrix` polyfill.
- */
-async function extractPages(buffer: Buffer): Promise<PositionedPage[]> {
-  // Canvas polyfill is handled natively by pdfjs-dist when externalized in next.config.mjs
-  // Dynamic import to keep bundle size low
-  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
-  const pdfDoc = await loadingTask.promise;
-  const numPages = pdfDoc.numPages;
-  const pages: PositionedPage[] = [];
-  for (let i = 1; i <= numPages; i++) {
-    const page = await pdfDoc.getPage(i);
-    const viewport = page.getViewport({ scale: 1.0 });
-    const textContent = await page.getTextContent();
-    const items = textContent.items as any[];
-    const positionedItems: PositionedTextItem[] = items.map((it) => ({
-      str: it.str,
-      x: it.transform[4],
-      y: viewport.height - it.transform[5], // invert Y to match original coordinate system
-      width: it.width,
-      height: it.height,
-    }));
-    pages.push({
-      pageNumber: i,
-      width: viewport.width,
-      height: viewport.height,
-      content: positionedItems,
-    });
-  }
-  await pdfDoc.destroy();
-  return pages;
 }
