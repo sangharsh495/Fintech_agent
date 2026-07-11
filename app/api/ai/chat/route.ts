@@ -4,6 +4,8 @@ import { buildUserContext } from "@/server/services/ai-context.service"
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
 
+export const dynamic = "force-dynamic"
+
 // Configure OpenAI-compatible provider with Oracle Cloud endpoint
 const endpoint = process.env.ORACLE_AI_ENDPOINT;
 const apiKey = process.env.ORACLE_AI_API_KEY;
