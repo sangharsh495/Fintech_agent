@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Download, Calculator, TrendingDown, TrendingUp, Percent, IndianRupee, Sparkles, AlertCircle } from "lucide-react"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { cn } from "@/lib/utils"
+import { AIWidget } from "@/components/ai-sidebar"
 
 interface DeductionItem {
   name: string
@@ -432,6 +433,12 @@ export default function TaxPage() {
           </Button>
         </div>
       </div>
+      
+      {/* AI Assistant Widget - Tax context */}
+      <AIWidget pageContext="/tax" defaultOpen={false}
+        contextTypes={["profile", "transactions", "tax", "analytics", "documents"]}
+        maxTokens={3500}
+      />
     </div>
   )
 }
