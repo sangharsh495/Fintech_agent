@@ -148,6 +148,19 @@ export default function Navbar({
                 <Search className="w-5 h-5" />
               </Button>
 
+              {/* Theme Toggle Button */}
+              {toggleTheme && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl text-foreground hover:bg-secondary transition-all duration-200 hover:scale-105 touch-target-comfortable"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                >
+                  {isDark ? <Sun className="w-5 h-5 text-amber-500 animate-in spin-in-12 duration-300" /> : <Moon className="w-5 h-5 text-primary" />}
+                </Button>
+              )}
+
               <Link href="/settings">
                 <button
                   title="Profile & Settings"
