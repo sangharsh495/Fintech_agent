@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
       }, { status: 429 })
     }
 
-    const modelName = process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
+  // Use the model name defined in the user's AI model access policy. Fallback to environment variable or default.
+  const modelName = aiAccess.policy?.model || process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 
     const result = streamText({
       model: aiModel(modelName),
