@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { UploadStatement } from "@/components/upload-statement"
+import { AIWidget } from "@/components/ai-sidebar"
 import { Card } from "@/components/ui/card"
 import { Upload, Zap, Shield, Clock } from "lucide-react"
 
@@ -66,6 +67,12 @@ export default function UploadPage() {
           </section>
         </div>
       </main>
+      
+      {/* AI Assistant Widget - Upload context */}
+      <AIWidget pageContext="/upload" defaultOpen={false}
+        contextTypes={["profile", "transactions"]}
+        maxTokens={1500}
+      />
     </div>
   )
 }
