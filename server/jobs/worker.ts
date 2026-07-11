@@ -68,7 +68,7 @@ const setupWorkerEvents = (worker: Worker, name: string) => {
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`Job ${job.id} failed in ${name} worker:`, err);
+    console.error(`Job ${job?.id} failed in ${name} worker:`, err);
   });
 
   worker.on('error', (err) => {

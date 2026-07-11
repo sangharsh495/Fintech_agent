@@ -81,7 +81,7 @@ export type JobData =
 
 // Queue options
 const defaultQueueOptions = {
-  connection: bullMQRedisConnection,
+  connection: bullMQRedisConnection as any,
   defaultJobOptions: {
     removeOnComplete: 100,
     removeOnFail: 50,
@@ -116,19 +116,19 @@ export const webhooksQueue = new Queue<WebhookJobData>(
 
 // Queue events for monitoring
 export const statementProcessingEvents = new QueueEvents(QueueNames.STATEMENT_PROCESSING, {
-  connection: bullMQRedisConnection,
+  connection: bullMQRedisConnection as any,
 })
 
 export const mlClusteringEvents = new QueueEvents(QueueNames.ML_CLUSTERING, {
-  connection: bullMQRedisConnection,
+  connection: bullMQRedisConnection as any,
 })
 
 export const notificationEvents = new QueueEvents(QueueNames.NOTIFICATIONS, {
-  connection: bullMQRedisConnection,
+  connection: bullMQRedisConnection as any,
 })
 
 export const webhookEvents = new QueueEvents(QueueNames.WEBHOOKS, {
-  connection: bullMQRedisConnection,
+  connection: bullMQRedisConnection as any,
 })
 
 // Helper functions for adding jobs
@@ -139,7 +139,7 @@ export async function addJob<T extends JobData>(
   options?: Parameters<Queue["add"]>[2]
 ) {
   const queue = getQueue(queueName)
-  return queue.add(jobName, data, options)
+  return queue.add(jobName as any, data as any, options as any) as any
 }
 
 export function getQueue(queueName: QueueName) {
