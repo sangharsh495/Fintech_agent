@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id
 
   try {
-    const formData = await req.formData()
+    const formData: any = await req.formData()
     const file = formData.get("file") as File | null
     const bankAccountId = formData.get("bankAccountId") as string | null
     const statementMonth = formData.get("statementMonth") as string | null
