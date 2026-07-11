@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 // Initialize Stripe (in practice, use environment variable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2023-10-16' as any,
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy';
@@ -126,9 +126,9 @@ async function handleSubscriptionChange(
           stripeSubscriptionId: subscription.id,
           stripeCustomerId: subscription.customer as string,
           status: subscription.status,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+          currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+          cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
         });
         break;
         
@@ -136,9 +136,9 @@ async function handleSubscriptionChange(
         await db.update(userSubscriptions)
           .set({
             status: subscription.status,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+            currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+            cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
           })
           .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
         break;
