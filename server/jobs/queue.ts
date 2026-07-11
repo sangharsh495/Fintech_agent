@@ -1,8 +1,8 @@
 import { Queue } from 'bullmq';
-import { IORedisOptions } from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 
 // Redis connection options
-const redisOptions: IORedisOptions = {
+const redisOptions: RedisOptions = {
   host: process.env.REDIS_HOST || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
   password: process.env.REDIS_PASSWORD || undefined,
@@ -93,40 +93,5 @@ export const addBackupJob = async (data: BackupJobData) => {
       type: 'fixed',
       delay: 30000,
     },
-  });
-};
-
-// Processors (these would be implemented in separate worker files)
-export const setupJobProcessors = () => {
-  // Transaction processing
-  transactionQueue.process('process-transaction', async (job) => {
-    // Implementation would go here
-    console.log(`Processing transaction job: ${job.id}`);
-    // Actual implementation would categorize, reconcile, or notify
-    return { status: 'completed' };
-  });
-
-  // Email notifications
-  emailQueue.process('send-email', async (job) => {
-    // Implementation would go here
-    console.log(`Sending email job: ${job.id}`);
-    // Actual implementation would use email service
-    return { status: 'sent' };
-  });
-
-  // Report generation
-  reportQueue.process('generate-report', async (job) => {
-    // Implementation would go here
-    console.log(`Generating report job: ${job.id}`);
-    // Actual implementation would generate reports
-    return { status: 'generated' };
-  });
-
-  // Data backup
-  backupQueue.process('perform-backup', async (job) => {
-    // Implementation would go here
-    console.log(`Performing backup job: ${job.id}`);
-    // Actual implementation would backup data
-    return { status: 'completed' };
   });
 };

@@ -58,9 +58,6 @@ export const backupWorker = new Worker(
   { connection: redisOptions }
 );
 
-// Set up job processors
-setupJobProcessors();
-
 // Handle worker events
 const setupWorkerEvents = (worker: Worker, name: string) => {
   worker.on('completed', (job) => {
