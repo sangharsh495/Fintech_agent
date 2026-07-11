@@ -111,7 +111,6 @@ PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operat
 
 ${context}`,
         messages,
-        messages,
       } as any);
 
       streamResponse = result.toTextStreamResponse();
@@ -141,7 +140,6 @@ PROACTIVE FINANCIAL PLANNING DIRECTIVES:
 PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operations: ${pagePolicy.allowedOperations.join(", ")})
 
 ${context}`,
-          messages,
           messages,
         } as any);
 
