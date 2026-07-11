@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { setupJobProcessors } from './queue';
+
 
 // Redis connection options
 const redisOptions = {
