@@ -87,7 +87,7 @@ export default function ClientLayout({
           <main
             className={`flex-1 overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-64" : "md:ml-0"}`}
           >
-            <div className="max-w-[480px] md:max-w-none w-full mx-auto">
+            <div className="container-page py-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
               {children}
             </div>
           </main>
