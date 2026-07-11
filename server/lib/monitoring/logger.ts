@@ -157,7 +157,7 @@ function log(level: LogLevel, message: string, fields?: Record<string, unknown>,
   
   // In production, you could also send to external logging service
   // e.g., Datadog, LogRocket, Sentry, CloudWatch, etc.
-  if (loggerConfig.environment === "production" && level >= LOG_LEVELS.error) {
+  if (loggerConfig.environment === "production" && LOG_LEVELS[level] >= LOG_LEVELS.error) {
     // sendToExternalLogger(entry)
   }
 }
