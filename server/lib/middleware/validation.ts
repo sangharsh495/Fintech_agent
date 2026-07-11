@@ -33,7 +33,7 @@ export async function validateBody<T>(
         field: err.path.join("."),
         message: err.message,
         code: err.code,
-        received: err.received,
+        received: (err as any).received,
       }))
       
       throw ApiError.validationError("Request body validation failed", {
@@ -73,7 +73,7 @@ export function validateQuery<T>(
         field: err.path.join("."),
         message: err.message,
         code: err.code,
-        received: err.received,
+        received: (err as any).received,
       }))
       
       throw ApiError.validationError("Query parameter validation failed", {
@@ -99,7 +99,7 @@ export function validateParams<T>(
         field: err.path.join("."),
         message: err.message,
         code: err.code,
-        received: err.received,
+        received: (err as any).received,
       }))
       
       throw ApiError.validationError("Route parameter validation failed", {
@@ -129,7 +129,7 @@ export function validateHeaders<T>(
         field: err.path.join("."),
         message: err.message,
         code: err.code,
-        received: err.received,
+        received: (err as any).received,
       }))
       
       throw ApiError.validationError("Header validation failed", {
