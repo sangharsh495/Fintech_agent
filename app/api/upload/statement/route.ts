@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
           type: txn.type, amount: txn.amount.toString(),
           category: txn.category, subcategory: txn.subcategory,
           description: txn.description, rawDescription: txn.rawDescription,
-          merchant: txn.merchant, paymentMethod: txn.paymentMethod,
+          merchant: txn.merchant, paymentMethod: txn.paymentMethod || "unknown",
           status: "completed" as const, date: txn.date,
           dayOfWeek: txn.date.getDay(), hourOfDay: txn.date.getHours(),
           isRecurring: txn.isRecurring,
