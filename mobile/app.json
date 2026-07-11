@@ -14,19 +14,20 @@
         "NSFaceIDUsageDescription": "Use Face ID to unlock FinWise securely"
       }
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#0f172a"
+      "android": {
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/android-icon-foreground.png",
+          "backgroundColor": "#0f172a"
+        },
+        "package": "com.finwise.mobile",
+        "permissions": [
+          "USE_BIOMETRIC",
+          "USE_FINGERPRINT",
+          "android.permission.USE_BIOMETRIC",
+          "android.permission.USE_FINGERPRINT",
+          "android.permission.INTERNET"
+        ]
       },
-      "package": "com.finwise.mobile",
-      "permissions": [
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT"
-      ]
-    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
