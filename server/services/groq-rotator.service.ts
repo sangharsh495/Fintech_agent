@@ -87,6 +87,52 @@ class GroqRotatorService {
       console.warn(`[GROQ ROTATOR] Key marked in cooldown for ${durationMs / 1000}s. Key suffix: ...${key.slice(-6)}`);
     }
   }
+
+  /**
+   * Executes a callback function with key rotation and automatic retry on 429/401/network errors.
+   */
+  public async execute<T>(
+    fn: (key: string) => Promise<T>,
+    maxRetries = Math.max(3, this.keys.length)
+  ): Promise<T> {
+    let attempts = 0;
+    let lastError: Error | null = null;
+
+    while (attempts < maxRetries) {
+      const key = this.getAvailableKey();
+      if (!key) {
+        throw new Error("No Groq API keys available or configured.");
+      }
+
+      try {
+        return await fn(key);
+      } catch (error: any) {
+        attempts++;
+        lastError = error;
+        const errorMessage = error?.message || "";
+        const statusCode = error?.status || error?.statusCode;
+
+        console.error(`[GROQ ROTATOR] Attempt ${attempts} failed:`, error);
+
+        // Check if the error indicates a rate limit (429), auth issue (401), or other server error
+        const isRateLimit = statusCode === 429 || errorMessage.includes("429") || errorMessage.toLowerCase().includes("rate limit");
+        const isAuthError = statusCode === 401 || errorMessage.includes("401") || errorMessage.toLowerCase().includes("invalid api key");
+
+        if (isRateLimit || isAuthError) {
+          // Put the key on cooldown
+          this.markCooldown(key);
+        }
+
+        if (attempts >= maxRetries) {
+          break;
+        }
+
+        console.log(`[GROQ ROTATOR] Retrying with another key...`);
+      }
+    }
+
+    throw new Error(`[GROQ ROTATOR] All retries exhausted. Last error: ${lastError?.message}`);
+  }
 }
 
 // Global singleton to preserve cooldown state across hot-reloads in development
