@@ -6,10 +6,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Ensure @napi-rs/canvas (native canvas polyfill for pdfjs-dist) is not bundled
-  // but available as an external dependency in serverless environments (Vercel)
-  // Also externalize pdfjs-dist to prevent Turbopack from breaking its dynamic requires
-  serverExternalPackages: ["@napi-rs/canvas", "pdfjs-dist"],
   async headers() {
     return [
       {
