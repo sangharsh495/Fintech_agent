@@ -42,7 +42,7 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow FinFlow to use Face ID for secure login"
+          "faceIDPermission": "Allow FinWise to use Face ID for secure login"
         }
       ]
     ],
