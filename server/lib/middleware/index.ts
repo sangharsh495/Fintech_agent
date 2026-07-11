@@ -123,10 +123,10 @@ export function createApiHandler(
       query: Object.fromEntries(new URL(req.url).searchParams),
       cache: config.cache
         ? {
-            get: <T>(key: string) => getCache<T>(config.cache!.namespace, key),
+            get: <T>(key: string) => getCache<T>(`${config.cache!.namespace}:${key}`),
             set: <T>(key: string, value: T, ttl?: number) => 
-              setCache(config.cache!.namespace, key, value, { ttl: ttl || config.cache!.ttl }),
-            delete: (key: string) => deleteCache(config.cache!.namespace, key),
+              setCache(`${config.cache!.namespace}:${key}`, value, { ttl: ttl || config.cache!.ttl }),
+            delete: (key: string) => deleteCache(`${config.cache!.namespace}:${key}`),
           }
         : undefined,
       metrics: config.metrics ? {
@@ -268,7 +268,7 @@ function createCacheWrapper(config: { namespace: string; keyGenerator: (req: Nex
     }
     
     const key = config.keyGenerator(req)
-    const cached = await getCache(config.namespace, key)
+    const cached = await getCache(`${config.namespace}:${key}`)
     
     if (cached !== null) {
       const response = NextResponse.json(cached)
