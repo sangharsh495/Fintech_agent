@@ -14,8 +14,9 @@ export interface ParsedTransaction {
   subcategory?: string
   merchant?: string
   isRecurring: boolean
-  paymentMethod: string
+  paymentMethod?: string
   hash: string
+  tags?: any
 }
 
 export function computeHash(date: Date, amount: number, rawDescription: string): string {

@@ -29,7 +29,8 @@ interface ParsedTransaction {
   rawDescription: string
   paymentMethod?: string
   merchant?: string
-}
+  hash?: string
+  tags?: any
 
 interface ProcessedTransaction extends ParsedTransaction {
   category: string
@@ -76,7 +77,7 @@ const worker = new Worker<StatementProcessingJobData>(
             ...t,
             category: category.category || "Uncategorized",
             subcategory: category.subcategory,
-            tags: (category as any).tags,
+            tags: category.tags ? (Array.isArray(category.tags) ? category.tags.join(",") : category.tags) : undefined,
             isRecurring: category.isRecurring || false,
             hash: t.hash || crypto.createHash("sha256").update(`${t.date}-${t.amount}-${t.description}`).digest("hex")
           }
