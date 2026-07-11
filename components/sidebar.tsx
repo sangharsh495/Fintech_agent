@@ -31,7 +31,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
     <>
       <aside
         className={cn(
-          "fixed left-0 top-16 z-40 w-[18rem] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out",
+          "fixed left-0 top-16 z-40 w-[16rem] border-r border-border bg-card/50 backdrop-blur-lg flex flex-col overflow-y-auto transition-all duration-500 ease-out",
           "h-[calc(100vh-4rem)]",
           isOpen ? "translate-x-0 opacity-100 visible" : "-translate-x-full opacity-0 invisible",
         )}
