@@ -14,7 +14,7 @@ class GroqKeyManager {
   constructor(rawKeys: string[]) {
     this.keys = Array.from(new Set(rawKeys.filter(Boolean)));
     if (this.keys.length === 0) {
-      throw new Error("No Groq API keys configured (check GROQ_KEY_1/2/3 env vars)");
+      console.warn("[GROQ KEY MANAGER] Warning: No Groq API keys configured (check GROQ_KEY_1/2/3 env vars). API calls will fail at runtime.");
     }
     this.checkRedis();
   }
@@ -58,6 +58,9 @@ class GroqKeyManager {
 
   /** Returns the next available key, round-robin, skipping ones on cooldown. */
   async getNextAvailable(): Promise<string | null> {
+    if (this.keys.length === 0) {
+      throw new Error("No Groq API keys configured (check GROQ_KEY_1/2/3 env vars)");
+    }
     const n = this.keys.length;
     for (let i = 0; i < n; i++) {
       const idx = (this.cursor + i) % n;
