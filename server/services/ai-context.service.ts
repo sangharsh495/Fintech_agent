@@ -1,5 +1,5 @@
 import { db } from "@/server/db"
-import { transactions, bankAccounts, userProfiles } from "@/server/db/schema"
+import { transactions, bankAccounts, userProfiles, clusterMetadata } from "@/server/db/schema"
 import { eq, and, desc, gte, lte, sum, sql } from "drizzle-orm"
 
 // Slabs for tax calculation (identical to tax route)
@@ -28,7 +28,7 @@ function calcTax(income: number, slabs: typeof OLD_REGIME_SLABS): number {
   return tax * 1.04 // 4% cess
 }
 
-export async function buildUserContext(userId: string): Promise<string> {
+export async function buildUserContext(userId: string, currentPath: string = "/"): Promise<string> {
   const threeMonthsAgo = new Date()
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
 
@@ -117,7 +117,28 @@ export async function buildUserContext(userId: string): Promise<string> {
     const hasAadhaar = !!profile?.aadhaarLast4
     const kycStatus = (hasPan && hasAadhaar) ? "VERIFIED" : "PENDING"
 
-    return `
+    // Fetch dynamic DBMS-computed ML clustering categories
+    const userClusters = await db
+      .select()
+      .from(clusterMetadata)
+      .where(eq(clusterMetadata.userId, userId))
+
+    let clusterContext = ""
+    if (userClusters.length > 0) {
+      clusterContext = userClusters
+        .map(
+          (m) =>
+            `- [${m.clusterType.toUpperCase()}] ${m.label}: ${m.description} (${m.transactionCount} transactions, avg ₹${Math.round(m.avgAmount)})`
+        )
+        .join("\n")
+    }
+
+    // Determine priority blocks based on user's current route location
+    const isTaxPath = currentPath.includes("tax")
+    const isAnalyticsPath = currentPath.includes("analytics")
+    const isSettingsPath = currentPath.includes("settings") || currentPath.includes("profile")
+
+    const profileText = `
 USER PROFILE & ACCOUNT DETAILS:
 - Name/ID: ${userId}
 - Occupation: ${profile?.occupation || "not specified"}
@@ -127,7 +148,9 @@ USER PROFILE & ACCOUNT DETAILS:
 - Linked Accounts: ${banks.length} bank(s) active (${bankNames || "none linked"})
 - AI consent: ${profile?.consentAIAssistant ? "approved" : "revoked"}
 - ML analytics consent: ${profile?.consentMLAnalytics ? "approved" : "revoked"}
+`.trim()
 
+    const taxText = `
 TAX LIABILITY SUMMARY (FY 2025-26):
 - Tax Regime Preference: ${taxRegime.toUpperCase()} regime
 - Better Alternative: ${betterRegime.toUpperCase()} regime (Potential savings vs other: ₹${Math.abs(Math.round(oldTax - newTax)).toLocaleString("en-IN")})
@@ -139,6 +162,11 @@ TAX LIABILITY SUMMARY (FY 2025-26):
 
 TAX SAVING OPPORTUNITIES:
 ${taxOpportunities.length > 0 ? taxOpportunities.map(o => `- ${o}`).join("\n") : "- Fully optimized! No current opportunities found."}
+`.trim()
+
+    const analyticsText = `
+DBMS-COMPUTED ML CLUSTERING SAMPLES:
+${clusterContext || "- No dynamic ML clusters computed yet. Ask the user to upload statement PDFs first."}
 
 LAST 3 MONTHS SPENDING METRICS:
 - Average monthly income: ₹${Math.round(avgIncome).toLocaleString("en-IN")}
@@ -150,6 +178,22 @@ ${topCategories || "No data available"}
 
 MONTHLY TRENDS:
 ${monthlyTrends || "No data available"}
+`.trim()
+
+    // Route-sensitive context assembly
+    let finalContext = ""
+    if (isTaxPath) {
+      finalContext = `[PATH: ${currentPath} - Prioritizing tax and saving insights]\n\n${taxText}\n\n${profileText}\n\n${analyticsText}`
+    } else if (isAnalyticsPath) {
+      finalContext = `[PATH: ${currentPath} - Prioritizing behavioral clusters & spending profiles]\n\n${analyticsText}\n\n${profileText}\n\n${taxText}`
+    } else if (isSettingsPath) {
+      finalContext = `[PATH: ${currentPath} - Prioritizing account preferences & consent status]\n\n${profileText}\n\n${taxText}\n\n${analyticsText}`
+    } else {
+      finalContext = `[PATH: ${currentPath} - Prioritizing standard dashboard overview]\n\n${profileText}\n\n${analyticsText}\n\n${taxText}`
+    }
+
+    return `
+${finalContext}
 
 IMPORTANT: Only discuss this user's own financial data. Never reference other users. Keep recommendations private.
 `.trim()
