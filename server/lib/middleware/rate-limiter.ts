@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Ratelimit } from "@upstash/ratelimit"
 import { Redis } from "@upstash/redis"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/server/auth/config"
+import { auth } from "@/server/auth"
 
 /**
  * Rate Limiting Middleware for FinFlow
@@ -58,13 +57,13 @@ export const RateLimitConfigs = {
 type RateLimitConfig = (typeof RateLimitConfigs)[keyof typeof RateLimitConfigs]
 
 // Cache of rate limiters
-const rateLimiters = new Map<string, Ratelimit>()
+const rateLimiterCache = new Map<string, Ratelimit>()
 
 function getRateLimiter(config: RateLimitConfig): Ratelimit {
   const key = `${config.prefix}:${config.tokens}:${config.window}`
   
-  if (!rateLimiters.has(key)) {
-    rateLimiters.set(
+  if (!rateLimiterCache.has(key)) {
+    rateLimiterCache.set(
       key,
       new Ratelimit({
         redis,
@@ -75,7 +74,7 @@ function getRateLimiter(config: RateLimitConfig): Ratelimit {
     )
   }
   
-  return rateLimiters.get(key)!
+  return rateLimiterCache.get(key)!
 }
 
 /**
@@ -84,7 +83,7 @@ function getRateLimiter(config: RateLimitConfig): Ratelimit {
  */
 async function getIdentifier(request: NextRequest): Promise<string> {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (session?.user?.id) {
       return `user:${session.user.id}`
     }
@@ -173,7 +172,8 @@ export function withRateLimit(
   
   return async function rateLimitedHandler(request: NextRequest): Promise<NextResponse> {
     const identifier = await getIdentifier(request)
-    const { success, limit, reset, remaining } = await limiter.limit(identifier)
+    const limiterInstance = getRateLimiter(config)
+    const { success, limit, reset, remaining } = await limiterInstance.limit(identifier)
     
     if (!success) {
       return new NextResponse(
