@@ -22,8 +22,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  try {
-    const { messages, currentPath, contextTypes, maxTokens } = await req.json()
+    let currentPath = "/";
+    try {
+      const body = await req.json();
+      currentPath = body.currentPath || "/";
+      const { messages, contextTypes, maxTokens } = body;
     const userId = session.user.id
     const userEmail = session.user.email || ""
 
@@ -108,10 +111,10 @@ PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operat
 
 ${context}`,
         messages,
-        maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
-      });
+        messages,
+      } as any);
 
-      streamResponse = result.toDataStreamResponse();
+      streamResponse = result.toTextStreamResponse();
     } else {
       // Fallback to Groq with key rotation and automatic retry logic
       streamResponse = await groqRotator.execute(async (currentKey) => {
@@ -139,10 +142,10 @@ PAGE CONTEXT: ${currentPath || "/"} (Data scope: ${pagePolicy.dataScope}, Operat
 
 ${context}`,
           messages,
-          maxTokens: Math.min(requestedTokens, aiAccess.policy.maxTokens),
-        });
+          messages,
+        } as any);
 
-        return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
       });
     }
 
