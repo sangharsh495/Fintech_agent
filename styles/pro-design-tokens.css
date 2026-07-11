@@ -1,0 +1,845 @@
+/* ============================================================================
+   PROFESSIONAL DESIGN TOKENS - CSS Custom Properties
+   FinTech Application - Industry Standard UI/UX
+   ============================================================================ */
+
+  /* ==========================================================================
+     CSS CUSTOM PROPERTIES - Design Tokens
+     ========================================================================== */
+
+  :root {
+    /* ========================================================================
+       SPACING SYSTEM - 8px Base Grid
+       ======================================================================== */
+    --spacing-xs: 8px;        /* 0.5rem */
+    --spacing-sm: 12px;       /* 0.75rem */
+    --spacing-md: 16px;       /* 1rem */
+    --spacing-lg: 24px;       /* 1.5rem */
+    --spacing-xl: 32px;       /* 2rem */
+    --spacing-2xl: 48px;      /* 3rem */
+    --spacing-3xl: 64px;      /* 4rem */
+    --spacing-4xl: 80px;      /* 5rem */
+
+    /* Section spacing */
+    --spacing-section-mobile: 24px;    /* 1.5rem */
+    --spacing-section-tablet: 40px;    /* 2.5rem */
+    --spacing-section-desktop: 64px;   /* 4rem */
+
+    /* ========================================================================
+       TYPOGRAPHY - Professional Scale
+       ======================================================================== */
+
+    /* Font families */
+    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --font-family-serif: 'Georgia', 'Times New Roman', serif;
+
+    /* Font weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
+
+    /* Line heights */
+    --line-height-tight: 1.1;
+    --line-height-normal: 1.4;
+    --line-height-relaxed: 1.6;
+    --line-height-loose: 2;
+
+    /* Letter spacing */
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.025em;
+    --letter-spacing-wider: 0.05em;
+
+    /* ========================================================================
+       BORDER RADIUS - Modern, Smooth Corners
+       ======================================================================== */
+    --radius-none: 0;
+    --radius-xs: 4px;         /* 0.25rem */
+    --radius-sm: 6px;         /* 0.375rem */
+    --radius-md: 8px;         /* 0.5rem */
+    --radius-lg: 12px;        /* 0.75rem */
+    --radius-xl: 16px;        /* 1rem */
+    --radius-2xl: 24px;       /* 1.5rem */
+    --radius-3xl: 32px;       /* 2rem */
+    --radius-full: 9999px;    /* Fully rounded */
+
+    /* Component-specific radii */
+    --radius-button: 8px;
+    --radius-card: 12px;
+    --radius-input: 8px;
+    --radius-badge: 9999px;
+    --radius-avatar: 9999px;
+    --radius-dialog: 16px;
+    --radius-sheet: 16px;
+    --radius-popover: 8px;
+    --radius-tooltip: 6px;
+
+    /* ========================================================================
+       SHADOWS - Layered, Professional Depth
+       ======================================================================== */
+
+    /* Standard shadows */
+    --shadow-none: 0 0 0 0 rgba(0, 0, 0, 0);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* Colored shadows */
+    --shadow-primary-sm: 0 0 0 3px rgba(67, 56, 202, 0.1), 0 2px 4px rgba(67, 56, 202, 0.1);
+    --shadow-primary-md: 0 0 0 4px rgba(67, 56, 202, 0.15), 0 4px 8px rgba(67, 56, 202, 0.15);
+    --shadow-primary-lg: 0 0 0 6px rgba(67, 56, 202, 0.2), 0 8px 16px rgba(67, 56, 202, 0.2);
+
+    /* Inner shadows */
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+
+    /* ========================================================================
+       ANIMATIONS - Smooth, Professional Transitions
+       ======================================================================== */
+
+    /* Timing functions */
+    --ease-linear: linear;
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Animation durations */
+    --duration-instant: 0ms;
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --duration-slower: 500ms;
+    --duration-slowest: 1000ms;
+
+    /* ========================================================================
+       Z-INDEX SCALE - Layer Management
+       ======================================================================== */
+    --z-base: 0;
+    --z-raised: 10;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal-backdrop: 400;
+    --z-modal: 500;
+    --z-popover: 600;
+    --z-tooltip: 700;
+    --z-notification: 800;
+    --z-max: 9999;
+
+    /* ========================================================================
+       LAYOUT CONSTRAINTS
+       ======================================================================== */
+
+    /* Maximum widths */
+    --max-width-xs: 320px;
+    --max-width-sm: 425px;
+    --max-width-md: 768px;
+    --max-width-lg: 1024px;
+    --max-width-xl: 1280px;
+    --max-width-2xl: 1536px;
+    --max-width-full: 100%;
+
+    /* Sidebar widths */
+    --sidebar-width-collapsed: 64px;
+    --sidebar-width-compact: 256px;
+    --sidebar-width-expanded: 288px;
+
+    /* Header heights */
+    --header-height-mobile: 56px;
+    --header-height-desktop: 64px;
+
+    /* ========================================================================
+       COMPONENT DIMENSIONS
+       ======================================================================== */
+
+    /* Icons */
+    --icon-xs: 12px;
+    --icon-sm: 16px;
+    --icon-md: 20px;
+    --icon-lg: 24px;
+    --icon-xl: 28px;
+    --icon-2xl: 32px;
+    --icon-3xl: 40px;
+
+    /* Buttons */
+    --button-height-sm: 32px;
+    --button-height-md: 40px;
+    --button-height-lg: 48px;
+    --button-icon-sm: 24px;
+    --button-icon-md: 32px;
+    --button-icon-lg: 40px;
+
+    /* Cards */
+    --card-radius: 12px;
+    --card-padding-sm: 16px;
+    --card-padding-md: 24px;
+    --card-padding-lg: 32px;
+    --card-padding-xl: 40px;
+
+    /* Inputs */
+    --input-height-sm: 32px;
+    --input-height-md: 40px;
+    --input-height-lg: 48px;
+    --input-padding-horizontal: 16px;
+    --input-padding-vertical: 12px;
+
+    /* Avatars */
+    --avatar-xs: 24px;
+    --avatar-sm: 32px;
+    --avatar-md: 40px;
+    --avatar-lg: 48px;
+    --avatar-xl: 56px;
+    --avatar-2xl: 64px;
+
+    /* Badges */
+    --badge-height-sm: 16px;
+    --badge-height-md: 20px;
+    --badge-height-lg: 24px;
+    --badge-padding-horizontal: 8px;
+    --badge-padding-vertical: 4px;
+  }
+
+  /* ==========================================================================
+     UTILITY CLASSES - Professional Spacing
+     ========================================================================== */
+
+  /* Margin utilities */
+  .m-xs { margin: var(--spacing-xs); }
+  .m-sm { margin: var(--spacing-sm); }
+  .m-md { margin: var(--spacing-md); }
+  .m-lg { margin: var(--spacing-lg); }
+  .m-xl { margin: var(--spacing-xl); }
+  .m-2xl { margin: var(--spacing-2xl); }
+  .m-3xl { margin: var(--spacing-3xl); }
+  .m-4xl { margin: var(--spacing-4xl); }
+
+  .mx-xs { margin-left: var(--spacing-xs); margin-right: var(--spacing-xs); }
+  .mx-sm { margin-left: var(--spacing-sm); margin-right: var(--spacing-sm); }
+  .mx-md { margin-left: var(--spacing-md); margin-right: var(--spacing-md); }
+  .mx-lg { margin-left: var(--spacing-lg); margin-right: var(--spacing-lg); }
+  .mx-xl { margin-left: var(--spacing-xl); margin-right: var(--spacing-xl); }
+
+  .my-xs { margin-top: var(--spacing-xs); margin-bottom: var(--spacing-xs); }
+  .my-sm { margin-top: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
+  .my-md { margin-top: var(--spacing-md); margin-bottom: var(--spacing-md); }
+  .my-lg { margin-top: var(--spacing-lg); margin-bottom: var(--spacing-lg); }
+  .my-xl { margin-top: var(--spacing-xl); margin-bottom: var(--spacing-xl); }
+
+  .mt-xs { margin-top: var(--spacing-xs); }
+  .mt-sm { margin-top: var(--spacing-sm); }
+  .mt-md { margin-top: var(--spacing-md); }
+  .mt-lg { margin-top: var(--spacing-lg); }
+  .mt-xl { margin-top: var(--spacing-xl); }
+
+  .mb-xs { margin-bottom: var(--spacing-xs); }
+  .mb-sm { margin-bottom: var(--spacing-sm); }
+  .mb-md { margin-bottom: var(--spacing-md); }
+  .mb-lg { margin-bottom: var(--spacing-lg); }
+  .mb-xl { margin-bottom: var(--spacing-xl); }
+
+  /* Padding utilities */
+  .p-xs { padding: var(--spacing-xs); }
+  .p-sm { padding: var(--spacing-sm); }
+  .p-md { padding: var(--spacing-md); }
+  .p-lg { padding: var(--spacing-lg); }
+  .p-xl { padding: var(--spacing-xl); }
+  .p-2xl { padding: var(--spacing-2xl); }
+  .p-3xl { padding: var(--spacing-3xl); }
+  .p-4xl { padding: var(--spacing-4xl); }
+
+  .px-xs { padding-left: var(--spacing-xs); padding-right: var(--spacing-xs); }
+  .px-sm { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
+  .px-md { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
+  .px-lg { padding-left: var(--spacing-lg); padding-right: var(--spacing-lg); }
+  .px-xl { padding-left: var(--spacing-xl); padding-right: var(--spacing-xl); }
+
+  .py-xs { padding-top: var(--spacing-xs); padding-bottom: var(--spacing-xs); }
+  .py-sm { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
+  .py-md { padding-top: var(--spacing-md); padding-bottom: var(--spacing-md); }
+  .py-lg { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
+  .py-xl { padding-top: var(--spacing-xl); padding-bottom: var(--spacing-xl); }
+
+  /* ==========================================================================
+     TYPOGRAPHY UTILITIES
+     ========================================================================== */
+
+  /* Font families */
+  .font-sans { font-family: var(--font-family-sans); }
+  .font-mono { font-family: var(--font-family-mono); }
+  .font-serif { font-family: var(--font-family-serif); }
+
+  /* Font weights */
+  .font-light { font-weight: var(--font-weight-light); }
+  .font-normal { font-weight: var(--font-weight-normal); }
+  .font-medium { font-weight: var(--font-weight-medium); }
+  .font-semibold { font-weight: var(--font-weight-semibold); }
+  .font-bold { font-weight: var(--font-weight-bold); }
+  .font-extrabold { font-weight: var(--font-weight-extrabold); }
+  .font-black { font-weight: var(--font-weight-black); }
+
+  /* Line heights */
+  .leading-tight { line-height: var(--line-height-tight); }
+  .leading-normal { line-height: var(--line-height-normal); }
+  .leading-relaxed { line-height: var(--line-height-relaxed); }
+  .leading-loose { line-height: var(--line-height-loose); }
+
+  /* Font sizes - Responsive */
+  .text-xs { font-size: 12px; }
+  .text-sm { font-size: 14px; }
+  .text-base { font-size: 16px; }
+  .text-lg { font-size: 18px; }
+  .text-xl { font-size: 20px; }
+  .text-2xl { font-size: 24px; }
+  .text-3xl { font-size: 30px; }
+  .text-4xl { font-size: 36px; }
+  .text-5xl { font-size: 48px; }
+  .text-6xl { font-size: 60px; }
+  .text-7xl { font-size: 72px; }
+
+  @media (min-width: 768px) {
+    .text-3xl { font-size: 36px; }
+    .text-4xl { font-size: 42px; }
+    .text-5xl { font-size: 56px; }
+  }
+
+  @media (min-width: 1024px) {
+    .text-4xl { font-size: 48px; }
+    .text-5xl { font-size: 64px; }
+  }
+
+  /* ==========================================================================
+     BORDER RADIUS UTILITIES
+     ========================================================================== */
+
+  .rounded-none { border-radius: var(--radius-none); }
+  .rounded-xs { border-radius: var(--radius-xs); }
+  .rounded-sm { border-radius: var(--radius-sm); }
+  .rounded-md { border-radius: var(--radius-md); }
+  .rounded-lg { border-radius: var(--radius-lg); }
+  .rounded-xl { border-radius: var(--radius-xl); }
+  .rounded-2xl { border-radius: var(--radius-2xl); }
+  .rounded-3xl { border-radius: var(--radius-3xl); }
+  .rounded-full { border-radius: var(--radius-full); }
+
+  /* ==========================================================================
+     SHADOW UTILITIES
+     ========================================================================== */
+
+  .shadow-none { box-shadow: var(--shadow-none); }
+  .shadow-sm { box-shadow: var(--shadow-sm); }
+  .shadow-md { box-shadow: var(--shadow-md); }
+  .shadow-lg { box-shadow: var(--shadow-lg); }
+  .shadow-xl { box-shadow: var(--shadow-xl); }
+  .shadow-2xl { box-shadow: var(--shadow-2xl); }
+
+  .shadow-primary-sm { box-shadow: var(--shadow-primary-sm); }
+  .shadow-primary-md { box-shadow: var(--shadow-primary-md); }
+  .shadow-primary-lg { box-shadow: var(--shadow-primary-lg); }
+
+  /* ==========================================================================
+     ANIMATION UTILITIES
+     ========================================================================== */
+
+  /* Animation durations */
+  .duration-instant { transition-duration: var(--duration-instant); }
+  .duration-fast { transition-duration: var(--duration-fast); }
+  .duration-normal { transition-duration: var(--duration-normal); }
+  .duration-slow { transition-duration: var(--duration-slow); }
+  .duration-slower { transition-duration: var(--duration-slower); }
+  .duration-slowest { transition-duration: var(--duration-slowest); }
+
+  /* Timing functions */
+  .ease-linear { transition-timing-function: var(--ease-linear); }
+  .ease-in { transition-timing-function: var(--ease-in); }
+  .ease-out { transition-timing-function: var(--ease-out); }
+  .ease-in-out { transition-timing-function: var(--ease-in-out); }
+  .ease-spring { transition-timing-function: var(--ease-spring); }
+  .ease-bounce { transition-timing-function: var(--ease-bounce); }
+
+  /* ==========================================================================
+     Z-INDEX UTILITIES
+     ========================================================================== */
+
+  .z-base { z-index: var(--z-base); }
+  .z-raised { z-index: var(--z-raised); }
+  .z-dropdown { z-index: var(--z-dropdown); }
+  .z-sticky { z-index: var(--z-sticky); }
+  .z-fixed { z-index: var(--z-fixed); }
+  .z-modal-backdrop { z-index: var(--z-modal-backdrop); }
+  .z-modal { z-index: var(--z-modal); }
+  .z-popover { z-index: var(--z-popover); }
+  .z-tooltip { z-index: var(--z-tooltip); }
+  .z-notification { z-index: var(--z-notification); }
+  .z-max { z-index: var(--z-max); }
+
+  /* ==========================================================================
+     LAYOUT UTILITIES
+     ========================================================================== */
+
+  /* Maximum widths */
+  .max-w-xs { max-width: var(--max-width-xs); }
+  .max-w-sm { max-width: var(--max-width-sm); }
+  .max-w-md { max-width: var(--max-width-md); }
+  .max-w-lg { max-width: var(--max-width-lg); }
+  .max-w-xl { max-width: var(--max-width-xl); }
+  .max-w-2xl { max-width: var(--max-width-2xl); }
+  .max-w-full { max-width: var(--max-width-full); }
+
+  /* ==========================================================================
+     COMPONENT-SPECIFIC UTILITIES
+     ========================================================================== */
+
+  /* Button utilities */
+  .btn-sm { height: var(--button-height-sm); }
+  .btn-md { height: var(--button-height-md); }
+  .btn-lg { height: var(--button-height-lg); }
+
+  /* Card utilities */
+  .card-sm { padding: var(--card-padding-sm); }
+  .card-md { padding: var(--card-padding-md); }
+  .card-lg { padding: var(--card-padding-lg); }
+  .card-xl { padding: var(--card-padding-xl); }
+
+  /* ==========================================================================
+     PROFESSIONAL TRANSITIONS
+     ========================================================================== */
+
+  /* Smooth transitions for all interactive elements */
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: var(--duration-normal);
+  }
+
+  .transition-colors {
+    transition-property: color, background-color, border-color;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: var(--duration-normal);
+  }
+
+  .transition-shadow {
+    transition-property: box-shadow;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: var(--duration-normal);
+  }
+
+  .transition-transform {
+    transition-property: transform;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: var(--duration-normal);
+  }
+
+  .transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: var(--ease-in-out);
+    transition-duration: var(--duration-normal);
+  }
+
+  /* ==========================================================================
+     HOVER STATES
+     ========================================================================== */
+
+  /* Elevation on hover */
+  .hover-lift {
+    transition: transform var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hover-lift-lg:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Scale on hover */
+  .hover-scale {
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  .hover-scale-sm:hover {
+    transform: scale(1.01);
+  }
+
+  .hover-scale-lg:hover {
+    transform: scale(1.03);
+  }
+
+  /* ==========================================================================
+     FOCUS STATES - Accessibility
+     ========================================================================== */
+
+  /* Visible focus ring */
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.3);
+  }
+
+  /* Focus for interactive elements */
+  .focus-interactive:focus {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* ==========================================================================
+     ACTIVE STATES
+     ========================================================================== */
+
+  /* Pressed state */
+  .active-press:active {
+    transform: scale(0.98);
+    transition-duration: var(--duration-fast);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE LAYOUT UTILITIES
+     ========================================================================== */
+
+  /* Grid gaps */
+  .gap-xs { gap: var(--spacing-xs); }
+  .gap-sm { gap: var(--spacing-sm); }
+  .gap-md { gap: var(--spacing-md); }
+  .gap-lg { gap: var(--spacing-lg); }
+  .gap-xl { gap: var(--spacing-xl); }
+
+  /* Flex gaps */
+  .flex-gap-xs { display: flex; gap: var(--spacing-xs); }
+  .flex-gap-sm { display: flex; gap: var(--spacing-sm); }
+  .flex-gap-md { display: flex; gap: var(--spacing-md); }
+  .flex-gap-lg { display: flex; gap: var(--spacing-lg); }
+  .flex-gap-xl { display: flex; gap: var(--spacing-xl); }
+
+  /* Grid gaps */
+  .grid-gap-xs { display: grid; gap: var(--spacing-xs); }
+  .grid-gap-sm { display: grid; gap: var(--spacing-sm); }
+  .grid-gap-md { display: grid; gap: var(--spacing-md); }
+  .grid-gap-lg { display: grid; gap: var(--spacing-lg); }
+  .grid-gap-xl { display: grid; gap: var(--spacing-xl); }
+
+  /* ==========================================================================
+     PROFESSIONAL CARD STYLES
+     ========================================================================== */
+
+  /* Base card */
+  .card-pro {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: var(--card-padding-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
+  }
+
+  /* Hoverable card */
+  .card-pro-hover:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* Elevated card */
+  .card-pro-elevated {
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Flat card */
+  .card-pro-flat {
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Bordered card */
+  .card-pro-bordered {
+    border: 1px solid var(--border);
+  }
+
+  /* Interactive card */
+  .card-pro-interactive {
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+
+  .card-pro-interactive:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+
+  /* ==========================================================================
+     PROFESSIONAL BUTTON STYLES
+     ========================================================================== */
+
+  /* Base button reset */
+  .btn-pro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-button);
+    transition: all var(--duration-normal) var(--ease-out);
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* Button sizes */
+  .btn-pro-sm {
+    height: var(--button-height-sm);
+    padding: 0 var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .btn-pro-md {
+    height: var(--button-height-md);
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-base);
+    gap: var(--spacing-sm);
+  }
+
+  .btn-pro-lg {
+    height: var(--button-height-lg);
+    padding: 0 var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    gap: var(--spacing-md);
+  }
+
+  /* Button variants */
+  .btn-pro-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+  }
+
+  .btn-pro-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-pro-primary:active:not(:disabled) {
+    background: var(--primary-active);
+    transform: translateY(0);
+  }
+
+  .btn-pro-secondary {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+  }
+
+  .btn-pro-secondary:hover:not(:disabled) {
+    background: var(--secondary-hover);
+    border-color: var(--border-hover);
+  }
+
+  .btn-pro-outline {
+    background: transparent;
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+
+  .btn-pro-outline:hover:not(:disabled) {
+    background: var(--secondary);
+    border-color: var(--border-hover);
+  }
+
+  .btn-pro-ghost {
+    background: transparent;
+    color: var(--foreground);
+    border: none;
+  }
+
+  .btn-pro-ghost:hover:not(:disabled) {
+    background: var(--secondary);
+  }
+
+  .btn-pro-destructive {
+    background: var(--destructive);
+    color: var(--destructive-foreground);
+    border: none;
+  }
+
+  .btn-pro-destructive:hover:not(:disabled) {
+    background: var(--destructive-hover);
+  }
+
+  .btn-pro-link {
+    background: transparent;
+    color: var(--primary);
+    border: none;
+    text-decoration: underline;
+  }
+
+  .btn-pro-link:hover:not(:disabled) {
+    color: var(--primary-hover);
+    text-decoration: none;
+  }
+
+  /* Disabled state */
+  .btn-pro:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* ==========================================================================
+     PROFESSIONAL FORM STYLES
+     ========================================================================== */
+
+  /* Input base */
+  .input-pro {
+    width: 100%;
+    padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+    border-radius: var(--radius-input);
+    border: 1px solid var(--input);
+    background: var(--background);
+    font-size: var(--font-size-base);
+    color: var(--foreground);
+    transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  .input-pro:focus {
+    border-color: var(--ring);
+    box-shadow: var(--shadow-primary-sm);
+    outline: none;
+  }
+
+  .input-pro:disabled {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Input sizes */
+  .input-pro-sm {
+    height: var(--input-height-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  .input-pro-md {
+    height: var(--input-height-md);
+  }
+
+  .input-pro-lg {
+    height: var(--input-height-lg);
+    font-size: var(--font-size-lg);
+  }
+
+  /* ==========================================================================
+     MEDIA QUERIES - Responsive Breakpoints
+     ========================================================================== */
+
+  @media (min-width: 640px) {
+    .sm\:block { display: block; }
+    .sm\:flex { display: flex; }
+    .sm\:grid { display: grid; }
+    .sm\:hidden { display: none; }
+
+    .sm\:p-xs { padding: var(--spacing-xs); }
+    .sm\:p-sm { padding: var(--spacing-sm); }
+    .sm\:p-md { padding: var(--spacing-md); }
+    .sm\:p-lg { padding: var(--spacing-lg); }
+
+    .sm\:gap-xs { gap: var(--spacing-xs); }
+    .sm\:gap-sm { gap: var(--spacing-sm); }
+    .sm\:gap-md { gap: var(--spacing-md); }
+    .sm\:gap-lg { gap: var(--spacing-lg); }
+  }
+
+  @media (min-width: 768px) {
+    .md\:block { display: block; }
+    .md\:flex { display: flex; }
+    .md\:grid { display: grid; }
+    .md\:hidden { display: none; }
+
+    .md\:p-xs { padding: var(--spacing-xs); }
+    .md\:p-sm { padding: var(--spacing-sm); }
+    .md\:p-md { padding: var(--spacing-md); }
+    .md\:p-lg { padding: var(--spacing-lg); }
+
+    .md\:gap-xs { gap: var(--spacing-xs); }
+    .md\:gap-sm { gap: var(--spacing-sm); }
+    .md\:gap-md { gap: var(--spacing-md); }
+    .md\:gap-lg { gap: var(--spacing-lg); }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:block { display: block; }
+    .lg\:flex { display: flex; }
+    .lg\:grid { display: grid; }
+    .lg\:hidden { display: none; }
+
+    .lg\:p-xs { padding: var(--spacing-xs); }
+    .lg\:p-sm { padding: var(--spacing-sm); }
+    .lg\:p-md { padding: var(--spacing-md); }
+    .lg\:p-lg { padding: var(--spacing-lg); }
+  }
+
+  @media (min-width: 1280px) {
+    .xl\:block { display: block; }
+    .xl\:flex { display: flex; }
+    .xl\:grid { display: grid; }
+    .xl\:hidden { display: none; }
+  }
+
+  /* ==========================================================================
+     PRINT STYLES
+     ========================================================================== */
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      font-size: 12pt;
+      line-height: 1.5;
+    }
+
+    .print-break {
+      page-break-before: always;
+    }
+  }
+
+  /* ==========================================================================
+     REDUCED MOTION - Accessibility
+     ========================================================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ==========================================================================
+     HIGH CONTRAST MODE - Accessibility
+     ========================================================================== */
+
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 2px solid currentColor;
+      --input: 2px solid currentColor;
+    }
+  }
