@@ -153,14 +153,14 @@ export const uploadApi = {
 }
 
 export const aiApi = {
-  chat: async (token: string, messages: any[]) => {
+  chat: async (token: string, messages: any[], currentPath: string = "/mobile") => {
     const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, currentPath }),
     })
 
     if (!response.ok) {
