@@ -5,7 +5,10 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const formData = (await req.formData()) as FormData;
+    // `req.formData()` returns the Web `FormData`. Under @types/node the global
+    // `FormData` symbol differs from the DOM one, so we go through `any` to call
+    // `.get()` without tripping the type-overlap check.
+    const formData: any = await req.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
