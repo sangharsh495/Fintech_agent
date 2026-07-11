@@ -68,6 +68,14 @@ export default function ClientLayout({
   if (isAuthenticated) {
     return (
       <>
+        {showLaunchScreen && (
+          <LaunchScreen
+            onComplete={() => {
+              sessionStorage.setItem("launch_complete", "true")
+              setShowLaunchScreen(false)
+            }}
+          />
+        )}
         <Navbar
           isDark={isDark}
           toggleTheme={toggleTheme}
