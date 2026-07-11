@@ -4,7 +4,7 @@ import { statementUploads, transactions, bankAccounts } from "@/server/db/schema
 import { eq, and } from "drizzle-orm"
 import { statementProcessingQueue, JobNames, type StatementProcessingJobData } from "@/server/jobs/queues"
 import { parseStatementFile } from "@/server/services/parser"
-import { categorizeTransactions } from "@/server/services/parser/categorizer"
+import { categorizeTransaction } from "@/server/services/parser/categorizer"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
 import { mlClusteringQueue, QueueNames } from "@/server/jobs/queues"
 import { addJob } from "@/server/jobs/queues"
@@ -50,7 +50,6 @@ const worker = new Worker<StatementProcessingJobData>(
       .update(statementUploads)
       .set({ 
         processingStatus: "processing",
-        updatedAt: new Date(),
       })
       .where(eq(statementUploads.id, uploadId))
 
@@ -70,7 +69,19 @@ const worker = new Worker<StatementProcessingJobData>(
 
       // Step 3: Categorize transactions
       console.log(`[Worker] Categorizing transactions...`)
-      const categorizedTransactions = await categorizeTransactions(parsedTransactions)
+      const categorizedTransactions = await Promise.all(
+        parsedTransactions.map(async (t: any) => {
+          const category = categorizeTransaction(t.description, t.amount, t.type)
+          return {
+            ...t,
+            category: category.category,
+            subcategory: category.subcategory,
+            tags: category.tags,
+            isRecurring: category.isRecurring || false,
+            hash: t.hash || crypto.createHash("sha256").update(`${t.date}-${t.amount}-${t.description}`).digest("hex")
+          }
+        })
+      )
 
       // Step 4: Deduplicate transactions
       console.log(`[Worker] Checking for duplicates...`)
@@ -95,7 +106,6 @@ const worker = new Worker<StatementProcessingJobData>(
           transactionsExtracted: newTransactions.length,
           transactionsDuplicate: duplicates.length,
           processedAt: new Date(),
-          updatedAt: new Date(),
         })
         .where(eq(statementUploads.id, uploadId))
 
@@ -135,7 +145,7 @@ const worker = new Worker<StatementProcessingJobData>(
         .set({
           processingStatus: "failed",
           errorMessage,
-          updatedAt: new Date(),
+          processedAt: new Date(),
         })
         .where(eq(statementUploads.id, uploadId))
 
