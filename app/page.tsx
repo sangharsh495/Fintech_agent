@@ -342,6 +342,9 @@ export default function Dashboard() {
           </Card>
         </section>
       </main>
+      
+      {/* AI Assistant Widget */}
+      <AIWidget pageContext="/" defaultOpen={false} />
     </div>
   )
 }
