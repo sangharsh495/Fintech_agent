@@ -124,6 +124,28 @@ async function extractPages(buffer: Buffer): Promise<PositionedPage[]> {
   // Canvas polyfill (DOMMatrix, Path2D, etc.) is loaded at module import via ./canvas-polyfill
 
   // Dynamic import to keep bundle size low
+  // Directly polyfill DOM APIs before importing pdfjs-dist
+  const canvas = await import("@napi-rs/canvas");
+  if (typeof globalThis.DOMMatrix === "undefined") globalThis.DOMMatrix = canvas.DOMMatrix as any;
+  if (typeof globalThis.DOMMatrixReadOnly === "undefined") globalThis.DOMMatrixReadOnly = canvas.DOMMatrixReadOnly as any;
+  if (typeof globalThis.Path2D === "undefined") globalThis.Path2D = canvas.Path2D as any;
+  if (typeof globalThis.Canvas === "undefined") globalThis.Canvas = canvas.Canvas as any;
+  if (typeof globalThis.CanvasRenderingContext2D === "undefined") globalThis.CanvasRenderingContext2D = canvas.CanvasRenderingContext2D as any;
+  if (typeof globalThis.ImageData === "undefined") globalThis.ImageData = canvas.ImageData as any;
+  if (typeof globalThis.ImageBitmap === "undefined") globalThis.ImageBitmap = canvas.ImageBitmap as any;
+  
+  if (typeof globalThis.document === 'undefined') {
+    (globalThis as any).document = {
+      createElement: (tagName: string) => {
+        if (tagName.toLowerCase() === 'canvas') return new canvas.Canvas(1, 1);
+        return { tagName: tagName.toUpperCase(), getContext: () => null };
+      },
+      createElementNS: () => null,
+      body: {},
+      head: {},
+    };
+  }
+
   const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
   const pdfDoc = await loadingTask.promise;
