@@ -12,7 +12,7 @@ import { decryptPDF } from "./pdf.decrypt"
 import { extractMetadata } from "./pdf.header"
 import { extractTransactions } from "./pdf.table"
 import type { PDFParseOptions, ParsedStatementResult, PositionedPage, PositionedTextItem } from "./pdf.types"
-import { PDFExtract } from "pdf.js-extract"
+// Removed dependency on pdf.js-extract to avoid worker issues; we now use pdfjs-dist directly.
 
 interface PDFExtractItem {
   str: string
@@ -114,24 +114,35 @@ export async function parsePDFStatement(
 // ─── pdf.js-extract Wrapper ─────────────────────────────────
 
 /**
- * Run pdf.js-extract on a buffer and normalize the output into PositionedPage[].
+ * Extract positioned pages from a PDF buffer using pdfjs-dist.
+ * This implementation avoids the worker used by pdf.js-extract, eliminating the need for the optional `dommatrix` polyfill.
  */
 async function extractPages(buffer: Buffer): Promise<PositionedPage[]> {
-  const pdfExtract = new PDFExtract()
-  const result = await pdfExtract.extractBuffer(buffer, {})
-
-  return result.pages.map((page): PositionedPage => ({
-    pageNumber: page.pageInfo.num,
-    width: page.pageInfo.width,
-    height: page.pageInfo.height,
-    content: page.content
-      .filter((item) => item.str.trim().length > 0)
-      .map((item): PositionedTextItem => ({
-        str: item.str,
-        x: item.x,
-        y: item.y,
-        width: item.w,
-        height: item.h,
-      })),
-  }))
+  // Dynamic import to keep bundle size low
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+  const pdfDoc = await loadingTask.promise;
+  const numPages = pdfDoc.numPages;
+  const pages: PositionedPage[] = [];
+  for (let i = 1; i <= numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 1.0 });
+    const textContent = await page.getTextContent();
+    const items = textContent.items as any[];
+    const positionedItems: PositionedTextItem[] = items.map((it) => ({
+      str: it.str,
+      x: it.transform[4],
+      y: viewport.height - it.transform[5], // invert Y to match original coordinate system
+      width: it.width,
+      height: it.height,
+    }));
+    pages.push({
+      pageNumber: i,
+      width: viewport.width,
+      height: viewport.height,
+      content: positionedItems,
+    });
+  }
+  await pdfDoc.destroy();
+  return pages;
 }

@@ -164,6 +164,9 @@ importers:
       date-fns:
         specifier: 4.1.0
         version: 4.1.0
+      dommatrix:
+        specifier: ^1.0.3
+        version: 1.0.3
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(@upstash/redis@1.36.2)(pg@8.19.0)
@@ -2636,6 +2639,10 @@ packages:
 
   dommatrix@0.1.1:
     resolution: {integrity: sha512-45CQT2bjnN9DXF07PXgG7hfQ2r8a6trrupNuTizRzfLHWWujdebAx8Xry0CB5uVBQlQY/m0TE/Whe5nrua+lsQ==}
+
+  dommatrix@1.0.3:
+    resolution: {integrity: sha512-l32Xp/TLgWb8ReqbVJAFIvXmY7go4nTxxlWiAFyhoQw9RKEOHBZNnyGvJWqDVSPmq3Y9HlM4npqF/T6VMOXhww==}
+    deprecated: dommatrix is no longer maintained. Please use @thednp/dommatrix.
 
   dompurify@3.3.1:
     resolution: {integrity: sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==}
@@ -6172,6 +6179,8 @@ snapshots:
       csstype: 3.2.3
 
   dommatrix@0.1.1: {}
+
+  dommatrix@1.0.3: {}
 
   dompurify@3.3.1:
     optionalDependencies:

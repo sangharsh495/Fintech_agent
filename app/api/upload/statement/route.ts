@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify bank belongs to user
-    const [bank] = await db.select().from(bankAccounts).where(and(eq(bankAccounts.id, bankAccountId), eq(bankAccounts.userId, userId))).limit(1)
+  const [bank] = await db.select().from(bankAccounts).where(and(eq(bankAccounts.id, bankAccountId), eq(bankAccounts.userId, userId))).limit(1);
     if (!bank) return NextResponse.json({ error: "Bank account not found" }, { status: 404 })
 
     // Validate file type
