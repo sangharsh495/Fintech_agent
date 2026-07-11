@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Calculator, TrendingUp, Wallet, Building2, Zap, ArrowRight, PiggyBank, Landmark, Shield, Coins, FileText, Anchor, PieChart, Plane, Home, Car, Scale, GraduationCap, Briefcase, Plus, HeartPulse, LineChart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { AIWidget } from "@/components/ai-sidebar"
 
 import EMICalculator from "@/components/calculators/emi-calculator"
 import SIPCalculator from "@/components/calculators/sip-calculator"
@@ -292,6 +293,12 @@ export default function CalculatorsPage() {
           </div>
         </div>
       </div>
+      
+      {/* AI Assistant Widget - Calculators context */}
+      <AIWidget pageContext="/calculators" defaultOpen={false}
+        contextTypes={["profile", "summary", "transactions"]}
+        maxTokens={1500}
+      />
     </div>
   )
 }
