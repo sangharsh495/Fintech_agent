@@ -558,7 +558,7 @@ export default function ClusterAnalytics() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            K-Means & DBSCAN clustering on {summary?.total_cluster_types || 0} dimensions
+            K-Means & DBSCAN clustering on {(summary as any)?.total_cluster_types || 0} dimensions
           </p>
         </div>
       </div>

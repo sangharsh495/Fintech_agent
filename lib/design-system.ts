@@ -518,7 +518,7 @@ export const getFontSize = (
 };
 
 export const getShadow = (scale: ShadowScale, platform: 'web' | 'mobile' = 'web') => {
-  return DesignTokens.shadows[platform][scale];
+  return (DesignTokens.shadows[platform] as any)[scale];
 };
 
 export const clamp = (value: number, min: number, max: number): number => {
