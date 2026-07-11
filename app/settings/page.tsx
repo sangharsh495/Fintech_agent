@@ -183,45 +183,91 @@ export default function SettingsPage() {
     router.push("/auth/login")
   }
 
-  const handleSave = async () => {
+  const saveSettings = async (updates: {
+    userDataUpdate?: typeof userData;
+    consentUpdate?: typeof consent;
+    securityUpdate?: typeof security;
+    privacyUpdate?: typeof privacy;
+    notificationsUpdate?: typeof notifications;
+    regionalUpdate?: typeof regional;
+  }) => {
     setSaveStatus("saving")
-    try {
-      const payload = {
-        name: userData.name,
-        phone: userData.phone,
-        dob: userData.dateOfBirth,
-        gender: userData.gender,
-        occupation: userData.occupation,
-        incomeBracket: userData.annualIncome,
-        panNumber: userData.pan,
-        city: userData.city,
-        state: userData.state,
-        consentDataProcessing: consent.consentDataProcessing,
-        consentMLAnalytics: consent.consentMLAnalytics,
-        consentAIAssistant: consent.consentAIAssistant,
-        consentMarketing: consent.consentMarketing,
-        preferences: {
-          security,
-          privacy,
-          notifications,
-          regional,
-        }
-      }
+    const currentSecurity = updates.securityUpdate || security
+    const currentPrivacy = updates.privacyUpdate || privacy
+    const currentNotifications = updates.notificationsUpdate || notifications
+    const currentRegional = updates.regionalUpdate || regional
+    const currentConsent = updates.consentUpdate || consent
+    const currentUserData = updates.userDataUpdate || userData
 
+    const payload = {
+      name: currentUserData.name,
+      phone: currentUserData.phone,
+      dob: currentUserData.dateOfBirth,
+      gender: currentUserData.gender,
+      occupation: currentUserData.occupation,
+      incomeBracket: currentUserData.annualIncome,
+      panNumber: currentUserData.pan,
+      city: currentUserData.city,
+      state: currentUserData.state,
+      consentDataProcessing: currentConsent.consentDataProcessing,
+      consentMLAnalytics: currentConsent.consentMLAnalytics,
+      consentAIAssistant: currentConsent.consentAIAssistant,
+      consentMarketing: currentConsent.consentMarketing,
+      preferences: {
+        security: currentSecurity,
+        privacy: currentPrivacy,
+        notifications: currentNotifications,
+        regional: currentRegional,
+      }
+    }
+
+    try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-
-      if (!res.ok) throw new Error("Failed to save profile")
-
+      if (!res.ok) throw new Error("Failed to save settings")
       setSaveStatus("saved")
       setTimeout(() => setSaveStatus("idle"), 2000)
     } catch (error) {
       console.error("Save failed:", error)
-      setSaveStatus("idle") // Fallback in case of error
+      setSaveStatus("idle")
     }
+  }
+
+  const handleSave = async () => {
+    await saveSettings({})
+  }
+
+  const handleSecurityChange = (key: keyof typeof security, value: any) => {
+    const next = { ...security, [key]: value }
+    setSecurity(next)
+    saveSettings({ securityUpdate: next })
+  }
+
+  const handlePrivacyChange = (key: keyof typeof privacy, value: any) => {
+    const next = { ...privacy, [key]: value }
+    setPrivacy(next)
+    saveSettings({ privacyUpdate: next })
+  }
+
+  const handleConsentChange = (key: keyof typeof consent, value: any) => {
+    const next = { ...consent, [key]: value }
+    setConsent(next)
+    saveSettings({ consentUpdate: next })
+  }
+
+  const handleNotificationsChange = (key: keyof typeof notifications, value: any) => {
+    const next = { ...notifications, [key]: value }
+    setNotifications(next)
+    saveSettings({ notificationsUpdate: next })
+  }
+
+  const handleRegionalChange = (key: keyof typeof regional, value: any) => {
+    const next = { ...regional, [key]: value }
+    setRegional(next)
+    saveSettings({ regionalUpdate: next })
   }
 
   const tabs = [
@@ -679,7 +725,7 @@ export default function SettingsPage() {
                       </div>
                       <ToggleSwitch
                         checked={security.twoFactorEnabled}
-                        onChange={(val) => setSecurity({ ...security, twoFactorEnabled: val })}
+                        onChange={(val) => handleSecurityChange("twoFactorEnabled", val)}
                       />
                     </div>
 
@@ -695,7 +741,7 @@ export default function SettingsPage() {
                       </div>
                       <ToggleSwitch
                         checked={security.biometricEnabled}
-                        onChange={(val) => setSecurity({ ...security, biometricEnabled: val })}
+                        onChange={(val) => handleSecurityChange("biometricEnabled", val)}
                       />
                     </div>
 
@@ -711,7 +757,7 @@ export default function SettingsPage() {
                       </div>
                       <ToggleSwitch
                         checked={security.loginAlerts}
-                        onChange={(val) => setSecurity({ ...security, loginAlerts: val })}
+                        onChange={(val) => handleSecurityChange("loginAlerts", val)}
                       />
                     </div>
 
@@ -727,7 +773,7 @@ export default function SettingsPage() {
                       </div>
                       <select
                         value={security.sessionTimeout}
-                        onChange={(e) => setSecurity({ ...security, sessionTimeout: e.target.value })}
+                        onChange={(e) => handleSecurityChange("sessionTimeout", e.target.value)}
                         className="px-4 py-2 rounded-xl border border-border bg-secondary/50 text-foreground text-sm"
                       >
                         <option value="15">15 minutes</option>
@@ -857,7 +903,7 @@ export default function SettingsPage() {
                           </div>
                           <ToggleSwitch
                             checked={privacy[item.key as keyof typeof privacy]}
-                            onChange={(val) => setPrivacy({ ...privacy, [item.key]: val })}
+                            onChange={(val) => handlePrivacyChange(item.key as keyof typeof privacy, val)}
                           />
                         </div>
                       )
@@ -932,7 +978,7 @@ export default function SettingsPage() {
                         </div>
                         <ToggleSwitch
                           checked={consent[item.key as keyof typeof consent]}
-                          onChange={(val) => setConsent({ ...consent, [item.key]: val })}
+                          onChange={(val) => handleConsentChange(item.key as keyof typeof consent, val)}
                         />
                       </div>
                     ))}
@@ -1142,10 +1188,10 @@ export default function SettingsPage() {
                               <p className="font-medium text-sm">{item.title}</p>
                               <p className="text-xs text-muted-foreground">{item.desc}</p>
                             </div>
-                            <ToggleSwitch
-                              checked={notifications[item.key as keyof typeof notifications] as boolean}
-                              onChange={(val) => setNotifications({ ...notifications, [item.key]: val })}
-                            />
+                              <ToggleSwitch
+                               checked={notifications[item.key as keyof typeof notifications] as boolean}
+                               onChange={(val) => handleNotificationsChange(item.key as keyof typeof notifications, val)}
+                             />
                           </div>
                         ))}
                       </div>
@@ -1183,7 +1229,7 @@ export default function SettingsPage() {
                             </div>
                             <ToggleSwitch
                               checked={notifications[item.key as keyof typeof notifications] as boolean}
-                              onChange={(val) => setNotifications({ ...notifications, [item.key]: val })}
+                              onChange={(val) => handleNotificationsChange(item.key as keyof typeof notifications, val)}
                             />
                           </div>
                         ))}
@@ -1203,7 +1249,7 @@ export default function SettingsPage() {
                             </div>
                             <ToggleSwitch
                               checked={notifications.smsAlerts}
-                              onChange={(val) => setNotifications({ ...notifications, smsAlerts: val })}
+                              onChange={(val) => handleNotificationsChange("smsAlerts", val)}
                             />
                           </div>
                           <p className="text-xs text-muted-foreground">Critical alerts via text</p>
@@ -1216,7 +1262,7 @@ export default function SettingsPage() {
                             </div>
                             <ToggleSwitch
                               checked={notifications.pushNotifications}
-                              onChange={(val) => setNotifications({ ...notifications, pushNotifications: val })}
+                              onChange={(val) => handleNotificationsChange("pushNotifications", val)}
                             />
                           </div>
                           <p className="text-xs text-muted-foreground">In-app notifications</p>
@@ -1228,7 +1274,7 @@ export default function SettingsPage() {
                           </div>
                           <select
                             value={notifications.emailDigest}
-                            onChange={(e) => setNotifications({ ...notifications, emailDigest: e.target.value })}
+                            onChange={(e) => handleNotificationsChange("emailDigest", e.target.value)}
                             className="w-full px-3 py-2 rounded-lg border border-border bg-secondary/50 text-sm"
                           >
                             <option value="instant">Instant</option>
@@ -1338,7 +1384,7 @@ export default function SettingsPage() {
                       </label>
                       <select
                         value={regional.language}
-                        onChange={(e) => setRegional({ ...regional, language: e.target.value })}
+                        onChange={(e) => handleRegionalChange("language", e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
                       >
                         <option value="en">English (US)</option>
@@ -1354,7 +1400,7 @@ export default function SettingsPage() {
                       </label>
                       <select
                         value={regional.currency}
-                        onChange={(e) => setRegional({ ...regional, currency: e.target.value })}
+                        onChange={(e) => handleRegionalChange("currency", e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
                       >
                         <option value="INR">Indian Rupee (₹)</option>
@@ -1369,7 +1415,7 @@ export default function SettingsPage() {
                       </label>
                       <select
                         value={regional.timezone}
-                        onChange={(e) => setRegional({ ...regional, timezone: e.target.value })}
+                        onChange={(e) => handleRegionalChange("timezone", e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
                       >
                         <option value="IST">IST (UTC+5:30)</option>
@@ -1384,7 +1430,7 @@ export default function SettingsPage() {
                       </label>
                       <select
                         value={regional.dateFormat}
-                        onChange={(e) => setRegional({ ...regional, dateFormat: e.target.value })}
+                        onChange={(e) => handleRegionalChange("dateFormat", e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
                       >
                         <option value="dd/mm/yyyy">DD/MM/YYYY</option>
@@ -1398,7 +1444,7 @@ export default function SettingsPage() {
                       </label>
                       <select
                         value={regional.financialYear}
-                        onChange={(e) => setRegional({ ...regional, financialYear: e.target.value })}
+                        onChange={(e) => handleRegionalChange("financialYear", e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-border bg-secondary/50 text-foreground focus:outline-none"
                       >
                         <option value="apr-mar">April - March (India)</option>
