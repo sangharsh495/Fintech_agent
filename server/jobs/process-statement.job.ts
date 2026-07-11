@@ -31,6 +31,7 @@ interface ParsedTransaction {
   merchant?: string
   hash?: string
   tags?: any
+}
 
 interface ProcessedTransaction extends ParsedTransaction {
   category: string
