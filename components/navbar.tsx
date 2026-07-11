@@ -1,6 +1,6 @@
 "use client"
 
-import { Menu, Search, X, User, BarChart3, Brain, Calculator, TrendingUp, LayoutDashboard } from "lucide-react"
+import { Menu, Search, X, User, BarChart3, Brain, Calculator, TrendingUp, LayoutDashboard, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
@@ -18,7 +18,14 @@ const navLinks = [
 export default function Navbar({
   sidebarOpen,
   onSidebarToggle,
-}: { sidebarOpen?: boolean; onSidebarToggle?: () => void }) {
+  isDark,
+  toggleTheme,
+}: {
+  sidebarOpen?: boolean;
+  onSidebarToggle?: () => void;
+  isDark?: boolean;
+  toggleTheme?: () => void;
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
