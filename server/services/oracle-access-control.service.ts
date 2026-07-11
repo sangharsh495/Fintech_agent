@@ -125,12 +125,12 @@ class OracleAccessControlService {
         "/dashboard": { allowed: true, dataScope: "full", allowedOperations: ["read", "chat", "analyze", "export"] },
         "/analytics": { allowed: true, dataScope: "full", allowedOperations: ["read", "chat", "analyze", "export", "ml-insights"] },
         "/tax": { allowed: true, dataScope: "full", allowedOperations: ["read", "chat", "calculate", "optimize", "export"] },
-        "/onboarding": { allowed: true, dataScope: "limited", allowedOperations: ["read", "guide", "assist"] },
-        "/settings": { allowed: true, dataScope: "limited", allowedOperations: ["read", "update-preferences", "manage-consent"] },
+        "/onboarding": { allowed: true, dataScope: "summary", allowedOperations: ["read", "guide", "assist"] },
+        "/settings": { allowed: true, dataScope: "summary", allowedOperations: ["read", "update-preferences", "manage-consent"] },
         "/upload": { allowed: true, dataScope: "restricted", allowedOperations: ["read", "upload", "validate"] },
         "/calculators": { allowed: true, dataScope: "full", allowedOperations: ["read", "calculate", "compare", "export"] },
         "/ai-ca": { allowed: true, dataScope: "full", allowedOperations: ["read", "chat", "analyze", "full-context"] },
-        "/profile": { allowed: true, dataScope: "limited", allowedOperations: ["read", "update", "manage-consent"] },
+        "/profile": { allowed: true, dataScope: "summary", allowedOperations: ["read", "update", "manage-consent"] },
       },
       aiModelAccess: {
         allowed: true,
@@ -305,7 +305,7 @@ class OracleAccessControlService {
       .eq("user_id", userId)
       .gte("created_at", windowStart)
 
-    const tokensUsed = requests?.reduce((sum, r) => sum + (r.tokens_used || 0), 0) || 0
+    const tokensUsed = requests?.reduce((sum: number, r: any) => sum + (r.tokens_used || 0), 0) || 0
     const requestCount = requests?.length || 0
 
     const policy = await this.getUserAccessPolicies(userId, "")

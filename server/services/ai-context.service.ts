@@ -255,7 +255,7 @@ export async function buildUserContext(
       clusterContext = userClusters
         .map(
           (m) =>
-            `- [${m.clusterType.toUpperCase()}] ${m.label}: ${m.description} (${m.transactionCount} transactions, avg ₹${Math.round(m.avgAmount)})`
+            `- [${m.clusterType.toUpperCase()}] ${m.label}: ${m.description} (${m.transactionCount} transactions, avg ₹${Math.round(m.avgAmount ?? 0)})`
         )
         .join("\n")
     }
