@@ -1,4 +1,4 @@
-import { PDFParse, VerbosityLevel } from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 
 /**
  * Extracts text and page count from a PDF buffer using the Node-safe
@@ -10,8 +10,9 @@ import { PDFParse, VerbosityLevel } from "pdf-parse";
  * `.total` (page count) — we use it as the authoritative page count.
  */
 export async function extractPdfText(buffer: Buffer): Promise<{ text: string; numPages: number }> {
-  // verbosity: errors only — avoids noisy info/warn logs from pdfjs internals
-  const parser = new PDFParse({ data: new Uint8Array(buffer), verbosity: VerbosityLevel.ERRORS });
+  // verbosity: 0 === VerbosityLevel.ERRORS (errors only). Avoids noisy info/warn
+  // logs from pdfjs internals. Numeric literal used for runtime safety.
+  const parser = new PDFParse({ data: new Uint8Array(buffer), verbosity: 0 });
 
   try {
     const textResult = await parser.getText();
