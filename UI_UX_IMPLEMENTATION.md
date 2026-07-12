@@ -1,708 +1,364 @@
-# Professional UI/UX Implementation Guide
-# FinTech Application - Industry Standard Design
-
-## Overview
-
-This comprehensive guide provides professional UI/UX design specifications and implementation instructions for the FinTech application, following industry best practices and modern design principles.
+# Professional UI/UX Implementation Guide - FinFlow Financial Application
+## Industry Standard Design System Implementation
 
 ---
 
-## Table of Contents
-
-1. [Design Philosophy](#design-philosophy)
-2. [Design System Architecture](#design-system-architecture)
-3. [Implementation Guide](#implementation-guide)
-4. [Component Library](#component-library)
-5. [Page Layouts](#page-layouts)
-6. [Responsive Design](#responsive-design)
-7. [Accessibility Guidelines](#accessibility-guidelines)
-8. [Performance Optimization](#performance-optimization)
-9. [Testing & Validation](#testing--validation)
+## 📋 TABLE OF CONTENTS
+1. [Design Philosophy & Standards](#-design-philosophy--standards)
+2. [Design System Architecture](#-design-system-architecture)
+3. [Component Library](#-component-library)
+4. [Page-Specific Implementations](#-page-specific-implementations)
+5. [Responsive Design Guidelines](#-responsive-design-guidelines)
+6. [Accessibility Standards](#-accessibility-standards)
+7. [Performance Optimization](#-performance-optimization)
+8. [Implementation Checklist](#-implementation-checklist)
 
 ---
 
-## Design Philosophy
+## 🎨 DESIGN PHILOSOPHY & STANDARDS
 
 ### Core Principles
+- **Consistency**: Unified look and feel across all pages
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Performance**: Optimized for speed and efficiency
+- **Responsive**: Mobile-first approach with seamless scaling
+- **Professional**: Enterprise-grade financial application aesthetic
 
-1. **Clarity First**: Every element must have a clear purpose and function
-2. **Consistency**: Unified design language across all pages and components
-3. **Accessibility**: WCAG 2.1 AA compliance as minimum standard
-4. **Performance**: Optimized for fast loading and smooth interactions
-5. **Responsive**: Seamless experience across all device sizes
-6. **Professional**: Enterprise-grade appearance and behavior
-
-### Design Pillars
-
-- **Trust**: Build user confidence through professional, reliable design
-- **Simplicity**: Reduce cognitive load with intuitive interfaces
-- **Efficiency**: Enable users to complete tasks quickly and accurately
-- **Delight**: Subtle animations and micro-interactions that enhance experience
+### Industry Standards Followed
+- **8px Grid System**: All dimensions multiples of 8px
+- **Material Design**: Elevation and shadow principles
+- **Apple Human Interface**: Clean, minimal design
+- **IBM Carbon Design**: Professional financial UX patterns
+- **Atomic Design**: Component-based architecture
 
 ---
 
-## Design System Architecture
+## 🏗️ DESIGN SYSTEM ARCHITECTURE
 
 ### File Structure
-
 ```
-fintech-main/
-├── lib/
-│   ├── design-system.ts          # Base design tokens
-│   └── design-system-pro.ts      # Professional design tokens
-├── styles/
-│   ├── globals.css               # Global styles
-│   └── pro-design-tokens.css     # CSS custom properties
-├── components/
-│   ├── ui/                       # UI component library
-│   └── layout/                   # Layout components
-└── app/
-    ├── layout.tsx                # Root layout
-    └── page.tsx                  # Home page
+lib/
+├── design-system-pro.ts      # TypeScript design tokens
+├── design-system.ts           # Existing design system (extended)
+styles/
+├── pro-design-tokens.css      # CSS custom properties
+├── globals.css                # Global styles (to be updated)
+components/
+├── ui/                        # UI component library
+├── layout/                    # Layout components
+└── financial/                 # Financial-specific components
 ```
 
-### Design Token Hierarchy
-
-```mermaid
-graph TD
-    A[Base Tokens] --> B[Professional Tokens]
-    B --> C[Component Specifications]
-    C --> D[Page Layouts]
-    D --> E[Implementation]
-```
-
-### Token Types
-
-1. **Primitive Tokens**: Platform-agnostic values (colors, spacing, etc.)
-2. **Semantic Tokens**: Purpose-based values (primary, secondary, error)
+### Design Tokens Hierarchy
+1. **Primitive Tokens**: Raw values (colors, spacing, typography)
+2. **Semantic Tokens**: Contextual usage (primary, secondary, success)
 3. **Component Tokens**: Component-specific values (button, card, input)
+
+### Color System
+```css
+/* Primary Palette */
+--color-primary-500: #3b82f6 (Main brand color)
+--color-primary-600: #2563eb (Hover state)
+--color-primary-400: #60a5fa (Light variant)
+
+/* Semantic Colors */
+--background: 0 0% 100% (White in light mode)
+--foreground: 240 5.9% 10% (Dark gray text)
+--card: 0 0% 100% (Card background)
+--border: 240 5.9% 90% (Border color)
+```
+
+### Spacing System (8px Base Grid)
+```css
+--spacing-1: 0.25rem;   /* 4px */
+--spacing-2: 0.5rem;    /* 8px */
+--spacing-3: 0.75rem;   /* 12px */
+--spacing-4: 1rem;      /* 16px */
+--spacing-6: 1.5rem;    /* 24px */
+--spacing-8: 2rem;      /* 32px */
+--spacing-12: 3rem;     /* 48px */
+--spacing-16: 4rem;     /* 64px */
+```
+
+### Typography Scale
+```css
+--text-xs: 0.75rem;      /* 12px - Captions, labels */
+--text-sm: 0.875rem;     /* 14px - Secondary text */
+--text-base: 1rem;       /* 16px - Body text */
+--text-lg: 1.125rem;     /* 18px - Subheadings */
+--text-xl: 1.25rem;      /* 20px - Headings */
+--text-2xl: 1.5rem;      /* 24px - Section titles */
+--text-3xl: 1.875rem;    /* 30px - Page titles */
+--text-4xl: 2.25rem;     /* 36px - Hero text */
+```
 
 ---
 
-## Implementation Guide
+## 🧩 COMPONENT LIBRARY
 
-### Step 1: Setup Design System
+### 1. Layout Components
 
-#### Import Design Tokens
-
+#### Sidebar Component (`components/sidebar.tsx`)
 ```typescript
-// In your component files
-import { ProDesignTokens, ProComponentSpecs } from '@/lib/design-system-pro'
-
-// Usage
-const buttonStyle = {
-  height: ProDesignTokens.componentSizes.button.height.md,
-  padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.md}px`,
-  borderRadius: ProDesignTokens.borderRadius.button,
-}
+// Professional Sidebar Dimensions
+- Width: 256px (16rem)
+- Collapsed width: 64px (4rem)
+- Header height: 64px (4rem)
+- Item padding: 12px 16px (0.75rem 1rem)
+- Icon size: 20px (1.25rem)
+- Border radius: 12px (0.75rem)
+- Background: var(--background-secondary)
+- Border: 1px solid var(--border)
 ```
 
-#### Use CSS Variables
-
-```css
-/* In your CSS files */
-@import 'styles/pro-design-tokens.css';
-
-.button {
-  height: var(--button-height-md);
-  padding: 0 var(--spacing-md);
-  border-radius: var(--radius-button);
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-```
-
-### Step 2: Create Base Layout
-
-#### Root Layout Implementation
-
+**Implementation:**
 ```tsx
-// app/layout.tsx
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import '@radix-ui/themes/styles.css'
-import { ThemeProvider } from '@/components/theme-provider'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-export const metadata: Metadata = {
-  title: 'FinTech - Professional Financial Platform',
-  description: 'Enterprise-grade financial management solution',
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en" className={`${inter.variable}`}>
-      <body
-        className={`font-sans antialiased ${inter.className}`}
-        style={{
-          backgroundColor: 'var(--background)',
-          color: 'var(--foreground)',
-        }}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="min-h-screen">
-            {children}
-          </div>
-        </ThemeProvider>
-      </body>
-    </html>
-  )
-}
-```
-
-### Step 3: Implement Global Styles
-
-#### Update globals.css
-
-```css
-/* app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Import professional design tokens */
-@import '../styles/pro-design-tokens.css';
-
-/* Base styles */
-:root {
-  /* Add your theme colors here */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
-}
-
-/* Apply professional typography */
-body {
-  font-family: var(--font-family-sans);
-  font-weight: var(--font-weight-normal);
-  line-height: var(--line-height-relaxed);
-  color: var(--foreground);
-  background: var(--background);
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Focus visible styles */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
-  border-radius: var(--radius-full);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground);
-}
-
-/* Selection */
-::selection {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-```
-
-### Step 4: Create Professional Components
-
-#### Button Component
-
-```tsx
-// components/ui/button.tsx
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-import { ProComponentSpecs } from "@/lib/design-system-pro"
-
-const buttonVariants = cva(
-  cn(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm",
-    "font-semibold transition-all duration-200 ease-out",
-    "cursor-pointer disabled:pointer-events-none disabled:opacity-50",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-  ),
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
-    return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button"
-
-export { Button, buttonVariants }
-```
-
-#### Card Component
-
-```tsx
-// components/ui/card.tsx
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { ProDesignTokens } from "@/lib/design-system-pro"
-
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      "transition-all duration-200 ease-out",
-      className
-    )}
-    style={{
-      borderRadius: ProDesignTokens.borderRadius.card,
-      padding: ProDesignTokens.componentSizes.card.padding.md,
-    }}
-    {...props}
-  />
-))
-Card.displayName = "Card"
-
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
-))
-CardHeader.displayName = "CardHeader"
-
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    style={{
-      fontSize: ProDesignTokens.typography.scale.heading.h3.mobile,
-      fontWeight: ProDesignTokens.typography.fontWeights.semibold,
-      lineHeight: ProDesignTokens.typography.lineHeights.normal,
-    }}
-    {...props}
-  />
-))
-CardTitle.displayName = "CardTitle"
-
-const CardDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    style={{
-      fontSize: ProDesignTokens.typography.scale.body.sm.mobile,
-      color: 'var(--muted-foreground)',
-    }}
-    {...props}
-  />
-))
-CardDescription.displayName = "CardDescription"
-
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
-
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-))
-CardFooter.displayName = "CardFooter"
-
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
-```
-
-#### Input Component
-
-```tsx
-// components/ui/input.tsx
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { ProDesignTokens } from "@/lib/design-system-pro"
-
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
-
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          "transition-all duration-150 ease-out",
-          className
-        )}
-        style={{
-          height: ProDesignTokens.componentSizes.input.height.md,
-          borderRadius: ProDesignTokens.borderRadius.input,
-          padding: `${ProDesignTokens.spacing.md}px ${ProDesignTokens.spacing.md}px`,
-          fontSize: ProDesignTokens.typography.scale.body.md.mobile,
-        }}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Input.displayName = "Input"
-
-export { Input }
-```
-
-### Step 5: Implement Layout Components
-
-#### Professional Sidebar
-
-```tsx
-// components/sidebar.tsx
-'use client'
-
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, BarChart3, Settings, HelpCircle, Users, FileText, Calculator } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-const navItems = [
-  { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Statements', href: '/upload', icon: FileText },
-  { name: 'AI Assistant', href: '/ai-ca', icon: Users },
-  { name: 'Calculators', href: '/calculators', icon: Calculator },
-  { name: 'Settings', href: '/settings', icon: Settings },
-]
+import { spacing, colors, typography } from '@/lib/design-system-pro'
 
 export function Sidebar() {
-  const pathname = usePathname()
-
   return (
-    <aside
-      className="fixed left-0 top-0 z-40 h-screen w-64 bg-background border-r"
-      style={{
-        width: ProDesignTokens.layout.sidebar.expanded,
-        borderRight: '1px solid var(--border)',
-        height: '100vh',
-        position: 'fixed',
-        zIndex: ProDesignTokens.zIndex.fixed,
-      }}
-    >
-      <div
-        className="flex h-full flex-col justify-between p-4"
-        style={{
-          padding: ProDesignTokens.spacing.md,
-        }}
-      >
-        <div className="space-y-2">
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-lg"
-            style={{
-              padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.md}px`,
-              borderRadius: ProDesignTokens.borderRadius.lg,
-              marginBottom: ProDesignTokens.spacing.md,
-            }}
-          >
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">F</span>
-            </div>
-            <span className="font-semibold text-lg">FinTech</span>
-          </div>
-
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
-                    isActive
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
-                  )}
-                  style={{
-                    padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.md}px`,
-                    borderRadius: ProDesignTokens.borderRadius.lg,
-                    gap: ProDesignTokens.spacing.sm,
-                    transition: `all ${ProDesignTokens.animation.duration.normal}ms ${ProDesignTokens.animation.timing.easeInOut}`,
-                  }}
-                >
-                  <item.icon
-                    className="w-5 h-5"
-                    style={{
-                      width: ProDesignTokens.componentSizes.icon.md,
-                      height: ProDesignTokens.componentSizes.icon.md,
-                    }}
-                  />
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontWeight: ProDesignTokens.typography.fontWeights.medium,
-                    }}
-                  >
-                    {item.name}
-                  </span>
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-
-        <div>
-          <Link
-            href="/help"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
-            style={{
-              padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.md}px`,
-              borderRadius: ProDesignTokens.borderRadius.lg,
-              gap: ProDesignTokens.spacing.sm,
-              transition: `colors ${ProDesignTokens.animation.duration.normal}ms`,
-            }}
-          >
-            <HelpCircle
-              className="w-5 h-5"
-              style={{
-                width: ProDesignTokens.componentSizes.icon.md,
-                height: ProDesignTokens.componentSizes.icon.md,
-              }}
-            />
-            <span className="font-medium">Help & Support</span>
-          </Link>
-        </div>
+    <aside className="w-[var(--sidebar-width)] h-screen fixed left-0 top-0 z-[var(--z-fixed)]">
+      <div className="h-[var(--header-height)] flex items-center justify-center border-b border-[var(--border)]">
+        <Logo />
       </div>
+      <nav className="p-[var(--spacing-4)] space-y-[var(--spacing-2)]">
+        {menuItems.map((item) => (
+          <SidebarItem
+            key={item.id}
+            icon={item.icon}
+            label={item.label}
+            isActive={item.isActive}
+          />
+        ))}
+      </nav>
     </aside>
   )
 }
 ```
 
-#### Professional Header
+#### Navbar Component (`components/navbar.tsx`)
+```typescript
+// Professional Navbar Dimensions
+- Height: 64px (4rem)
+- Padding: 0 2rem (0 32px)
+- Logo height: 32px (2rem)
+- Search bar width: 400px (25rem)
+- Avatar size: 40px (2.5rem)
+- Background: var(--background)
+- Border: 1px solid var(--border)
+- Shadow: var(--shadow-sm)
+```
 
+### 2. Form Components
+
+#### Button Component
+```typescript
+// Button Dimensions
+- Height: 40px (2.5rem)
+- Height (small): 32px (2rem)
+- Height (large): 48px (3rem)
+- Padding (horizontal): 16px (1rem)
+- Padding (vertical): 8px (0.5rem)
+- Border radius: 8px (0.5rem)
+- Font size: 14px (0.875rem)
+- Font weight: 500 (medium)
+- Transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)
+```
+
+**Variants:**
 ```tsx
-// components/header.tsx
-'use client'
-
-import { Bell, Search, User } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-export function Header() {
-  return (
-    <header
-      className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b"
-      style={{
-        height: ProDesignTokens.layout.header.desktop,
-        zIndex: ProDesignTokens.zIndex.sticky,
-        position: 'sticky',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
-      <div
-        className="flex items-center justify-between px-6 py-3"
-        style={{
-          padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.xl}px`,
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-              style={{
-                left: ProDesignTokens.spacing.sm,
-                width: ProDesignTokens.componentSizes.icon.sm,
-                height: ProDesignTokens.componentSizes.icon.sm,
-              }}
-            />
-            <Input
-              placeholder="Search..."
-              className="pl-10 w-[300px]"
-              style={{
-                paddingLeft: ProDesignTokens.spacing.xl,
-                width: 300,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative"
-            style={{
-              width: ProDesignTokens.componentSizes.button.height.md,
-              height: ProDesignTokens.componentSizes.button.height.md,
-            }}
-          >
-            <Bell
-              className="w-5 h-5"
-              style={{
-                width: ProDesignTokens.componentSizes.icon.md,
-                height: ProDesignTokens.componentSizes.icon.md,
-              }}
-            />
-            <span className="absolute top-1 right-1 w-3 h-3 bg-destructive rounded-full" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2"
-            style={{
-              gap: ProDesignTokens.spacing.sm,
-            }}
-          >
-            <User
-              className="w-5 h-5"
-              style={{
-                width: ProDesignTokens.componentSizes.icon.md,
-                height: ProDesignTokens.componentSizes.icon.md,
-              }}
-            />
-            <span className="font-medium">Account</span>
-          </Button>
-        </div>
-      </div>
-    </header>
-  )
+const buttonVariants = {
+  primary: 'bg-[var(--color-primary-500)] text-white hover:bg-[var(--color-primary-600)]',
+  secondary: 'bg-[var(--background-secondary)] text-[var(--foreground)] border border-[var(--border)]',
+  outline: 'border-2 border-[var(--color-primary-500)] text-[var(--color-primary-500)]',
+  ghost: 'text-[var(--foreground-secondary)] hover:bg-[var(--background-hover)]',
+  destructive: 'bg-[var(--color-error-500)] text-white hover:bg-[var(--color-error-600)]',
+  success: 'bg-[var(--color-success-500)] text-white hover:bg-[var(--color-success-600)]',
 }
 ```
 
-#### Professional Layout
+#### Input Component
+```typescript
+// Input Dimensions
+- Height: 40px (2.5rem)
+- Height (small): 32px (2rem)
+- Height (large): 48px (3rem)
+- Padding (horizontal): 16px (1rem)
+- Padding (vertical): 8px (0.5rem)
+- Border radius: 8px (0.5rem)
+- Border width: 1px
+- Font size: 16px (1rem)
+- Transition: all 0.2s
+```
 
+**States:**
 ```tsx
-// components/layout.tsx
-'use client'
+const inputStates = {
+  default: 'border-[var(--border)] bg-[var(--background)]',
+  focus: 'border-[var(--color-primary-500)] ring-2 ring-[var(--color-primary-100)]',
+  error: 'border-[var(--color-error-500)] bg-[var(--color-error-50)]',
+  disabled: 'border-[var(--border-secondary)] bg-[var(--background-secondary)]',
+}
+```
 
-import { Sidebar } from '@/components/sidebar'
-import { Header } from '@/components/header'
-import { ProDesignTokens } from '@/lib/design-system-pro'
+#### Card Component
+```typescript
+// Card Dimensions
+- Border radius: 16px (1rem)
+- Padding: 24px (1.5rem)
+- Shadow: var(--shadow)
+- Shadow (hover): var(--shadow-lg)
+- Border width: 1px
+- Transition: all 0.3s
+```
 
-export function Layout({ children }: { children: React.ReactNode }) {
+**Variants:**
+```tsx
+const cardVariants = {
+  default: 'bg-[var(--card)] border-[var(--card-border)]',
+  glass: 'bg-[var(--background-glass)] backdrop-blur-[var(--background-blur)] border-[var(--border)]',
+  gradient: 'bg-gradient-to-br from-[var(--color-primary-500)] to-[var(--color-primary-700)] text-white',
+  elevated: 'bg-[var(--card)] border-[var(--card-border)] shadow-[var(--shadow-lg)]',
+}
+```
+
+### 3. Data Display Components
+
+#### Table Component
+```typescript
+// Table Dimensions
+- Row height: 48px (3rem)
+- Header height: 56px (3.5rem)
+- Cell padding: 16px (1rem)
+- Border radius: 8px (0.5rem)
+- Font size: 14px (0.875rem)
+- Header font size: 16px (1rem)
+- Header font weight: 600 (semibold)
+```
+
+#### Chart Component
+```typescript
+// Chart Container
+- Padding: 16px (1rem)
+- Border radius: 16px (1rem)
+- Background: var(--card)
+- Border: 1px solid var(--card-border)
+- Shadow: var(--shadow-sm)
+```
+
+### 4. Feedback Components
+
+#### Alert Component
+```typescript
+// Alert Dimensions
+- Border radius: 8px (0.5rem)
+- Padding: 16px (1rem)
+- Icon size: 32px (2rem)
+- Font size: 14px (0.875rem)
+- Border width: 1px
+```
+
+**Variants:**
+```tsx
+const alertVariants = {
+  info: 'bg-[var(--color-info-50)] border-[var(--color-info-200)] text-[var(--color-info-800)]',
+  success: 'bg-[var(--color-success-50)] border-[var(--color-success-200)] text-[var(--color-success-800)]',
+  warning: 'bg-[var(--color-warning-50)] border-[var(--color-warning-200)] text-[var(--color-warning-800)]',
+  error: 'bg-[var(--color-error-50)] border-[var(--color-error-200)] text-[var(--color-error-800)]',
+}
+```
+
+#### Toast Component
+```typescript
+// Toast Dimensions
+- Width: 360px (22.5rem)
+- Padding: 16px (1rem)
+- Border radius: 12px (0.75rem)
+- Shadow: var(--shadow-lg)
+- Animation: slideIn 0.3s ease-out
+```
+
+---
+
+## 📄 PAGE-SPECIFIC IMPLEMENTATIONS
+
+### 1. Dashboard Page (`app/page.tsx`)
+
+#### Layout Structure
+```typescript
+// Dashboard Layout
+- Header: 64px (fixed)
+- Sidebar: 256px (collapsible)
+- Main content: Flexible
+- Footer: 64px (optional)
+
+// Grid Layout
+- Desktop: 4 columns (21/9 aspect ratio cards)
+- Tablet: 2 columns
+- Mobile: 1 column
+
+// Card Dimensions
+- Small card: 300px width, 200px height
+- Medium card: 384px width, 280px height
+- Large card: Full width, auto height
+```
+
+#### Implementation Example
+```tsx
+import { spacing, layout, components } from '@/lib/design-system-pro'
+
+export default function Dashboard() {
   return (
-    <div className="min-h-screen">
-      <Sidebar />
-      <div
-        className="ml-64"
-        style={{
-          marginLeft: ProDesignTokens.layout.sidebar.expanded,
-        }}
-      >
-        <Header />
-        <main
-          className="p-6"
-          style={{
-            padding: ProDesignTokens.spacing.xl,
-          }}
-        >
-          {children}
+    <div className="min-h-screen bg-[var(--background)]">
+      {/* Header */}
+      <Navbar />
+
+      <div className="flex">
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Main Content */}
+        <main className="flex-1 p-[var(--spacing-section-padding)] ml-[var(--sidebar-width)]">
+          {/* Hero Section */}
+          <section className="mb-[var(--spacing-8)]">
+            <div className="flex justify-between items-center mb-[var(--spacing-6)]">
+              <div>
+                <h1 className="text-[var(--text-3xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">
+                  Dashboard
+                </h1>
+                <p className="text-[var(--text-base)] text-[var(--foreground-secondary)] mt-[var(--spacing-1)]">
+                  Welcome back! Here's your financial overview.
+                </p>
+              </div>
+              <Button variant="primary" size="lg">
+                + New Transaction
+              </Button>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[var(--spacing-6)]">
+              {stats.map((stat) => (
+                <StatCard
+                  key={stat.id}
+                  title={stat.title}
+                  value={stat.value}
+                  change={stat.change}
+                  icon={stat.icon}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Charts Section */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--spacing-6)] mb-[var(--spacing-8)]">
+            <ChartCard title="Revenue Overview" type="line" data={revenueData} />
+            <ChartCard title="Expense Categories" type="pie" data={expenseData} />
+          </section>
+
+          {/* Recent Transactions */}
+          <section>
+            <TransactionTable transactions={recentTransactions} />
+          </section>
         </main>
       </div>
     </div>
@@ -710,1131 +366,832 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 ```
 
----
+### 2. Analytics Page (`app/analytics/page.tsx`)
 
-## Component Library
-
-### UI Components
-
-#### 1. Buttons
-
-**Primary Button**
-```tsx
-<Button variant="default" size="md">
-  Primary Action
-</Button>
+#### Layout Structure
+```typescript
+// Analytics Layout
+- Filter bar: 60px height
+- Charts grid: 2-3 columns
+- Detail sections: Full width
 ```
 
-**Secondary Button**
+#### Implementation
 ```tsx
-<Button variant="secondary" size="md">
-  Secondary Action
-</Button>
-```
-
-**Outline Button**
-```tsx
-<Button variant="outline" size="md">
-  Outline
-</Button>
-```
-
-**Destructive Button**
-```tsx
-<Button variant="destructive" size="md">
-  Delete
-</Button>
-```
-
-**Ghost Button**
-```tsx
-<Button variant="ghost" size="md">
-  Ghost
-</Button>
-```
-
-**Link Button**
-```tsx
-<Button variant="link" size="md">
-  Link
-</Button>
-```
-
-#### 2. Cards
-
-**Basic Card**
-```tsx
-<Card>
-  <CardHeader>
-    <CardTitle>Card Title</CardTitle>
-    <CardDescription>Card description goes here</CardDescription>
-  </CardHeader>
-  <CardContent>
-    Card content goes here
-  </CardContent>
-</Card>
-```
-
-**Interactive Card**
-```tsx
-<Card
-  className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all"
->
-  <CardHeader>
-    <CardTitle>Interactive Card</CardTitle>
-  </CardHeader>
-  <CardContent>
-    Click me for more information
-  </CardContent>
-</Card>
-```
-
-#### 3. Forms
-
-**Form with Input**
-```tsx
-<form className="space-y-4">
-  <div className="space-y-2">
-    <label htmlFor="email" className="font-medium">
-      Email
-    </label>
-    <Input
-      id="email"
-      type="email"
-      placeholder="Enter your email"
-    />
-  </div>
-  <Button type="submit" className="w-full">
-    Submit
-  </Button>
-</form>
-```
-
-#### 4. Typography
-
-**Headings**
-```tsx
-<h1 className="text-4xl font-bold leading-tight">Heading 1</h1>
-<h2 className="text-3xl font-bold leading-tight">Heading 2</h2>
-<h3 className="text-2xl font-semibold leading-normal">Heading 3</h3>
-<h4 className="text-xl font-semibold leading-normal">Heading 4</h4>
-```
-
-**Body Text**
-```tsx
-<p className="text-base leading-relaxed">Body text</p>
-<p className="text-sm text-muted-foreground">Secondary text</p>
-<p className="text-xs text-muted-foreground">Caption text</p>
-```
-
-#### 5. Badges/Chips
-
-```tsx
-<Badge variant="default">Default</Badge>
-<Badge variant="secondary">Secondary</Badge>
-<Badge variant="outline">Outline</Badge>
-<Badge variant="destructive">Error</Badge>
-```
-
-#### 6. Alerts
-
-```tsx
-<Alert>
-  <AlertDescription>This is a default alert</AlertDescription>
-</Alert>
-
-<Alert variant="destructive">
-  <AlertDescription>This is an error alert</AlertDescription>
-</Alert>
-```
-
-#### 7. Dialogs/Modals
-
-```tsx
-<Dialog>
-  <DialogTrigger asChild>
-    <Button>Open Dialog</Button>
-  </DialogTrigger>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Dialog Title</DialogTitle>
-      <DialogDescription>Dialog description</DialogDescription>
-    </DialogHeader>
-    <DialogFooter>
-      <Button variant="outline">Cancel</Button>
-      <Button>Confirm</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-```
-
----
-
-## Page Layouts
-
-### Dashboard Layout
-
-```tsx
-// app/page.tsx
-import { Layout } from '@/components/layout'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-export default function DashboardPage() {
+export default function Analytics() {
   return (
-    <Layout>
-      <div className="space-y-6">
-        {/* Hero Section */}
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back! Here's your financial overview.
-          </p>
-        </div>
+    <div className="p-[var(--spacing-section-padding)]">
+      {/* Page Header */}
+      <PageHeader
+        title="Analytics"
+        subtitle="Detailed financial insights and trends"
+      />
 
-        {/* Stats Grid */}
-        <div
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-          style={{
-            gap: ProDesignTokens.spacing.md,
-          }}
-        >
-          {[
-            { title: 'Total Balance', value: '$12,345.67', change: '+12%' },
-            { title: 'This Month', value: '$2,345.67', change: '+8%' },
-            { title: 'Investments', value: '$8,901.23', change: '+15%' },
-            { title: 'Savings', value: '$3,456.78', change: '+5%' },
-          ].map((stat, index) => (
-            <Card
-              key={index}
-              className="hover:shadow-md transition-shadow"
-              style={{
-                borderRadius: ProDesignTokens.borderRadius.card,
-              }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <span className="text-xs text-green-500">{stat.change}</span>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      {/* Filter Bar */}
+      <FilterBar
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        categories={categories}
+      />
 
-        {/* Main Content Grid */}
-        <div
-          className="grid gap-4 lg:grid-cols-2"
-          style={{
-            gap: ProDesignTokens.spacing.md,
-          }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Transaction list */}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Spending Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Chart component */}
-            </CardContent>
-          </Card>
-        </div>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--spacing-6)] mb-[var(--spacing-8)]">
+        <AreaChart data={revenueTrend} title="Revenue Trend" />
+        <BarChart data={expenseByCategory} title="Expense Distribution" />
+        <PieChart data={categoryBreakdown} title="Category Breakdown" />
       </div>
-    </Layout>
+
+      {/* Detailed Analysis */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-[var(--spacing-6)]">
+        <DataTable data={detailedTransactions} title="Transaction History" />
+        <InsightsPanel insights={generatedInsights} />
+      </div>
+    </div>
   )
 }
 ```
 
-### Analytics Page Layout
+### 3. Onboarding Page (`app/onboarding/page.tsx`)
 
+#### Layout Structure
+```typescript
+// Onboarding Layout
+- Container: Max width 600px
+- Steps: Horizontal progress bar
+- Form: Multi-step with validation
+```
+
+#### Implementation
 ```tsx
-// app/analytics/page.tsx
-import { Layout } from '@/components/layout'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ProDesignTokens } from '@/lib/design-system-pro'
+export default function Onboarding() {
+  const steps = [
+    { id: 1, title: 'Personal Info', icon: UserIcon },
+    { id: 2, title: 'Financial Goals', icon: TargetIcon },
+    { id: 3, title: 'Preferences', icon: SettingsIcon },
+    { id: 4, title: 'Complete', icon: CheckIcon },
+  ]
 
-export default function AnalyticsPage() {
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground mt-1">
-            Detailed insights into your financial data
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background-secondary)] p-[var(--spacing-4)]">
+      <div className="w-full max-w-[600px]">
+        {/* Progress Bar */}
+        <div className="mb-[var(--spacing-8)]">
+          <Stepper steps={steps} currentStep={currentStep} />
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="spending">Spending</TabsTrigger>
-            <TabsTrigger value="investments">Investments</TabsTrigger>
-            <TabsTrigger value="savings">Savings</TabsTrigger>
-          </TabsList>
+        {/* Onboarding Card */}
+        <Card className="p-[var(--spacing-8)] shadow-[var(--shadow-lg)]">
+          <div className="text-center mb-[var(--spacing-8)]">
+            <h1 className="text-[var(--text-3xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">
+              {steps[currentStep - 1].title}
+            </h1>
+            <p className="text-[var(--text-base)] text-[var(--foreground-secondary)] mt-[var(--spacing-2)]">
+              {stepDescriptions[currentStep - 1]}
+            </p>
+          </div>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div
-              className="grid gap-4 md:grid-cols-2"
-              style={{
-                gap: ProDesignTokens.spacing.md,
-              }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Spending Trends</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Line chart */}
-                </CardContent>
-              </Card>
+          {/* Step Content */}
+          <div className="space-y-[var(--spacing-6)]">
+            {currentStep === 1 && <PersonalInfoForm />}
+            {currentStep === 2 && <FinancialGoalsForm />}
+            {currentStep === 3 && <PreferencesForm />}
+            {currentStep === 4 && <CompletionScreen />}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Category Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Pie chart */}
-                </CardContent>
-              </Card>
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-[var(--spacing-6)] border-t border-[var(--border)]">
+              {currentStep > 1 && (
+                <Button variant="outline" onClick={prevStep}>
+                  Back
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={nextStep}
+                disabled={!isFormValid}
+              >
+                {currentStep === steps.length ? 'Finish' : 'Next'}
+              </Button>
             </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Health</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Health metrics */}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="spending">
-            <Card>
-              <CardHeader>
-                <CardTitle>Spending Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Spending content */}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </Card>
       </div>
-    </Layout>
+    </div>
   )
 }
 ```
 
-### Form Page Layout
+### 4. Auth Pages (`app/auth/login/page.tsx`, `app/auth/signup/page.tsx`)
 
+#### Layout Structure
+```typescript
+// Auth Layout
+- Container: Max width 400px
+- Card: Centered with shadow
+- Form: Vertical stack
+- Social buttons: Grid layout
+```
+
+#### Login Page Implementation
 ```tsx
-// app/settings/page.tsx
-import { Layout } from '@/components/layout'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-export default function SettingsPage() {
+export default function Login() {
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your account preferences
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background-secondary)] p-[var(--spacing-4)]">
+      <Card className="w-full max-w-[400px] p-[var(--spacing-8)] shadow-[var(--shadow-xl)]">
+        {/* Logo */}
+        <div className="text-center mb-[var(--spacing-8)]">
+          <Logo className="mx-auto h-[48px] w-[48px] mb-[var(--spacing-4)]" />
+          <h1 className="text-[var(--text-2xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">
+            Welcome Back
+          </h1>
+          <p className="text-[var(--text-sm)] text-[var(--foreground-secondary)] mt-[var(--spacing-1)]">
+            Sign in to access your financial dashboard
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your personal information
-            </CardDescription>
-          </CardHeader>
-          <CardContent
-            className="space-y-4"
-            style={{
-              gap: ProDesignTokens.spacing.md,
-            }}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-[var(--spacing-6)]">
+          <div className="space-y-[var(--spacing-4)]">
+            <Input
+              type="email"
+              label="Email Address"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input
+              type="password"
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-[var(--spacing-2)] cursor-pointer">
+              <Checkbox
+                checked={rememberMe}
+                onCheckedChange={setRememberMe}
+              />
+              <span className="text-[var(--text-sm)] text-[var(--foreground-secondary)]">
+                Remember me
+              </span>
+            </label>
+            <Link
+              href="/auth/forgot-password"
+              className="text-[var(--text-sm)] text-[var(--color-primary-500)] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            loading={isLoading}
           >
-            <div
-              className="space-y-2"
-              style={{
-                gap: ProDesignTokens.spacing.xs,
-              }}
-            >
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                style={{
-                  height: ProDesignTokens.componentSizes.input.height.md,
-                }}
-              />
-            </div>
+            Sign In
+          </Button>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john@example.com"
-              />
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border)]"></div>
             </div>
+            <div className="relative flex justify-center text-[var(--text-sm)] text-[var(--foreground-secondary)]">
+              <span className="px-[var(--spacing-4)] bg-[var(--background)]">
+                or continue with
+              </span>
+            </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save Changes</Button>
-          </CardFooter>
-        </Card>
+          {/* Social Buttons */}
+          <div className="grid grid-cols-2 gap-[var(--spacing-3)]">
+            <Button variant="outline" size="lg" onClick={() => signIn('google')}>
+              <GoogleIcon className="w-[18px] h-[18px] mr-[var(--spacing-2)]" />
+              Google
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => signIn('apple')}>
+              <AppleIcon className="w-[18px] h-[18px] mr-[var(--spacing-2)]" />
+              Apple
+            </Button>
+          </div>
+        </form>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Security Settings</CardTitle>
-            <CardDescription>
-              Manage your account security
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input
-                id="current-password"
-                type="password"
-              />
-            </div>
+        {/* Sign Up Link */}
+        <p className="text-center text-[var(--text-sm)] text-[var(--foreground-secondary)] mt-[var(--spacing-6)]">
+          Don't have an account?{' '}
+          <Link
+            href="/auth/signup"
+            className="text-[var(--color-primary-500)] hover:underline font-[var(--font-weight-medium)]"
+          >
+            Sign up
+          </Link>
+        </p>
+      </Card>
+    </div>
+  )
+}
+```
 
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-              />
-            </div>
+### 5. Calculator Pages (`app/calculators/page.tsx`)
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Update Password</Button>
-          </CardFooter>
-        </Card>
+#### Layout Structure
+```typescript
+// Calculator Layout
+- Container: Max width 1200px
+- Sidebar: Calculator selection (256px)
+- Main: Calculator display area
+- Card dimensions: Consistent with design system
+```
+
+#### Implementation
+```tsx
+export default function Calculators() {
+  const calculators = [
+    { id: 'emi', name: 'EMI Calculator', icon: CalculatorIcon, color: 'blue' },
+    { id: 'fd', name: 'Fixed Deposit', icon: BankIcon, color: 'green' },
+    { id: 'sip', name: 'SIP Calculator', icon: TrendingUpIcon, color: 'purple' },
+    { id: 'loan', name: 'Loan Comparison', icon: ScaleIcon, color: 'orange' },
+    { id: 'rd', name: 'Recurring Deposit', icon: RepeatIcon, color: 'teal' },
+    { id: 'budget', name: 'Budget Planner', icon: PieChartIcon, color: 'pink' },
+  ]
+
+  return (
+    <div className="min-h-screen bg-[var(--background-secondary)]">
+      <div className="flex">
+        {/* Calculator Sidebar */}
+        <div className="w-[256px] h-screen fixed left-0 top-[var(--header-height)] p-[var(--spacing-4)] bg-[var(--background)] border-r border-[var(--border)] overflow-y-auto">
+          <h2 className="text-[var(--text-lg)] font-[var(--font-weight-semibold)] text-[var(--foreground)] mb-[var(--spacing-4)]">
+            Financial Calculators
+          </h2>
+          <nav className="space-y-[var(--spacing-1)]">
+            {calculators.map((calc) => (
+              <button
+                key={calc.id}
+                onClick={() => setActiveCalculator(calc.id)}
+                className={`w-full flex items-center gap-[var(--spacing-3)] p-[var(--spacing-3)] rounded-[var(--radius)] transition-colors ${
+                  activeCalculator === calc.id
+                    ? 'bg-[var(--color-primary-100)] text-[var(--color-primary-600)]'
+                    : 'text-[var(--foreground-secondary)] hover:bg-[var(--background-hover)]'
+                }`}
+              >
+                <div className={`p-[var(--spacing-2)] rounded-[var(--radius)] bg-[var(--color-${calc.color}-100)]`}>
+                  <calc.icon className={`w-[18px] h-[18px] text-[var(--color-${calc.color}-500)]`} />
+                </div>
+                <span className="text-[var(--text-sm)] font-[var(--font-weight-medium)]">
+                  {calc.name}
+                </span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 ml-[256px] p-[var(--spacing-8)]">
+          <div className="max-w-[900px] mx-auto">
+            {/* Active Calculator */}
+            {activeCalculator === 'emi' && <EMICalculator />}
+            {activeCalculator === 'fd' && <FdCalculator />}
+            {activeCalculator === 'sip' && <SipCalculator />}
+            {activeCalculator === 'loan' && <LoanComparison />}
+            {activeCalculator === 'rd' && <RdCalculator />}
+            {activeCalculator === 'budget' && <BudgetPlanner />}
+          </div>
+        </main>
       </div>
-    </Layout>
+    </div>
+  )
+}
+```
+
+#### EMI Calculator Example
+```tsx
+function EMICalculator() {
+  const [principal, setPrincipal] = useState(100000)
+  const [interest, setInterest] = useState(7.5)
+  const [tenure, setTenure] = useState(5)
+
+  const result = calculateEMI(principal, interest, tenure)
+
+  return (
+    <div className="space-y-[var(--spacing-6)]">
+      <div>
+        <h1 className="text-[var(--text-2xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">
+          EMI Calculator
+        </h1>
+        <p className="text-[var(--text-base)] text-[var(--foreground-secondary)] mt-[var(--spacing-1)]">
+          Calculate your monthly EMI for home loans, car loans, and personal loans
+        </p>
+      </div>
+
+      {/* Input Card */}
+      <Card className="p-[var(--spacing-6)]">
+        <div className="space-y-[var(--spacing-6)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--spacing-4)]">
+            <InputGroup
+              label="Loan Amount (₹)"
+              value={principal}
+              onChange={(e) => setPrincipal(Number(e.target.value))}
+              type="number"
+              min={1000}
+              max={100000000}
+              step={1000}
+            />
+            <InputGroup
+              label="Interest Rate (%)"
+              value={interest}
+              onChange={(e) => setInterest(Number(e.target.value))}
+              type="number"
+              min={0}
+              max={30}
+              step={0.1}
+            />
+            <InputGroup
+              label="Loan Tenure (Years)"
+              value={tenure}
+              onChange={(e) => setTenure(Number(e.target.value))}
+              type="number"
+              min={1}
+              max={30}
+              step={1}
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Result Card */}
+      <Card className="p-[var(--spacing-6)] bg-gradient-to-r from-[var(--color-primary-50)] to-[var(--color-primary-100)] border-[var(--color-primary-200)]">
+        <h2 className="text-[var(--text-xl)] font-[var(--font-weight-semibold)] text-[var(--color-primary-700)] mb-[var(--spacing-4)]">
+          Your EMI Calculation
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--spacing-4)]">
+          <ResultCard
+            label="Monthly EMI"
+            value={formatCurrency(result.emi)}
+            color="primary"
+            icon={CurrencyIcon}
+          />
+          <ResultCard
+            label="Total Interest"
+            value={formatCurrency(result.totalInterest)}
+            color="warning"
+            icon={TrendingUpIcon}
+          />
+          <ResultCard
+            label="Total Payment"
+            value={formatCurrency(result.totalPayment)}
+            color="success"
+            icon={CheckCircleIcon}
+          />
+        </div>
+        <div className="mt-[var(--spacing-6)]">
+          <PaymentScheduleTable schedule={result.schedule} />
+        </div>
+      </Card>
+
+      {/* Chart Visualization */}
+      <Card className="p-[var(--spacing-6)]">
+        <h2 className="text-[var(--text-lg)] font-[var(--font-weight-semibold)] text-[var(--foreground)] mb-[var(--spacing-4)]">
+          Payment Breakdown
+        </h2>
+        <div className="h-[300px]">
+          <PieChart
+            data={[
+              { name: 'Principal', value: principal, color: 'var(--color-primary-500)' },
+              { name: 'Interest', value: result.totalInterest, color: 'var(--color-warning-500)' },
+            ]}
+          />
+        </div>
+      </Card>
+    </div>
   )
 }
 ```
 
 ---
 
-## Responsive Design
+## 📱 RESPONSIVE DESIGN GUIDELINES
 
 ### Breakpoints
-
 ```css
-/* Mobile-first approach */
-@media (min-width: 640px) { /* sm */ }
-@media (min-width: 768px) { /* md */ }
-@media (min-width: 1024px) { /* lg */ }
-@media (min-width: 1280px) { /* xl */ }
-@media (min-width: 1536px) { /* 2xl */ }
+/* Tailwind-like breakpoints */
+--breakpoint-sm: 640px;    /* Mobile */
+--breakpoint-md: 768px;    /* Tablet */
+--breakpoint-lg: 1024px;   /* Desktop */
+--breakpoint-xl: 1280px;   /* Large Desktop */
+--breakpoint-2xl: 1536px;  /* Wide Screen */
 ```
 
-### Responsive Typography
+### Responsive Strategy
+1. **Mobile First**: Design for smallest screen first
+2. **Progressive Enhancement**: Add features for larger screens
+3. **Fluid Layouts**: Use percentages and flex/grid
+4. **Touch Targets**: Minimum 44x44px for touch elements
 
+### Implementation Patterns
+```tsx
+// Responsive Container
+<div className="container mx-auto px-[var(--spacing-4)] md:px-[var(--spacing-6)] lg:px-[var(--spacing-8)]">
+  {/* Content */}
+</div>
+
+// Responsive Grid
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[var(--spacing-4)]">
+  {/* Items */}
+</div>
+
+// Responsive Typography
+<h1 className="text-[var(--text-2xl)] md:text-[var(--text-3xl)] lg:text-[var(--text-4xl)]">
+  Responsive Title
+</h1>
+
+// Responsive Padding
+<div className="p-[var(--spacing-4)] md:p-[var(--spacing-6)] lg:p-[var(--spacing-8)]">
+  {/* Content */}
+</div>
+
+// Hide/Show Based on Breakpoint
+<div className="block md:hidden">Mobile Only</div>
+<div className="hidden md:block">Desktop Only</div>
+```
+
+### Touch Targets
 ```typescript
-// lib/design-system-pro.ts
-typography: {
-  scale: {
-    heading: {
-      h1: { mobile: 36, tablet: 48, desktop: 56 },
-      h2: { mobile: 30, tablet: 36, desktop: 42 },
-      // ...
-    }
-  }
+// Minimum touch target dimensions
+const touchTargets = {
+  button: { minWidth: '44px', minHeight: '44px' },
+  input: { minHeight: '40px' },
+  checkbox: { minSize: '20px' },
+  radio: { minSize: '20px' },
+  tapArea: { minSize: '44px' },
 }
 ```
 
-### Responsive Layout Patterns
-
-#### 1. Mobile-First Grid
-
-```tsx
-// Always mobile by default, then enhance
-<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-  {/* Items */}
-</div>
-```
-
-#### 2. Responsive Spacing
-
-```tsx
-<div className="p-4 md:p-6 lg:p-8">
-  {/* Content */}
-</div>
-```
-
-#### 3. Responsive Text
-
-```tsx
-<h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
-  Responsive Heading
-</h1>
-```
-
-#### 4. Hide/Show Based on Screen Size
-
-```tsx
-<div className="hidden md:block">Visible on medium and larger screens</div>
-<div className="block md:hidden">Visible on mobile only</div>
-```
-
-#### 5. Responsive Images
-
-```tsx
-<Image
-  src="/image.jpg"
-  alt="Description"
-  width={1200}
-  height={600}
-  className="w-full h-auto"
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-/>
+### Viewport Meta Tag
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 ```
 
 ---
 
-## Accessibility Guidelines
+## ♿ ACCESSIBILITY STANDARDS
 
 ### WCAG 2.1 AA Compliance
 
 #### 1. Color Contrast
-
 ```typescript
 // Minimum contrast ratios
-const Accessibility = {
-  contrast: {
-    minimum: 4.5,  // WCAG AA minimum for normal text
-    enhanced: 7,    // WCAG AAA
-    largeText: 3,   // For large text (18.66px+ bold, 24px+ regular)
-  }
+const contrastRatios = {
+  text: { normal: 4.5, large: 3.0 },
+  uiComponents: 3.0,
+  graphics: 3.0,
+}
+
+// Color combinations that meet AA standards
+const accessibleColors = {
+  textOnLight: {
+    primary: '#1f2937',    // 21.21:1
+    secondary: '#6b7280',  // 7.21:1
+    muted: '#9ca3af',     // 4.52:1
+  },
+  textOnDark: {
+    primary: '#f9fafb',    // 21.21:1
+    secondary: '#d1d5db',  // 7.21:1
+    muted: '#9ca3af',     // 4.52:1
+  },
+  backgroundColors: {
+    light: '#ffffff',
+    dark: '#111827',
+    primary: '#3b82f6',
+  },
 }
 ```
-
-**Testing Tools:**
-- WebAIM Color Contrast Checker
-- axe DevTools
-- Lighthouse
 
 #### 2. Keyboard Navigation
-
-```tsx
-// Ensure all interactive elements are keyboard accessible
-<button
-  onKeyDown={(e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      // Handle click
-    }
-  }}
->
-  Click me
-</button>
-```
-
-**Keyboard Requirements:**
-- All interactive elements must be focusable
-- Focus indicators must be visible
-- All functionality must be available via keyboard
-- Logical tab order
-
-#### 3. Focus Management
-
-```css
-/* Global focus styles */
-*:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.3);
+```typescript
+// Keyboard shortcuts and focus management
+const keyboardNavigation = {
+  focusVisible: 'outline: 2px solid var(--color-primary-500); outline-offset: 2px;',
+  skipLink: '<a href="#main-content" class="sr-only focus:not-sr-only">Skip to main content</a>',
+  tabOrder: 'Ensure logical tab order matching visual layout',
+  focusTrap: 'Implement focus trap for modals and dialogs',
 }
 ```
 
-#### 4. ARIA Attributes
-
+#### 3. ARIA Attributes
 ```tsx
-// Proper ARIA usage
-<div
-  role="dialog"
-  aria-labelledby="dialog-title"
-  aria-describedby="dialog-description"
-  aria-modal="true"
+// Button with ARIA
+<button
+  onClick={handleClick}
+  aria-label="Submit form"
+  aria-describedby="submit-help"
+  aria-pressed={isPressed}
+  aria-expanded={isExpanded}
+  aria-controls="dropdown-menu"
+  disabled={isDisabled}
+  aria-disabled={isDisabled}
 >
-  <h2 id="dialog-title">Dialog Title</h2>
-  <p id="dialog-description">Dialog description</p>
-</div>
-```
+  Submit
+</button>
 
-#### 5. Semantic HTML
-
-```tsx
-// Use semantic HTML5 elements
-<header>...</header>
-<nav>...</nav>
-<main>...</main>
-<article>...</article>
-<section>...</section>
-<aside>...</aside>
-<footer>...</footer>
-```
-
-#### 6. Form Accessibility
-
-```tsx
-// Proper form labeling
-<div>
-  <label htmlFor="email">Email Address</label>
+// Form with ARIA
+<form
+  onSubmit={handleSubmit}
+  aria-label="Login form"
+  aria-describedby="login-description"
+>
+  <label htmlFor="email" className="sr-only">
+    Email address
+  </label>
   <input
     id="email"
     type="email"
     aria-required="true"
-    aria-invalid={hasError}
-    aria-describedby={hasError ? 'email-error' : undefined}
+    aria-invalid={!!error}
+    aria-describedby={error ? "email-error" : undefined}
   />
-  {hasError && (
-    <span id="email-error" role="alert">
-      Please enter a valid email address
+  {error && (
+    <span id="email-error" role="alert" aria-live="assertive">
+      {error}
     </span>
   )}
-</div>
+</form>
 ```
 
-#### 7. Screen Reader Support
-
+#### 4. Screen Reader Support
 ```tsx
-// Hide content from visual users but make it available to screen readers
-function ScreenReaderOnly({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      className="sr-only"
-      style={{
-        position: 'absolute',
-        width: '1px',
-        height: '1px',
-        padding: '0',
-        margin: '-1px',
-        overflow: 'hidden',
-        clip: 'rect(0, 0, 0, 0)',
-        whiteSpace: 'nowrap',
-        border: '0',
-      }}
-    >
-      {children}
-    </span>
-  )
+// Screen reader only text
+const SrOnly = ({ children }: { children: React.ReactNode }) => (
+  <span className="sr-only">{children}</span>
+)
+
+// Visually hidden but accessible
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Focus styles for screen readers
+.focus-visible:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 ```
 
-#### 8. Touch Targets
+#### 5. Semantic HTML
+```tsx
+// Use semantic elements
+<header>...</header>
+<nav>...</nav>
+<main id="main-content">...</main>
+<section>...</section>
+<article>...</article>
+<aside>...</aside>
+<footer>...</footer>
 
-```typescript
-// Minimum touch target sizes
-const Accessibility = {
-  touch: {
-    minimum: 44,   // 44x44px minimum touch target
-    recommended: 48, // 48x48px recommended
-  }
-}
+// Proper heading hierarchy
+<h1>Page Title</h1>
+<h2>Section Title</h2>
+<h3>Subsection Title</h3>
+<h4>Sub-subsection Title</h4>
 ```
 
-```css
-/* Ensure touch targets are large enough */
-button, [role="button"], a, [role="link"] {
-  min-width: 44px;
-  min-height: 44px;
-}
-```
-
-### Accessibility Testing Checklist
-
-- [ ] Keyboard navigation works correctly
-- [ ] Focus indicators are visible
-- [ ] All images have alt text
-- [ ] All form fields have labels
+#### 6. Accessibility Checklist
+- [ ] All images have `alt` text
+- [ ] All form inputs have associated labels
 - [ ] Color contrast meets WCAG AA standards
+- [ ] Keyboard navigation works throughout
+- [ ] Focus indicators are visible
+- [ ] ARIA attributes are used appropriately
 - [ ] Screen reader testing completed
-- [ ] ARIA attributes are properly used
-- [ ] Touch targets are at least 44x44px
-- [ ] No focus traps
-- [ ] Skip links provided for keyboard users
+- [ ] Semantic HTML structure
+- [ ] Error messages are accessible
+- [ ] Skip to content link available
 
 ---
 
-## Performance Optimization
+## ⚡ PERFORMANCE OPTIMIZATION
 
-### 1. Image Optimization
-
-```tsx
-import Image from 'next/image'
-
-// Optimized image component
-<Image
-  src="/hero-image.jpg"
-  alt="FinTech Dashboard"
-  width={1200}
-  height={600}
-  priority={true} // For above-the-fold images
-  quality={85}    // Good balance of quality and size
-  placeholder="blur" // For blurred placeholder
-  blurDataURL="data:image/jpeg;base64,..." // Base64 placeholder
-  className="w-full h-auto"
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-/>
-```
-
-### 2. Font Optimization
-
+### 1. CSS Performance
 ```typescript
-// Optimize font loading
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap', // Show text immediately with fallback, then swap when loaded
-  adjustFontFallback: true, // Improve fallback metrics
-  fallback: ['system-ui', 'Arial', 'sans-serif'], // Fallback fonts
-})
-```
-
-### 3. Code Splitting
-
-```tsx
-// Dynamic imports for code splitting
-import dynamic from 'next/dynamic'
-
-// Load heavy component only when needed
-const HeavyChartComponent = dynamic(
-  () => import('@/components/heavy-chart'),
-  {
-    loading: () => <p>Loading...</p>,
-    ssr: false, // Disable server-side rendering if not needed
-  }
-)
-```
-
-### 4. Lazy Loading
-
-```tsx
-// Lazy load images and components
-const LazyImage = dynamic(
-  () => import('@/components/lazy-image'),
-  { ssr: false }
-)
-
-// Use Intersection Observer for lazy loading
-useEffect(() => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Load content
-        observer.unobserve(entry.target)
-      }
-    })
-  })
-
-  // Observe elements
-  return () => observer.disconnect()
-}, [])
-```
-
-### 5. Bundle Optimization
-
-```json
-// package.json scripts
-{
-  "scripts": {
-    "analyze": "next build && next bundler analyze"
-  }
+// Optimize CSS delivery
+const cssOptimizations = {
+  criticalCSS: 'Inline critical CSS for above-the-fold content',
+  loadCSS: 'Load non-critical CSS asynchronously',
+  minifyCSS: 'Minify and compress CSS files',
+  purgeUnused: 'Remove unused CSS with PurgeCSS',
+  bundleSize: 'Keep CSS bundle under 50KB',
 }
 ```
 
-```bash
-# Run bundle analysis
-npm run analyze
-```
-
-### 6. Performance Metrics
-
-**Target Metrics:**
-- First Contentful Paint (FCP): < 1.8s
-- Largest Contentful Paint (LCP): < 2.5s
-- First Input Delay (FID): < 100ms
-- Cumulative Layout Shift (CLS): < 0.1
-- Time to Interactive (TTI): < 3.8s
-
-**Monitoring Tools:**
-- Lighthouse
-- WebPageTest
-- Chrome DevTools
-- Google Analytics
-- New Relic
-
----
-
-## Testing & Validation
-
-### 1. Design System Testing
-
+### 2. Image Optimization
 ```typescript
-// test/design-system.test.ts
-import { ProDesignTokens, ProComponentSpecs } from '@/lib/design-system-pro'
-
-describe('Design System Tokens', () => {
-  it('should have correct spacing values', () => {
-    expect(ProDesignTokens.spacing.xs).toBe(8)
-    expect(ProDesignTokens.spacing.sm).toBe(12)
-    expect(ProDesignTokens.spacing.md).toBe(16)
-    expect(ProDesignTokens.spacing.lg).toBe(24)
-    expect(ProDesignTokens.spacing.xl).toBe(32)
-  })
-
-  it('should have correct typography values', () => {
-    expect(ProDesignTokens.typography.fontWeights.normal).toBe(400)
-    expect(ProDesignTokens.typography.fontWeights.bold).toBe(700)
-    expect(ProDesignTokens.typography.lineHeights.tight).toBe(1.1)
-  })
-
-  it('should have correct border radius values', () => {
-    expect(ProDesignTokens.borderRadius.md).toBe(8)
-    expect(ProDesignTokens.borderRadius.lg).toBe(12)
-  })
-})
-```
-
-### 2. Component Testing
-
-```typescript
-// test/components/button.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react'
-import { Button } from '@/components/ui/button'
-
-describe('Button Component', () => {
-  it('renders correctly with default props', () => {
-    render(<Button>Click me</Button>)
-    expect(screen.getByText('Click me')).toBeInTheDocument()
-  })
-
-  it('handles click events', () => {
-    const handleClick = jest.fn()
-    render(<Button onClick={handleClick}>Click me</Button>)
-
-    fireEvent.click(screen.getByText('Click me'))
-    expect(handleClick).toHaveBeenCalledTimes(1)
-  })
-
-  it('applies correct styles for variants', () => {
-    const { rerender } = render(<Button variant="default">Default</Button>)
-    expect(screen.getByText('Default')).toHaveClass('bg-primary')
-
-    rerender(<Button variant="secondary">Secondary</Button>)
-    expect(screen.getByText('Secondary')).toHaveClass('bg-secondary')
-  })
-})
-```
-
-### 3. Visual Regression Testing
-
-```typescript
-// visual-regression.config.js
-module.exports = {
-  backstop: {
-    id: 'fintech_app',
-    viewports: [
-      { label: 'phone', width: 375, height: 667 },
-      { label: 'tablet', width: 768, height: 1024 },
-      { label: 'desktop', width: 1440, height: 900 },
-    ],
-    scenarios: [
-      {
-        label: 'Dashboard',
-        url: 'http://localhost:3000',
-        selectors: ['document'],
-      },
-    ],
-    paths: {
-      bitmaps_reference: 'backstop_data/bitmaps_reference',
-      bitmaps_test: 'backstop_data/bitmaps_test',
-    },
-  },
+// Image optimization strategies
+const imageOptimizations = {
+  format: 'Use WebP for modern browsers, fallback to JPEG/PNG',
+  sizes: 'Generate multiple sizes for responsive images',
+  lazyLoading: 'Lazy load offscreen images',
+  placeholder: 'Use low-quality image placeholders (LQIP)',
+  cdn: 'Serve images from CDN with caching',
+  compression: 'Compress images to optimal quality',
 }
 ```
 
-### 4. Cross-Browser Testing
-
-**Supported Browsers:**
-- Chrome (latest 2 versions)
-- Firefox (latest 2 versions)
-- Safari (latest 2 versions)
-- Edge (latest 2 versions)
-- Opera (latest version)
-
-**Testing Tools:**
-- BrowserStack
-- Sauce Labs
-- LambdaTest
-- CrossBrowserTesting.com
-
-### 5. Mobile Testing
-
-**Mobile Testing Checklist:**
-- [ ] Responsive layout works on all screen sizes
-- [ ] Touch targets are large enough
-- [ ] Form inputs work on mobile
-- [ ] Scrolling behaves correctly
-- [ ] Native mobile features work (camera, location, etc.)
-- [ ] Performance is acceptable on mobile devices
-- [ ] Battery usage is reasonable
-
-**Mobile Testing Tools:**
-- Chrome DevTools Device Mode
-- Xcode Simulator
-- Android Studio Emulator
-- Real devices (various iOS and Android versions)
-
----
-
-## Deployment & Maintenance
-
-### 1. CI/CD Pipeline
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test
-      - run: npm run build
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run deploy
-```
-
-### 2. Monitoring
-
+### 3. JavaScript Performance
 ```typescript
-// server/lib/monitoring/logger.ts
-import { pino } from 'pino'
-
-const logger = pino({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-  formatters: {
-    level: (label) => ({ level: label }),
-    log: (object) => ({
-      ...object,
-      timestamp: new Date().toISOString(),
-    }),
-  },
-  transport: {
-    targets: [
-      { target: 'pino-http', level: 'info' },
-      { target: 'pino/file', options: { destination: '/var/log/fintech/app.log' } },
-    ],
-  },
-})
-
-export { logger }
-```
-
-### 3. Error Tracking
-
-```typescript
-// server/lib/monitoring/error-tracker.ts
-import * as Sentry from '@sentry/node'
-import { ProDesignTokens } from '@/lib/design-system-pro'
-
-if (process.env.NODE_ENV === 'production') {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    release: `fintech@${process.env.npm_package_version}`,
-    environment: process.env.NODE_ENV,
-    integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express({ app: expressApp }),
-    ],
-  })
-}
-
-export function captureError(error: Error, context: Record<string, any> = {}) {
-  Sentry.captureException(error, { extra: context })
-}
-
-export function captureMessage(message: string, context: Record<string, any> = {}) {
-  Sentry.captureMessage(message, { extra: context })
+// JavaScript optimization strategies
+const jsOptimizations = {
+  codeSplitting: 'Implement code splitting for large bundles',
+  lazyLoading: 'Lazy load non-critical components',
+  treeShaking: 'Remove unused code with tree shaking',
+  debounce: 'Debounce expensive operations',
+  memoization: 'Memoize expensive computations',
+  virtualization: 'Virtualize large lists',
+  bundleSize: 'Keep main bundle under 200KB',
 }
 ```
 
-### 4. Performance Monitoring
-
+### 4. Font Optimization
 ```typescript
-// server/lib/monitoring/performance.ts
-import { performance } from 'perf_hooks'
+// Font loading strategy
+const fontOptimizations = {
+  preload: 'Preload critical fonts',
+  format: 'Use WOFF2 format for modern browsers',
+  subset: 'Load only necessary character subsets',
+  display: 'Use font-display: swap for better UX',
+  local: 'Use system fonts as fallback',
+}
+```
 
-export function measurePerformance<T>(
-  name: string,
-  fn: () => T
-): T {
-  const start = performance.now()
-  const result = fn()
-  const end = performance.now()
-
-  const duration = end - start
-  // Log or send to monitoring service
-  console.log(`[Performance] ${name}: ${duration.toFixed(2)}ms`)
-
-  return result
+### 5. Performance Metrics Targets
+```typescript
+// Core Web Vitals Targets
+const performanceTargets = {
+  firstContentfulPaint: '< 1.8s',
+  largestContentfulPaint: '< 2.5s',
+  firstInputDelay: '< 100ms',
+  cumulativeLayoutShift: '< 0.1',
+  timeToInteractive: '< 3.8s',
+  totalBlockingTime: '< 200ms',
 }
 ```
 
 ---
 
-## Best Practices
+## ✅ IMPLEMENTATION CHECKLIST
 
-### 1. Design System Maintenance
+### Phase 1: Design System Setup
+- [ ] Create `lib/design-system-pro.ts` ✅
+- [ ] Create `styles/pro-design-tokens.css` ✅
+- [ ] Update `app/globals.css` to import design tokens
+- [ ] Update `components/ui/` components to use design tokens
+- [ ] Create responsive layout components
+- [ ] Set up color scheme and theming
 
-- **Regular Audits**: Review design tokens and components quarterly
-- **Documentation**: Keep documentation up to date
-- **Versioning**: Use semantic versioning for design system changes
-- **Changelog**: Maintain a changelog for design system updates
-- **Deprecation**: Clearly communicate deprecations with migration paths
+### Phase 2: Component Library
+- [ ] Update Button component with professional styling
+- [ ] Update Input component with proper dimensions
+- [ ] Update Card component with industry-standard design
+- [ ] Update Table component with professional styling
+- [ ] Update Form components (Select, Checkbox, Radio)
+- [ ] Create Chart components with consistent styling
+- [ ] Create Loading states and skeletons
+- [ ] Create Toast/Notification system
+- [ ] Create Dialog/Modal system
+- [ ] Create Tooltip system
 
-### 2. Component Development
+### Phase 3: Layout Components
+- [ ] Update Sidebar component with professional design
+- [ ] Update Navbar component with proper dimensions
+- [ ] Create PageHeader component
+- [ ] Create Section component
+- [ ] Create FilterBar component
+- [ ] Create StatCard component
+- [ ] Create DataTable component
+- [ ] Create ChartCard component
 
-- **Single Responsibility**: Each component should do one thing well
-- **Composition**: Favor composition over inheritance
-- **Props Validation**: Use TypeScript for type safety
-- **Accessibility**: Build accessibility in from the start
-- **Performance**: Optimize for performance in component design
+### Phase 4: Page Implementations
+- [ ] Update Dashboard page (`app/page.tsx`)
+- [ ] Update Analytics page (`app/analytics/page.tsx`)
+- [ ] Update Onboarding page (`app/onboarding/page.tsx`)
+- [ ] Update Auth pages (Login, Signup, Forgot Password)
+- [ ] Update Calculator pages (`app/calculators/page.tsx`)
+- [ ] Update Settings page (`app/settings/page.tsx`)
+- [ ] Update Tax page (`app/tax/page.tsx`)
+- [ ] Update Upload page (`app/upload/page.tsx`)
 
-### 3. Code Quality
+### Phase 5: Accessibility
+- [ ] Audit color contrast across all pages
+- [ ] Implement keyboard navigation
+- [ ] Add ARIA attributes
+- [ ] Add screen reader support
+- [ ] Ensure semantic HTML
+- [ ] Test with screen readers
+- [ ] Test keyboard-only navigation
+- [ ] Test with various assistive technologies
 
-- **Consistent Naming**: Use consistent naming conventions
-- **Code Formatting**: Use Prettier for consistent formatting
-- **Linting**: Use ESLint for code quality
-- **Type Checking**: Use TypeScript for type safety
-- **Testing**: Write comprehensive tests
+### Phase 6: Responsive Design
+- [ ] Test on mobile (360px - 640px)
+- [ ] Test on tablet (640px - 1024px)
+- [ ] Test on desktop (1024px - 1280px)
+- [ ] Test on large desktop (1280px+)
+- [ ] Ensure touch targets meet minimum size
+- [ ] Test orientation changes
+- [ ] Test high DPI displays
 
-### 4. Collaboration
+### Phase 7: Performance
+- [ ] Optimize images and assets
+- [ ] Implement lazy loading
+- [ ] Minify and compress assets
+- [ ] Implement code splitting
+- [ ] Set up caching strategies
+- [ ] Test performance metrics
+- [ ] Optimize font loading
 
-- **Design Handoff**: Use tools like Figma for design handoff
-- **Code Reviews**: Conduct thorough code reviews
-- **Pair Programming**: Use pair programming for complex features
-- **Documentation**: Document decisions and changes
-- **Communication**: Maintain clear communication channels
+### Phase 8: Testing & Quality Assurance
+- [ ] Cross-browser testing (Chrome, Firefox, Safari, Edge)
+- [ ] Cross-device testing (Mobile, Tablet, Desktop)
+- [ ] Accessibility testing (WCAG 2.1 AA)
+- [ ] Performance testing (Lighthouse score > 90)
+- [ ] User experience testing
+- [ ] Functional testing
+- [ ] Visual regression testing
+- [ ] Load testing
 
 ---
 
-## Resources
+## 📊 SUCCESS METRICS
 
-### Design Tools
-- [Figma](https://www.figma.com/) - UI/UX Design
-- [Adobe XD](https://www.adobe.com/products/xd.html) - UI/UX Design
-- [Sketch](https://www.sketch.com/) - UI/UX Design
-- [Whimsical](https://whimsical.com/) - Flowcharts and Wireframes
+### Design Quality
+- **Consistency Score**: 100% (All components follow design system)
+- **Accessibility Score**: 100% (WCAG 2.1 AA compliant)
+- **Responsive Score**: 100% (Works on all breakpoints)
+- **Visual Appeal**: 95%+ (Professional, modern design)
 
-### Development Tools
-- [Next.js](https://nextjs.org/) - React Framework
-- [Tailwind CSS](https://tailwindcss.com/) - CSS Framework
-- [Radix UI](https://www.radix-ui.com/) - UI Components
-- [shadcn/ui](https://ui.shadcn.com/) - UI Component Library
-- [Storybook](https://storybook.js.org/) - Component Documentation
+### Performance
+- **Lighthouse Score**: > 90
+- **First Contentful Paint**: < 1.8s
+- **Largest Contentful Paint**: < 2.5s
+- **First Input Delay**: < 100ms
+- **Cumulative Layout Shift**: < 0.1
+- **Bundle Size**: < 500KB (JS + CSS)
 
-### Testing Tools
-- [Jest](https://jestjs.io/) - JavaScript Testing
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - React Testing
-- [Cypress](https://www.cypress.io/) - E2E Testing
-- [Playwright](https://playwright.dev/) - E2E Testing
-- [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) - Performance Testing
-
-### Accessibility Tools
-- [axe DevTools](https://www.deque.com/axe/) - Accessibility Testing
-- [WAVE](https://wave.webaim.org/) - Accessibility Evaluation
-- [WebAIM Color Contrast Checker](https://webaim.org/resources/contrastchecker/) - Color Contrast
-- [NVDA](https://www.nvaccess.org/) - Screen Reader
-- [VoiceOver](https://support.apple.com/guide/voiceover/welcome/mac) - Screen Reader
-
-### Performance Tools
-- [WebPageTest](https://www.webpagetest.org/) - Performance Testing
-- [Google PageSpeed Insights](https://pagespeed.web.dev/) - Performance Analysis
-- [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) - Performance Auditing
-- [New Relic](https://newrelic.com/) - Application Monitoring
-- [Sentry](https://sentry.io/) - Error Tracking
+### User Experience
+- **Task Completion Rate**: > 95%
+- **Error Rate**: < 1%
+- **User Satisfaction**: > 4.5/5
+- **Bounce Rate**: < 20%
 
 ---
 
-## Conclusion
+## 🎯 NEXT STEPS
 
-This comprehensive UI/UX implementation guide provides everything you need to create a professional, industry-standard FinTech application. By following the design system, component library, and best practices outlined in this document, you can build a high-quality application that meets modern web standards.
+1. **Implement Design System**: Apply the design tokens to all components
+2. **Update Pages**: Migrate all pages to use the new design system
+3. **Test Extensively**: Ensure all functionality works with new design
+4. **Optimize Performance**: Fine-tune performance based on metrics
+5. **Gather Feedback**: Collect user feedback and iterate
+6. **Document**: Document all design decisions and patterns
 
-**Key Takeaways:**
-1. Use the design system tokens consistently
-2. Follow the component specifications for professional results
-3. Prioritize accessibility and performance
-4. Test thoroughly across devices and browsers
-5. Maintain clear documentation and communication
+---
 
-**Next Steps:**
-1. Implement the design system in your project
-2. Create or update components using the specifications
-3. Apply the layout patterns to your pages
-4. Test and validate your implementation
-5. Iterate and improve based on feedback
+## 📞 SUPPORT & RESOURCES
 
-By following this guide, you'll create a FinTech application that looks and feels professional, performs well, and provides an excellent user experience across all devices.
+### Design Resources
+- [Material Design Guidelines](https://material.io/design)
+- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
+- [IBM Carbon Design System](https://carbondesignsystem.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+
+### Tools
+- **Figma**: Design and prototyping
+- **Storybook**: Component documentation
+- **Lighthouse**: Performance auditing
+- **axe**: Accessibility testing
+- **BrowserStack**: Cross-browser testing
+
+### Contacts
+- **Design Lead**: [Your Name]
+- **Frontend Lead**: [Your Name]
+- **Accessibility Specialist**: [Your Name]
+
+---
+
+**Document Version**: 1.0.0
+**Last Updated**: July 2026
+**Maintainer**: [Your Name]
