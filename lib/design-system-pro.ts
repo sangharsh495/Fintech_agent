@@ -1,900 +1,723 @@
-// ============================================================================
-// PROFESSIONAL DESIGN SYSTEM - Industry Standard
-// FinTech Application UI/UX Framework
-// ============================================================================
+// Professional Design System - Industry Standard Dimensions & Layout
+// FinFlow Financial Application Design Tokens
 
-import { DesignTokens } from './design-system'
+// ============================================
+// SPACING SYSTEM (8px Base Grid)
+// ============================================
+export const spacing = {
+  // Base units
+  xs: '0.25rem',     // 4px
+  sm: '0.5rem',      // 8px
+  md: '1rem',        // 16px
+  lg: '1.5rem',      // 24px
+  xl: '2rem',        // 32px
+  '2xl': '3rem',     // 48px
+  '3xl': '4rem',     // 64px
+  '4xl': '6rem',     // 96px
+  '5xl': '8rem',     // 128px
 
-// ============================================================================
-// ENHANCED DESIGN TOKENS - Professional Grade
-// ============================================================================
+  // Component-specific
+  cardPadding: '1.5rem',           // 24px
+  cardPaddingSm: '1rem',           // 16px
+  cardPaddingLg: '2rem',           // 32px
+  sectionPadding: '2rem',          // 32px
+  sectionPaddingLg: '3rem',        // 48px
+  pagePadding: '1rem',             // 16px mobile
+  pagePaddingMd: '2rem',           // 32px tablet
+  pagePaddingLg: '4rem',           // 64px desktop
 
-export const ProDesignTokens = {
-  // ==========================================================================
-  // SPACING SYSTEM - 8px Base Grid (Industry Standard)
-  // ==========================================================================
-  spacing: {
-    // Base units (8px = 1rem)
-    xs: 8,       // 0.5rem - Tight spacing
-    sm: 12,      // 0.75rem - Small spacing
-    md: 16,      // 1rem - Standard spacing
-    lg: 24,      // 1.5rem - Large spacing
-    xl: 32,      // 2rem - Extra large
-    '2xl': 48,   // 3rem
-    '3xl': 64,   // 4rem
-    '4xl': 80,   // 5rem
+  // Gap sizes
+  gapSm: '0.75rem',    // 12px
+  gapMd: '1rem',       // 16px
+  gapLg: '1.5rem',     // 24px
+  gapXl: '2rem',       // 32px
 
-    // Section spacing
-    section: {
-      mobile: 24,    // 1.5rem
-      tablet: 40,    // 2.5rem
-      desktop: 64,   // 4rem
-    },
+  // Border radius
+  radiusSm: '0.375rem',    // 6px
+  radius: '0.5rem',        // 8px
+  radiusMd: '0.75rem',     // 12px
+  radiusLg: '1rem',        // 16px
+  radiusXl: '1.5rem',      // 24px
+  radius2xl: '2rem',       // 32px
+  radiusFull: '9999px',    // Full circle
 
-    // Component spacing
-    component: {
-      button: {
-        padding: {
-          sm: '8px 16px',    // 0.5rem 1rem
-          md: '12px 24px',   // 0.75rem 1.5rem
-          lg: '16px 32px',   // 1rem 2rem
-        },
-        gap: 8,
-      },
-      card: {
-        padding: {
-          sm: 16,    // 1rem
-          md: 24,    // 1.5rem
-          lg: 32,    // 2rem
-          xl: 40,    // 2.5rem
-        },
-      },
-      form: {
-        fieldGap: 24,       // 1.5rem between form fields
-        labelGap: 8,        // 0.5rem between label and input
-        helperGap: 4,       // 0.25rem between input and helper text
-      },
-    },
+  // Heights
+  headerHeight: '4rem',     // 64px
+  footerHeight: '4rem',     // 64px
+  sidebarWidth: '16rem',    // 256px
+  sidebarCollapsed: '4rem', // 64px
+  navbarHeight: '4rem',     // 64px
+
+  // Form elements
+  inputHeight: '2.5rem',    // 40px
+  inputHeightSm: '2rem',     // 32px
+  inputHeightLg: '3rem',     // 48px
+  buttonHeight: '2.5rem',    // 40px
+  buttonHeightSm: '2rem',     // 32px
+  buttonHeightLg: '3rem',     // 48px
+}
+
+// ============================================
+// TYPOGRAPHY SYSTEM
+// ============================================
+export const typography = {
+  // Font families
+  sans: 'Inter, system-ui, -apple-system, sans-serif',
+  mono: 'JetBrains Mono, Fira Code, monospace',
+  serif: 'Georgia, serif',
+
+  // Font sizes (rem based)
+  textXs: '0.75rem',      // 12px
+  textSm: '0.875rem',     // 14px
+  textBase: '1rem',       // 16px
+  textLg: '1.125rem',     // 18px
+  textXl: '1.25rem',      // 20px
+  text2xl: '1.5rem',      // 24px
+  text3xl: '1.875rem',    // 30px
+  text4xl: '2.25rem',     // 36px
+  text5xl: '3rem',        // 48px
+  text6xl: '3.75rem',     // 60px
+
+  // Font weights
+  fontLight: 300,
+  fontNormal: 400,
+  fontMedium: 500,
+  fontSemibold: 600,
+  fontBold: 700,
+  fontExtrabold: 800,
+  fontBlack: 900,
+
+  // Line heights
+  leadingNone: 1,
+  leadingTight: 1.25,
+  leadingSnug: 1.375,
+  leadingNormal: 1.5,
+  leadingRelaxed: 1.625,
+  leadingLoose: 2,
+
+  // Letter spacing
+  trackingTighter: '-0.05em',
+  trackingTight: '-0.025em',
+  trackingNormal: '0',
+  trackingWide: '0.025em',
+  trackingWider: '0.05em',
+  trackingWidest: '0.1em',
+}
+
+// ============================================
+// COLOR SYSTEM (Semantic Tokens)
+// ============================================
+export const colors = {
+  // Primary palette
+  primary: {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',      // Primary brand color
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+    950: '#172554',
   },
 
-  // ==========================================================================
-  // TYPOGRAPHY - Professional Scale
-  // ==========================================================================
-  typography: {
-    // Font families
-    fontFamilies: {
-      sans: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      mono: "'JetBrains Mono', 'Fira Code', monospace",
-      serif: "'Georgia', 'Times New Roman', serif",
-    },
-
-    // Font weights
-    fontWeights: {
-      light: 300,
-      normal: 400,
-      medium: 500,
-      semibold: 600,
-      bold: 700,
-      extrabold: 800,
-      black: 900,
-    },
-
-    // Line heights
-    lineHeights: {
-      tight: 1.1,
-      normal: 1.4,
-      relaxed: 1.6,
-      loose: 2,
-    },
-
-    // Letter spacing
-    letterSpacing: {
-      tight: '-0.025em',
-      normal: '0',
-      wide: '0.025em',
-      wider: '0.05em',
-    },
-
-    // Font sizes - Mobile First Scale
-    scale: {
-      // Body text
-      body: {
-        xs: {
-          mobile: 12,
-          tablet: 12,
-          desktop: 12,
-        },
-        sm: {
-          mobile: 14,
-          tablet: 14,
-          desktop: 14,
-        },
-        md: {
-          mobile: 16,
-          tablet: 16,
-          desktop: 16,
-        },
-        lg: {
-          mobile: 18,
-          tablet: 18,
-          desktop: 18,
-        },
-        xl: {
-          mobile: 20,
-          tablet: 20,
-          desktop: 20,
-        },
-      },
-
-      // Headings
-      heading: {
-        h1: {
-          mobile: 36,
-          tablet: 48,
-          desktop: 56,
-        },
-        h2: {
-          mobile: 30,
-          tablet: 36,
-          desktop: 42,
-        },
-        h3: {
-          mobile: 24,
-          tablet: 28,
-          desktop: 32,
-        },
-        h4: {
-          mobile: 20,
-          tablet: 22,
-          desktop: 24,
-        },
-        h5: {
-          mobile: 18,
-          tablet: 20,
-          desktop: 20,
-        },
-        h6: {
-          mobile: 16,
-          tablet: 16,
-          desktop: 18,
-        },
-      },
-
-      // Numeric display
-      numeric: {
-        sm: {
-          mobile: 20,
-          tablet: 24,
-          desktop: 28,
-        },
-        md: {
-          mobile: 28,
-          tablet: 32,
-          desktop: 36,
-        },
-        lg: {
-          mobile: 36,
-          tablet: 44,
-          desktop: 52,
-        },
-        xl: {
-          mobile: 48,
-          tablet: 56,
-          desktop: 64,
-        },
-      },
-    },
+  // Secondary palette
+  secondary: {
+    50: '#f8fafc',
+    100: '#f1f5f9',
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
+    950: '#020617',
   },
 
-  // ==========================================================================
-  // BORDER RADIUS - Modern, Smooth Corners
-  // ==========================================================================
-  borderRadius: {
-    none: 0,
-    xs: 4,      // 0.25rem - Sharp corners
-    sm: 6,      // 0.375rem - Subtle rounding
-    md: 8,      // 0.5rem - Standard rounding
-    lg: 12,     // 0.75rem - Pronounced rounding
-    xl: 16,     // 1rem - Strong rounding
-    '2xl': 24,  // 1.5rem - Very rounded
-    '3xl': 32,  // 2rem - Pill-like
-    full: 9999, // Fully rounded (pill/circle)
-
-    // Component-specific radii
-    button: 8,          // 0.5rem
-    card: 12,           // 0.75rem
-    input: 8,           // 0.5rem
-    badge: 9999,        // Full pill
-    avatar: 9999,       // Full circle
-    dialog: 16,         // 1rem
-    sheet: 16,          // 1rem
-    popover: 8,         // 0.5rem
-    tooltip: 6,         // 0.375rem
+  // Success palette
+  success: {
+    50: '#f0fdf4',
+    100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
+    500: '#22c55e',      // Success color
+    600: '#16a34a',
+    700: '#15803d',
+    800: '#166534',
+    900: '#14532d',
   },
 
-  // ==========================================================================
-  // SHADOWS - Layered, Professional Depth
-  // ==========================================================================
-  shadows: {
-    // Web shadows (box-shadow)
-    web: {
-      none: '0 0 0 0 rgba(0, 0, 0, 0)',
-      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-      md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-      '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-
-      // Colored shadows for brand elements
-      primarySm: '0 0 0 3px rgba(67, 56, 202, 0.1), 0 2px 4px rgba(67, 56, 202, 0.1)',
-      primaryMd: '0 0 0 4px rgba(67, 56, 202, 0.15), 0 4px 8px rgba(67, 56, 202, 0.15)',
-      primaryLg: '0 0 0 6px rgba(67, 56, 202, 0.2), 0 8px 16px rgba(67, 56, 202, 0.2)',
-
-      // Inner shadows for pressed states
-      inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
-    },
-
-    // Text shadows
-    text: {
-      sm: '0 1px 2px rgba(0, 0, 0, 0.1)',
-      md: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      lg: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    },
+  // Warning palette
+  warning: {
+    50: '#fffbeb',
+    100: '#fef3c7',
+    200: '#fde68a',
+    300: '#fcd34d',
+    400: '#fbbf24',
+    500: '#f59e0b',      // Warning color
+    600: '#d97706',
+    700: '#b45309',
+    800: '#92400e',
+    900: '#78350f',
+    950: '#451a03',
   },
 
-  // ==========================================================================
-  // ANIMATIONS - Smooth, Professional Transitions
-  // ==========================================================================
-  animation: {
-    duration: {
-      instant: 0,
-      fast: 150,      // 150ms - Micro-interactions
-      normal: 200,    // 200ms - Standard transitions
-      slow: 300,      // 300ms - Noticeable animations
-      slower: 500,    // 500ms - Emphasis animations
-      slowest: 1000,  // 1000ms - Dramatic effects
-    },
-
-    timing: {
-      linear: 'linear',
-      easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-      easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
-      easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-      bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-    },
-
-    // Predefined animations
-    presets: {
-      fadeIn: 'fadeIn 200ms ease-out',
-      fadeOut: 'fadeOut 200ms ease-in',
-      slideIn: 'slideIn 300ms ease-out',
-      slideOut: 'slideOut 300ms ease-in',
-      scaleIn: 'scaleIn 200ms ease-out',
-      scaleOut: 'scaleOut 200ms ease-in',
-      spin: 'spin 1s linear infinite',
-      pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      bounce: 'bounce 1s ease-in-out infinite',
-      shake: 'shake 500ms ease-in-out',
-    },
+  // Error palette
+  error: {
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444',      // Error color
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    950: '#450a0a',
   },
 
-  // ==========================================================================
-  // Z-INDEX SCALE - Layer Management
-  // ==========================================================================
-  zIndex: {
-    base: 0,
-    raised: 10,
-    dropdown: 100,
-    sticky: 200,
-    fixed: 300,
-    modalBackdrop: 400,
-    modal: 500,
-    popover: 600,
-    tooltip: 700,
-    notification: 800,
-    max: 9999,
+  // Info palette
+  info: {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',
   },
 
-  // ==========================================================================
-  // LAYOUT CONSTRAINTS - Professional Container System
-  // ==========================================================================
-  layout: {
-    // Maximum widths
-    maxWidth: {
-      xs: 320,    // Mobile cards
-      sm: 425,    // Small containers
-      md: 768,    // Tablet/Modal
-      lg: 1024,   // Large containers
-      xl: 1280,   // Desktop max
-      '2xl': 1536, // Wide desktop
+  // Gradient definitions
+  gradients: {
+    primary: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    warning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    error: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    purple: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+    teal: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
+    dark: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+  },
+
+  // Semantic colors
+  semantic: {
+    background: {
+      primary: 'hsl(var(--background))',
+      secondary: 'hsl(var(--background-secondary))',
+      tertiary: 'hsl(var(--background-tertiary))',
+    },
+    foreground: {
+      primary: 'hsl(var(--foreground))',
+      secondary: 'hsl(var(--foreground-secondary))',
+      tertiary: 'hsl(var(--foreground-tertiary))',
+      muted: 'hsl(var(--foreground-muted))',
+    },
+    border: {
+      primary: 'hsl(var(--border))',
+      secondary: 'hsl(var(--border-secondary))',
+    },
+    card: {
+      background: 'hsl(var(--card))',
+      foreground: 'hsl(var(--card-foreground))',
+      border: 'hsl(var(--card-border))',
+    },
+    accent: {
+      primary: 'hsl(var(--accent))',
+      foreground: 'hsl(var(--accent-foreground))',
+    },
+    destructive: {
+      background: 'hsl(var(--destructive))',
+      foreground: 'hsl(var(--destructive-foreground))',
+    },
+    muted: {
+      background: 'hsl(var(--muted))',
+      foreground: 'hsl(var(--muted-foreground))',
+    },
+    popover: {
+      background: 'hsl(var(--popover))',
+      foreground: 'hsl(var(--popover-foreground))',
+    },
+  }
+}
+
+// ============================================
+// SHADOW SYSTEM
+// ============================================
+export const shadows = {
+  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+  xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+  '3xl': '0 35px 60px -15px rgb(0 0 0 / 0.3)',
+
+  // Colored shadows
+  primary: {
+    sm: '0 4px 14px 0 rgba(59, 130, 246, 0.15)',
+    md: '0 8px 25px 0 rgba(59, 130, 246, 0.2)',
+    lg: '0 15px 40px 0 rgba(59, 130, 246, 0.25)',
+  },
+  success: {
+    sm: '0 4px 14px 0 rgba(16, 185, 129, 0.15)',
+    md: '0 8px 25px 0 rgba(16, 185, 129, 0.2)',
+  },
+  warning: {
+    sm: '0 4px 14px 0 rgba(245, 158, 11, 0.15)',
+  },
+  error: {
+    sm: '0 4px 14px 0 rgba(239, 68, 68, 0.15)',
+  },
+
+  // Inner shadows
+  inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
+  innerLg: 'inset 0 4px 8px 0 rgb(0 0 0 / 0.1)',
+
+  // Glow effects
+  glow: {
+    primary: '0 0 20px rgba(59, 130, 246, 0.3)',
+    success: '0 0 20px rgba(16, 185, 129, 0.3)',
+    warning: '0 0 20px rgba(245, 158, 11, 0.3)',
+    error: '0 0 20px rgba(239, 68, 68, 0.3)',
+  }
+}
+
+// ============================================
+// BORDER SYSTEM
+// ============================================
+export const borders = {
+  none: '0',
+  sm: '1px',
+  md: '2px',
+  lg: '4px',
+  xl: '8px',
+
+  // Styles
+  solid: 'solid',
+  dashed: 'dashed',
+  dotted: 'dotted',
+
+  // Radii (from spacing)
+  radius: spacing.radius,
+  radiusSm: spacing.radiusSm,
+  radiusMd: spacing.radiusMd,
+  radiusLg: spacing.radiusLg,
+  radiusXl: spacing.radiusXl,
+  radius2xl: spacing.radius2xl,
+  radiusFull: spacing.radiusFull,
+}
+
+// ============================================
+// TRANSITIONS & ANIMATIONS
+// ============================================
+export const transitions = {
+  // Durations
+  instant: '75ms',
+  fast: '150ms',
+  normal: '250ms',
+  slow: '350ms',
+  slower: '500ms',
+  slowest: '700ms',
+
+  // Easing
+  linear: 'linear',
+  in: 'cubic-bezier(0.4, 0, 1, 1)',
+  out: 'cubic-bezier(0, 0, 0.2, 1)',
+  inOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+
+  // Presets
+  button: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  card: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  modal: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  fade: 'opacity 0.2s ease-out',
+  slide: 'transform 0.3s ease-out',
+  scale: 'transform 0.2s ease-out',
+  spin: 'transform 0.6s linear',
+}
+
+export const animations = {
+  // Keyframe animations
+  spin: '@keyframes spin { to { transform: rotate(360deg); } }',
+  pulse: '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }',
+  bounce: '@keyframes bounce { 0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); } 50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); } }',
+  fadeIn: '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
+  fadeInUp: '@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }',
+  fadeInDown: '@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }',
+  fadeInLeft: '@keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }',
+  fadeInRight: '@keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }',
+  scaleIn: '@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }',
+  slideIn: '@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }',
+  shimmer: '@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }',
+
+  // Animation durations
+  durations: {
+    fast: '150ms',
+    normal: '250ms',
+    slow: '350ms',
+    slower: '500ms',
+    slowest: '700ms',
+  }
+}
+
+// ============================================
+// Z-INDEX SCALE
+// ============================================
+export const zIndex = {
+  auto: 'auto',
+  base: 0,
+  dropdown: 100,
+  sticky: 200,
+  fixed: 300,
+  modalBackdrop: 400,
+  modal: 500,
+  popover: 600,
+  tooltip: 700,
+  notification: 800,
+  max: 9999,
+}
+
+// ============================================
+// LAYOUT CONSTANTS
+// ============================================
+export const layout = {
+  // Container widths
+  containerSm: '640px',
+  containerMd: '768px',
+  containerLg: '1024px',
+  containerXl: '1280px',
+  container2xl: '1536px',
+  containerFull: '100%',
+
+
+  // Breakpoints
+  breakpoint: {
+    xs: '360px',
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+  },
+
+  // Grid
+  grid: {
+    columns: {
+      mobile: 1,
+      tablet: 2,
+      desktop: 3,
+      wide: 4,
+    },
+    gap: spacing.gapMd,
+    gapLg: spacing.gapLg,
+  },
+
+  // Card dimensions
+  card: {
+    width: {
+      sm: '300px',
+      md: '384px',
+      lg: '448px',
+      xl: '512px',
       full: '100%',
     },
-
-    // Sidebar widths
-    sidebar: {
-      collapsed: 64,    // 4rem - Icon only
-      compact: 256,    // 16rem - Compact
-      expanded: 288,   // 18rem - Full
+    height: {
+      auto: 'auto',
+      sm: '200px',
+      md: '280px',
+      lg: '360px',
     },
-
-    // Header heights
-    header: {
-      mobile: 56,      // 3.5rem
-      desktop: 64,     // 4rem
-    },
-
-    // Border widths
-    borderWidth: {
-      hairline: 1,
-      thin: 1,
-      standard: 1,
-      thick: 2,
-      heavy: 4,
-    },
+    aspectRatio: {
+      square: '1 / 1',
+      video: '16 / 9',
+      wide: '21 / 9',
+      portrait: '9 / 16',
+    }
   },
 
-  // ==========================================================================
-  // COMPONENT DIMENSIONS - Standardized Sizing
-  // ==========================================================================
-  componentSizes: {
-    // Icons
-    icon: {
-      xs: 12,    // 0.75rem
-      sm: 16,    // 1rem
-      md: 20,    // 1.25rem
-      lg: 24,    // 1.5rem
-      xl: 28,    // 1.75rem
-      '2xl': 32, // 2rem
-      '3xl': 40, // 2.5rem
-    },
-
-    // Buttons
-    button: {
-      height: {
-        sm: 32,   // 2rem
-        md: 40,   // 2.5rem
-        lg: 48,   // 3rem
-      },
-      icon: {
-        sm: 24,   // 1.5rem
-        md: 32,   // 2rem
-        lg: 40,   // 2.5rem
-      },
-    },
-
-    // Cards
-    card: {
-      radius: 12,      // 0.75rem
-      padding: {
-        sm: 16,        // 1rem
-        md: 24,        // 1.5rem
-        lg: 32,        // 2rem
-        xl: 40,        // 2.5rem
-      },
-    },
-
-    // Inputs
-    input: {
-      height: {
-        sm: 32,   // 2rem
-        md: 40,   // 2.5rem
-        lg: 48,   // 3rem
-      },
-      padding: {
-        horizontal: 16, // 1rem
-        vertical: 12,   // 0.75rem
-      },
-    },
-
-    // Avatars
-    avatar: {
-      xs: 24,   // 1.5rem
-      sm: 32,   // 2rem
-      md: 40,   // 2.5rem
-      lg: 48,   // 3rem
-      xl: 56,   // 3.5rem
-      '2xl': 64, // 4rem
-    },
-
-    // Badges/Chips
-    badge: {
-      height: {
-        sm: 16,   // 1rem
-        md: 20,   // 1.25rem
-        lg: 24,   // 1.5rem
-      },
-      padding: {
-        horizontal: 8,  // 0.5rem
-        vertical: 4,    // 0.25rem
-      },
-    },
+  // Sidebar
+  sidebar: {
+    width: spacing.sidebarWidth,
+    collapsedWidth: spacing.sidebarCollapsed,
+    transition: transitions.normal,
   },
 
-  // ==========================================================================
-  // ELEVATION SYSTEM - Material Design Inspired
-  // ==========================================================================
-  elevation: {
-    '0': {
-      boxShadow: 'none',
-      transform: 'translateY(0)',
-    },
-    '1': {
-      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-      transform: 'translateY(0)',
-    },
-    '2': {
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
-      transform: 'translateY(-1px)',
-    },
-    '3': {
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
-      transform: 'translateY(-2px)',
-    },
-    '4': {
-      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06)',
-      transform: 'translateY(-4px)',
-    },
-    '5': {
-      boxShadow: '0 16px 32px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1)',
-      transform: 'translateY(-8px)',
-    },
+  // Header
+  header: {
+    height: spacing.headerHeight,
+    transition: transitions.normal,
   },
+
+  // Form spacing
+  form: {
+    labelMarginBottom: spacing.xs,
+    inputMarginBottom: spacing.md,
+    fieldGap: spacing.gapMd,
+    rowGap: spacing.gapLg,
+  }
 }
 
-// ============================================================================
-// RESPONSIVE BREAKPOINTS - Tailwind CSS Standard
-// ============================================================================
+// ============================================
+// COMPONENT DIMENSIONS
+// ============================================
+export const components = {
+  // Buttons
+  button: {
+    height: spacing.inputHeight,
+    heightSm: spacing.inputHeightSm,
+    heightLg: spacing.inputHeightLg,
+    paddingX: spacing.md,
+    paddingXSm: spacing.sm,
+    paddingXLg: spacing.lg,
+    paddingY: spacing.sm,
+    paddingYLg: spacing.md,
+    borderRadius: spacing.radius,
+    borderRadiusLg: spacing.radiusLg,
+    fontSize: typography.textSm,
+    fontSizeLg: typography.textBase,
+    fontWeight: typography.fontMedium,
+  },
 
-export const Breakpoints = {
-  sm: 640,    // 40rem
-  md: 768,    // 48rem
-  lg: 1024,   // 64rem
-  xl: 1280,   // 80rem
-  '2xl': 1536, // 96rem
+  // Inputs
+  input: {
+    height: spacing.inputHeight,
+    heightSm: spacing.inputHeightSm,
+    heightLg: spacing.inputHeightLg,
+    paddingX: spacing.md,
+    paddingY: spacing.sm,
+    borderRadius: spacing.radius,
+    fontSize: typography.textBase,
+    fontSizeSm: typography.textSm,
+  },
+
+  // Cards
+  card: {
+    borderRadius: spacing.radiusLg,
+    borderRadiusSm: spacing.radius,
+    borderRadiusLg: spacing.radiusXl,
+    padding: spacing.cardPadding,
+    paddingSm: spacing.cardPaddingSm,
+    paddingLg: spacing.cardPaddingLg,
+    shadow: shadows.md,
+    shadowLg: shadows.lg,
+    shadowHover: shadows.lg,
+    borderWidth: borders.sm,
+  },
+
+  // Badges
+  badge: {
+    paddingX: spacing.sm,
+    paddingY: spacing.xs,
+    borderRadius: spacing.radiusFull,
+    fontSize: typography.textXs,
+    fontWeight: typography.fontMedium,
+    height: spacing.inputHeightSm,
+  },
+
+  // Avatars
+  avatar: {
+    size: {
+      xs: spacing.inputHeightSm,
+      sm: spacing.inputHeight,
+      md: '2.75rem',    // 44px
+      lg: '3.5rem',     // 56px
+      xl: '4.5rem',     // 72px
+    },
+    borderRadius: spacing.radiusFull,
+  },
+
+  // Alerts
+  alert: {
+    borderRadius: spacing.radius,
+    padding: spacing.md,
+    iconSize: spacing.inputHeightSm,
+    fontSize: typography.textSm,
+  },
+
+  // Dialogs/Modals
+  dialog: {
+    borderRadius: spacing.radiusXl,
+    padding: spacing.sectionPadding,
+    maxWidth: layout.containerMd,
+    overlayOpacity: 0.5,
+    backdropBlur: '4px',
+  },
+
+  // Tooltips
+  tooltip: {
+    borderRadius: spacing.radius,
+    padding: spacing.sm,
+    fontSize: typography.textSm,
+    maxWidth: '200px',
+    arrowSize: '8px',
+  },
+
+  // Tables
+  table: {
+    borderRadius: spacing.radius,
+    cellPadding: spacing.md,
+    rowHeight: '3rem',    // 48px
+    headerHeight: '3.5rem', // 56px
+    fontSize: typography.textSm,
+    fontSizeHeader: typography.textBase,
+  },
+
+  // Progress bars
+  progress: {
+    height: spacing.sm,
+    heightLg: spacing.md,
+    borderRadius: spacing.radiusFull,
+  },
+
+  // Tabs
+  tabs: {
+    height: spacing.inputHeight,
+    paddingX: spacing.md,
+    paddingY: spacing.sm,
+    fontSize: typography.textSm,
+    borderRadius: spacing.radius,
+    indicatorHeight: '2px',
+  },
+
+  // Accordions
+  accordion: {
+    borderRadius: spacing.radius,
+    padding: spacing.md,
+    triggerPadding: spacing.md,
+    contentPadding: spacing.md,
+    iconSize: spacing.inputHeightSm,
+  },
+
+  // Charts
+  chart: {
+    containerPadding: spacing.md,
+    legendFontSize: typography.textXs,
+    labelFontSize: typography.textSm,
+    tooltipPadding: spacing.sm,
+    tooltipBorderRadius: spacing.radius,
+  }
 }
 
-// ============================================================================
-// PROFESSIONAL UI COMPONENT SPECIFICATIONS
-// ============================================================================
-
-export const ProComponentSpecs = {
-  // Button specifications
-  Button: {
-    variants: {
-      primary: {
-        base: {
-          background: 'var(--primary)',
-          color: 'var(--primary-foreground)',
-          border: 'none',
-          hover: {
-            background: 'var(--primary-hover)',
-            transform: 'translateY(-1px)',
-            boxShadow: ProDesignTokens.shadows.web.lg,
-          },
-          active: {
-            background: 'var(--primary-active)',
-            transform: 'translateY(0)',
-          },
-          disabled: {
-            background: 'var(--muted)',
-            color: 'var(--muted-foreground)',
-            cursor: 'not-allowed',
-            opacity: 0.5,
-          },
-        },
-      },
-      secondary: {
-        base: {
-          background: 'var(--secondary)',
-          color: 'var(--secondary-foreground)',
-          border: '1px solid var(--border)',
-          hover: {
-            background: 'var(--secondary-hover)',
-            borderColor: 'var(--border-hover)',
-          },
-          active: {
-            background: 'var(--secondary-active)',
-          },
-        },
-      },
-      outline: {
-        base: {
-          background: 'transparent',
-          color: 'var(--foreground)',
-          border: '1px solid var(--border)',
-          hover: {
-            background: 'var(--secondary)',
-            borderColor: 'var(--border-hover)',
-          },
-          active: {
-            background: 'var(--secondary-active)',
-          },
-        },
-      },
-      ghost: {
-        base: {
-          background: 'transparent',
-          color: 'var(--foreground)',
-          border: 'none',
-          hover: {
-            background: 'var(--secondary)',
-          },
-          active: {
-            background: 'var(--secondary-active)',
-          },
-        },
-      },
-      destructive: {
-        base: {
-          background: 'var(--destructive)',
-          color: 'var(--destructive-foreground)',
-          border: 'none',
-          hover: {
-            background: 'var(--destructive-hover)',
-          },
-          active: {
-            background: 'var(--destructive-active)',
-          },
-        },
-      },
-      link: {
-        base: {
-          background: 'transparent',
-          color: 'var(--primary)',
-          border: 'none',
-          textDecoration: 'underline',
-          hover: {
-            color: 'var(--primary-hover)',
-            textDecoration: 'none',
-          },
-        },
-      },
-    },
-    sizes: {
-      sm: {
-        height: ProDesignTokens.componentSizes.button.height.sm,
-        padding: `${ProDesignTokens.spacing.xs}px ${ProDesignTokens.spacing.sm}px`,
-        fontSize: ProDesignTokens.typography.scale.body.sm.mobile,
-        iconSize: ProDesignTokens.componentSizes.icon.sm,
-        gap: ProDesignTokens.spacing.xs,
-      },
-      md: {
-        height: ProDesignTokens.componentSizes.button.height.md,
-        padding: `${ProDesignTokens.spacing.sm}px ${ProDesignTokens.spacing.md}px`,
-        fontSize: ProDesignTokens.typography.scale.body.md.mobile,
-        iconSize: ProDesignTokens.componentSizes.icon.md,
-        gap: ProDesignTokens.spacing.sm,
-      },
-      lg: {
-        height: ProDesignTokens.componentSizes.button.height.lg,
-        padding: `${ProDesignTokens.spacing.md}px ${ProDesignTokens.spacing.lg}px`,
-        fontSize: ProDesignTokens.typography.scale.body.lg.mobile,
-        iconSize: ProDesignTokens.componentSizes.icon.lg,
-        gap: ProDesignTokens.spacing.md,
-      },
-    },
-  },
-
-  // Card specifications
-  Card: {
-    base: {
-      background: 'var(--card)',
-      border: '1px solid var(--border)',
-      borderRadius: ProDesignTokens.borderRadius.card,
-      padding: ProDesignTokens.componentSizes.card.padding.md,
-      boxShadow: ProDesignTokens.shadows.web.sm,
-      transition: `box-shadow ${ProDesignTokens.animation.duration.normal}ms, transform ${ProDesignTokens.animation.duration.normal}ms`,
-    },
-    hover: {
-      boxShadow: ProDesignTokens.shadows.web.md,
-      transform: 'translateY(-2px)',
-    },
-    variants: {
-      default: {},
-      elevated: {
-        boxShadow: ProDesignTokens.shadows.web.lg,
-      },
-      flat: {
-        border: 'none',
-        boxShadow: 'none',
-      },
-      bordered: {
-        border: '1px solid var(--border)',
-      },
-      interactive: {
-        cursor: 'pointer',
-        transition: `all ${ProDesignTokens.animation.duration.normal}ms`,
-        hover: {
-          boxShadow: ProDesignTokens.shadows.web.lg,
-          transform: 'translateY(-4px)',
-        },
-      },
-    },
-  },
-
-  // Input specifications
-  Input: {
-    base: {
-      width: '100%',
-      padding: `${ProDesignTokens.spacing.md}px ${ProDesignTokens.spacing.md}px`,
-      borderRadius: ProDesignTokens.borderRadius.input,
-      border: '1px solid var(--input)',
-      background: 'var(--background)',
-      fontSize: ProDesignTokens.typography.scale.body.md.mobile,
-      color: 'var(--foreground)',
-      transition: `border-color ${ProDesignTokens.animation.duration.fast}ms, box-shadow ${ProDesignTokens.animation.duration.fast}ms`,
-    },
-    states: {
-      focus: {
-        borderColor: 'var(--ring)',
-        boxShadow: ProDesignTokens.shadows.web.primarySm,
-        outline: 'none',
-      },
-      error: {
-        borderColor: 'var(--destructive)',
-        boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
-      },
-      disabled: {
-        background: 'var(--muted)',
-        color: 'var(--muted-foreground)',
-        cursor: 'not-allowed',
-        opacity: 0.5,
-      },
-    },
-  },
-
-  // Form specifications
-  Form: {
-    field: {
-      gap: ProDesignTokens.spacing.lg,
-      label: {
-        fontSize: ProDesignTokens.typography.scale.body.md.mobile,
-        fontWeight: ProDesignTokens.typography.fontWeights.medium,
-        color: 'var(--foreground)',
-        marginBottom: ProDesignTokens.spacing.xs,
-        display: 'block',
-      },
-      helperText: {
-        fontSize: ProDesignTokens.typography.scale.body.sm.mobile,
-        color: 'var(--muted-foreground)',
-        marginTop: ProDesignTokens.spacing.xs,
-      },
-      errorText: {
-        fontSize: ProDesignTokens.typography.scale.body.sm.mobile,
-        color: 'var(--destructive)',
-        marginTop: ProDesignTokens.spacing.xs,
-      },
-    },
-  },
-
-  // Typography specifications
-  Typography: {
-    h1: {
-      fontSize: ProDesignTokens.typography.scale.heading.h1,
-      fontWeight: ProDesignTokens.typography.fontWeights.bold,
-      lineHeight: ProDesignTokens.typography.lineHeights.tight,
-      letterSpacing: ProDesignTokens.typography.letterSpacing.tight,
-      color: 'var(--foreground)',
-      marginBottom: ProDesignTokens.spacing.md,
-    },
-    h2: {
-      fontSize: ProDesignTokens.typography.scale.heading.h2,
-      fontWeight: ProDesignTokens.typography.fontWeights.bold,
-      lineHeight: ProDesignTokens.typography.lineHeights.tight,
-      color: 'var(--foreground)',
-      marginBottom: ProDesignTokens.spacing.md,
-    },
-    h3: {
-      fontSize: ProDesignTokens.typography.scale.heading.h3,
-      fontWeight: ProDesignTokens.typography.fontWeights.semibold,
-      lineHeight: ProDesignTokens.typography.lineHeights.normal,
-      color: 'var(--foreground)',
-      marginBottom: ProDesignTokens.spacing.sm,
-    },
-    h4: {
-      fontSize: ProDesignTokens.typography.scale.heading.h4,
-      fontWeight: ProDesignTokens.typography.fontWeights.semibold,
-      lineHeight: ProDesignTokens.typography.lineHeights.normal,
-      color: 'var(--foreground)',
-      marginBottom: ProDesignTokens.spacing.sm,
-    },
-    body: {
-      fontSize: ProDesignTokens.typography.scale.body.md,
-      fontWeight: ProDesignTokens.typography.fontWeights.normal,
-      lineHeight: ProDesignTokens.typography.lineHeights.relaxed,
-      color: 'var(--foreground)',
-    },
-    bodySmall: {
-      fontSize: ProDesignTokens.typography.scale.body.sm,
-      fontWeight: ProDesignTokens.typography.fontWeights.normal,
-      lineHeight: ProDesignTokens.typography.lineHeights.relaxed,
-      color: 'var(--muted-foreground)',
-    },
-    caption: {
-      fontSize: ProDesignTokens.typography.scale.body.xs,
-      fontWeight: ProDesignTokens.typography.fontWeights.normal,
-      lineHeight: ProDesignTokens.typography.lineHeights.normal,
-      color: 'var(--muted-foreground)',
-    },
-  },
+// ============================================
+// RESPONSIVE BREAKPOINTS
+// ============================================
+export const breakpoints = {
+  xs: '(min-width: 360px)',
+  sm: '(min-width: 640px)',
+  md: '(min-width: 768px)',
+  lg: '(min-width: 1024px)',
+  xl: '(min-width: 1280px)',
+  '2xl': '(min-width: 1536px)',
+  hover: '(hover: hover)',
+  pointer: '(pointer: fine)',
+  reducedMotion: '(prefers-reduced-motion: reduce)',
 }
 
-// ============================================================================
-// LAYOUT PATTERNS - Professional Page Structures
-// ============================================================================
-
-export const ProLayoutPatterns = {
-  // Dashboard layout
-  Dashboard: {
-    header: {
-      height: ProDesignTokens.layout.header.desktop,
-      padding: {
-        horizontal: ProDesignTokens.spacing.xl,
-        vertical: ProDesignTokens.spacing.md,
-      },
-      borderBottom: '1px solid var(--border)',
-      background: 'var(--background)',
-    },
-    sidebar: {
-      width: ProDesignTokens.layout.sidebar.expanded,
-      background: 'var(--sidebar-background)',
-      borderRight: '1px solid var(--border)',
-    },
-    main: {
-      padding: ProDesignTokens.spacing.xl,
-      maxWidth: ProDesignTokens.layout.maxWidth.xl,
-    },
-    grid: {
-      // Standard dashboard grid
-      columns: {
-        mobile: 1,
-        tablet: 2,
-        desktop: 3,
-        wide: 4,
-      },
-      gap: ProDesignTokens.spacing.lg,
-    },
+// ============================================
+// THEME CONFIGURATION
+// ============================================
+export const theme = {
+  // Default theme
+  default: {
+    name: 'default',
+    primary: colors.primary[500],
+    secondary: colors.secondary[600],
+    success: colors.success[500],
+    warning: colors.warning[500],
+    error: colors.error[500],
+    info: colors.info[500],
+    background: '#ffffff',
+    foreground: '#1f2937',
+    card: '#ffffff',
+    border: '#e5e7eb',
+    muted: '#f3f4f6',
+    popover: '#ffffff',
   },
 
-  // Page container
-  PageContainer: {
-    maxWidth: ProDesignTokens.layout.maxWidth.xl,
-    margin: '0 auto',
-    padding: {
-      mobile: ProDesignTokens.spacing.md,
-      tablet: ProDesignTokens.spacing.xl,
-      desktop: ProDesignTokens.spacing.xl,
-    },
+  // Dark theme
+  dark: {
+    name: 'dark',
+    primary: colors.primary[500],
+    secondary: colors.secondary[400],
+    success: colors.success[500],
+    warning: colors.warning[500],
+    error: colors.error[500],
+    info: colors.info[500],
+    background: '#0f172a',
+    foreground: '#f1f5f9',
+    card: '#1e293b',
+    border: '#334155',
+    muted: '#1e293b',
+    popover: '#1e293b',
   },
 
-  // Section spacing
-  Section: {
-    padding: {
-      top: ProDesignTokens.spacing.xl,
-      bottom: ProDesignTokens.spacing.xl,
-    },
-    margin: {
-      top: ProDesignTokens.spacing.xl,
-      bottom: ProDesignTokens.spacing.xl,
-    },
-  },
+  // System preference
+  system: {
+    name: 'system',
+  }
 }
 
-// ============================================================================
-// ACCESSIBILITY GUIDELINES
-// ============================================================================
-
-export const Accessibility = {
-  // Focus states
-  focus: {
-    visible: {
-      outline: '2px solid var(--ring)',
-      outlineOffset: 2,
-      boxShadow: '0 0 0 4px rgba(67, 56, 202, 0.3)',
-    },
-    ring: {
-      width: 2,
-      color: 'var(--ring)',
-      offset: 2,
-    },
-  },
-
-  // Color contrast
-  contrast: {
-    minimum: 4.5, // WCAG AA minimum
-    enhanced: 7,   // WCAG AAA enhanced
-  },
-
-  // Touch targets
-  touch: {
-    minimum: 44, // 44x44px minimum touch target
-    recommended: 48, // 48x48px recommended
-  },
-
-  // Keyboard navigation
-  keyboard: {
-    focusTrap: true,
-    skipLinks: true,
-    visibleFocus: true,
-  },
-
-  // Screen reader
-  screenReader: {
-    only: {
-      position: 'absolute',
-      width: 1,
-      height: 1,
-      padding: 0,
-      margin: '-1px',
-      overflow: 'hidden',
-      clip: 'rect(0, 0, 0, 0)',
-      whiteSpace: 'nowrap',
-      border: 0,
-    },
-  },
+// ============================================
+// EXPORT DESIGN TOKENS
+// ============================================
+export const designTokens = {
+  spacing,
+  typography,
+  colors,
+  shadows,
+  borders,
+  transitions,
+  animations,
+  zIndex,
+  layout,
+  components,
+  breakpoints,
+  theme,
 }
 
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
+// Utility function to generate CSS variables
+export function generateCSSVariables() {
+  const cssVars: Record<string, string> = {}
 
-// Generate CSS custom properties
-export function generateCSSVariables(tokens: typeof ProDesignTokens): string {
-  const variables: string[] = []
+  // Spacing
+  Object.entries(spacing).forEach(([key, value]) => {
+    cssVars[`--spacing-${key}`] = value
+  })
 
-  // Add spacing variables
-  Object.entries(tokens.spacing).forEach(([key, value]) => {
-    if (typeof value === 'number') {
-      variables.push(`--spacing-${key}: ${value}px;`)
+  // Typography
+  Object.entries(typography).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      cssVars[`--typography-${key}`] = value
     }
   })
 
-  // Add typography variables
-  Object.entries(tokens.typography.fontWeights).forEach(([key, value]) => {
-    variables.push(`--font-weight-${key}: ${value};`)
+  // Colors
+  Object.entries(colors.primary).forEach(([key, value]) => {
+    cssVars[`--color-primary-${key}`] = value
   })
 
-  Object.entries(tokens.typography.lineHeights).forEach(([key, value]) => {
-    variables.push(`--line-height-${key}: ${value};`)
+  Object.entries(colors.secondary).forEach(([key, value]) => {
+    cssVars[`--color-secondary-${key}`] = value
   })
 
-  // Add border radius variables
-  Object.entries(tokens.borderRadius).forEach(([key, value]) => {
-    if (typeof value === 'number') {
-      variables.push(`--radius-${key}: ${value}px;`)
-    }
+  Object.entries(colors.success).forEach(([key, value]) => {
+    cssVars[`--color-success-${key}`] = value
   })
 
-  return variables.join('\n')
+  Object.entries(colors.warning).forEach(([key, value]) => {
+    cssVars[`--color-warning-${key}`] = value
+  })
+
+  Object.entries(colors.error).forEach(([key, value]) => {
+    cssVars[`--color-error-${key}`] = value
+  })
+
+  return cssVars
 }
 
-// Create responsive styles
-export function responsiveStyle(
-  property: string,
-  values: Record<'mobile' | 'tablet' | 'desktop', string | number>
-): string {
-  const { mobile, tablet, desktop } = values
-  return `${property}: ${mobile}; @media (min-width: 768px) { ${property}: ${tablet}; } @media (min-width: 1024px) { ${property}: ${desktop}; }`
-}
-
-// Create typography utility
-export function typographyStyle(
-  scale: keyof typeof ProDesignTokens.typography.scale,
-  variant: keyof typeof ProDesignTokens.typography.scale[keyof typeof ProDesignTokens.typography.scale]
-): string {
-  const size = ProDesignTokens.typography.scale[scale][variant]
-  return `font-size: ${size}px;`
-}
-
-// Export all professional design tokens and specifications
-export {
-  ProDesignTokens as default,
-  Breakpoints,
-  ProComponentSpecs,
-  ProLayoutPatterns,
-  Accessibility,
-  generateCSSVariables,
-  responsiveStyle,
-  typographyStyle,
-}
+// Export individual modules for tree-shaking
+export * from './design-system'
