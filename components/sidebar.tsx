@@ -31,15 +31,15 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
     <>
       <aside
         className={cn(
-          "fixed left-0 top-[var(--header-height-desktop)] z-[var(--z-sticky)] w-[var(--sidebar-width-default)] border-r border-border bg-background/95 backdrop-blur-[20px] flex flex-col justify-between transition-all duration-[var(--duration-normal)] ease-out",
-          "h-[calc(100vh-var(--header-height-desktop))]",
+          "fixed left-0 top-16 z-40 w-[18rem] border-r border-border/50 bg-background/95 backdrop-blur-xl flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+          "h-[calc(100vh-4rem)]",
           isOpen ? "translate-x-0 opacity-100 visible" : "-translate-x-full opacity-0 invisible",
         )}
         aria-label="Sidebar navigation"
       >
         <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden no-scrollbar">
           {/* Main Navigation */}
-          <nav className="flex-1 space-y-1 p-3" aria-label="Main navigation">
+          <nav className="flex-1 p-3 space-y-1 mt-2" aria-label="Main navigation">
             <div className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Menu
             </div>
@@ -51,7 +51,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex min-h-[var(--touch-target-min)] items-center gap-3 overflow-hidden rounded-[var(--radius-md)] px-3 text-sm transition-colors duration-[var(--duration-fast)] group",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm group relative overflow-hidden",
                     isActive
                       ? "bg-primary/10 text-primary font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
                 >
                   <Icon
                     className={cn(
-                      "size-[var(--icon-md)] transition-transform duration-[var(--duration-fast)] group-hover:scale-110",
+                      "w-[18px] h-[18px] transition-transform duration-200 group-hover:scale-110",
                       isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                     )}
                   />
@@ -74,17 +74,17 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
           </nav>
 
           {/* User Profile & Actions (Bottom) */}
-          <div className="border-t border-border bg-card/30 p-3">
+          <div className="p-3 border-t border-border/40 bg-card/30">
             <button
               onClick={handleLogout}
-              className="mb-2 flex min-h-[var(--touch-target-min)] w-full items-center gap-3 rounded-[var(--radius-md)] px-3 text-sm text-destructive transition-colors duration-[var(--duration-fast)] hover:bg-destructive/10 group"
+              className="w-full flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl hover:bg-destructive/10 transition-colors duration-200 text-sm text-destructive/80 hover:text-destructive group"
             >
               <LogOut className="w-[18px] h-[18px]" />
               <span className="font-medium tracking-tight">Log out</span>
             </button>
 
-            <Link href="/settings" className="flex min-h-[var(--touch-target-min)] items-center gap-3 rounded-[var(--radius-md)] px-3 transition-colors duration-[var(--duration-fast)] hover:bg-secondary group">
-              <div className="flex size-9 flex-shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary shadow-inner">
+            <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/60 transition-colors duration-200 group">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex flex-shrink-0 items-center justify-center shadow-inner border border-primary/20">
                 <User className="w-[18px] h-[18px] text-primary-foreground" />
               </div>
               <div className="flex-1 min-w-0">
@@ -100,7 +100,7 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[calc(var(--z-sticky)-1)] bg-foreground/40 backdrop-blur-sm lg:hidden transition-opacity duration-[var(--duration-normal)]"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden transition-opacity duration-300"
           onClick={() => window.dispatchEvent(new CustomEvent("sidebar-close"))}
           aria-hidden="true"
         />

@@ -5,30 +5,30 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex min-h-[var(--touch-target-min)] items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] font-medium transition-[background,color,border-color,box-shadow,transform,opacity] duration-[var(--duration-normal)] ease-out outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[var(--icon-md)]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all duration-200 ease-smooth outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-98 hover:scale-102 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-sm hover:opacity-90',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/95 shadow-md hover:shadow-lg hover:shadow-primary/20',
         destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:opacity-90',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/95 shadow-md hover:shadow-lg hover:shadow-destructive/20',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary',
+          'border border-border bg-background shadow-xs hover:bg-secondary hover:text-secondary-foreground dark:hover:bg-muted/30',
         secondary:
-          'border border-border bg-secondary text-secondary-foreground hover:opacity-90',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/50',
         ghost:
-          'bg-transparent text-foreground hover:bg-secondary',
-        link: 'min-h-0 text-primary underline-offset-4 hover:underline active:scale-100',
+          'hover:bg-secondary hover:text-secondary-foreground dark:hover:bg-muted/30',
+        link: 'text-primary underline-offset-4 hover:underline hover:scale-100 active:scale-100',
       },
       size: {
-        xs: 'h-[var(--btn-height-xs)] px-3 text-xs',
-        sm: 'h-[var(--btn-height-sm)] px-4 text-sm',
-        default: 'h-[var(--btn-height-md)] px-5 text-base',
-        lg: 'h-[var(--btn-height-lg)] px-6 text-lg',
-        icon: 'size-[var(--btn-height-md)] p-0',
-        'icon-xs': 'size-[var(--btn-height-xs)] p-0',
-        'icon-sm': 'size-[var(--btn-height-sm)] p-0',
-        'icon-lg': 'size-[var(--btn-height-lg)] p-0',
+        xs: 'h-8 px-3 text-xs rounded-lg relative after:absolute after:inset-[-6px] after:content-[""]', // expand touch target to 44px
+        sm: 'h-10 px-4 text-sm rounded-xl',
+        default: 'h-12 px-5 text-base rounded-xl',
+        lg: 'h-14 px-6 text-lg rounded-2xl',
+        icon: 'size-12 rounded-xl',
+        'icon-xs': 'size-8 rounded-lg relative after:absolute after:inset-[-6px] after:content-[""]',
+        'icon-sm': 'size-10 rounded-xl',
+        'icon-lg': 'size-14 rounded-2xl',
       },
     },
     defaultVariants: {
@@ -60,3 +60,4 @@ function Button({
 }
 
 export { Button, buttonVariants }
+

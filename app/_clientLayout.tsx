@@ -46,12 +46,6 @@ export default function ClientLayout({
     }
   }, [])
 
-  useEffect(() => {
-    const closeSidebar = () => setSidebarOpen(false)
-    window.addEventListener("sidebar-close", closeSidebar)
-    return () => window.removeEventListener("sidebar-close", closeSidebar)
-  }, [])
-
   const toggleTheme = () => {
     const newTheme = isDark ? "light" : "dark"
     setIsDark(!isDark)
@@ -89,12 +83,12 @@ export default function ClientLayout({
           sidebarOpen={sidebarOpen}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-        <div className="flex pt-[var(--header-height-desktop)]">
+        <div className="flex pt-16">
           <Sidebar isOpen={sidebarOpen} />
           <main
-            className={`flex-1 min-h-[calc(100vh-var(--header-height-desktop))] flex flex-col justify-between overflow-auto transition-[margin] duration-[var(--duration-normal)] pb-[calc(var(--mobile-tab-height)+1.5rem)] md:pb-0 ${sidebarOpen ? "md:ml-[var(--sidebar-width-default)]" : "md:ml-0"}`}
+            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
           >
-            <div className="page-shell py-[var(--card-padding-xl)] w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-[var(--duration-slower)]">
+            <div className="container-page py-8 w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {children}
             </div>
             <Footer />
