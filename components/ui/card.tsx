@@ -1,15 +1,33 @@
 import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
-function Card({ className, ...props }: React.ComponentProps<'div'>) {
+const cardVariants = cva(
+  'flex flex-col gap-6 rounded-2xl transition-all duration-300',
+  {
+    variants: {
+      variant: {
+        default: 'card-base py-6',
+        elevated: 'card-elevated py-6',
+        hover: 'card-hover py-6',
+        glass: 'card-glass py-6',
+        interactive: 'card-interactive py-6',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+)
+
+interface CardProps extends React.ComponentProps<'div'>, VariantProps<typeof cardVariants> {}
+
+function Card({ className, variant, ...props }: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
-        className,
-      )}
+      className={cn(cardVariants({ variant }), className)}
       {...props}
     />
   )
@@ -32,7 +50,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn('leading-none font-semibold', className)}
+      className={cn('leading-none font-semibold text-lg tracking-tight', className)}
       {...props}
     />
   )
@@ -65,7 +83,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('px-6', className)}
+      className={cn('px-6 flex-1', className)}
       {...props}
     />
   )
@@ -90,3 +108,4 @@ export {
   CardDescription,
   CardContent,
 }
+

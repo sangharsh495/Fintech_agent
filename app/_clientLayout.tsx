@@ -10,6 +10,7 @@ import Sidebar from "@/components/sidebar"
 import MobileTabBar from "@/components/mobile-tab-bar"
 import { useIsMobile } from "@/components/ui/use-mobile"
 import LaunchScreen from "@/components/launch-screen"
+import Footer from "@/components/footer"
 
 export default function ClientLayout({
   children,
@@ -85,11 +86,12 @@ export default function ClientLayout({
         <div className="flex pt-16">
           <Sidebar isOpen={sidebarOpen} />
           <main
-            className={`flex-1 overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-64" : "md:ml-0"}`}
+            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
           >
-            <div className="container-page py-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="container-page py-8 w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {children}
             </div>
+            <Footer />
           </main>
           <MobileTabBar />
         </div>

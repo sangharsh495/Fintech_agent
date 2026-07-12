@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ["pino", "thread-stream"],
   typescript: {
     ignoreBuildErrors: true,
   },

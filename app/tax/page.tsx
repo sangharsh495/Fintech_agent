@@ -151,7 +151,7 @@ export default function TaxPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col pt-16">
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
       <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000"></div>
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>

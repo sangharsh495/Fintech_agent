@@ -188,7 +188,7 @@ export default function Dashboard() {
   const userName = session?.user?.name?.split(" ")[0] || "Member"
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col pt-16">
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
       
       {/* Dynamic IndMoney-Style Welcome Header */}
       <header className="px-6 lg:px-8 py-5 border-b border-border bg-gradient-to-r from-card via-background to-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

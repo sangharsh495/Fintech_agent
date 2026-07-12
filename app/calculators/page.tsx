@@ -119,7 +119,7 @@ export default function CalculatorsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col pt-16">
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
       <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/10 via-background to-accent/5">
 
         {/* Decorative Blurs */}
