@@ -88,9 +88,9 @@ export default function Navbar({
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container-page">
-          <div className="flex justify-between items-center h-[4rem]">
+      <nav className="fixed inset-x-0 top-0 z-[var(--z-fixed)] border-b border-border bg-background/90 backdrop-blur-[20px]">
+        <div className="page-shell max-w-none">
+          <div className="flex h-[var(--header-height-desktop)] items-center justify-between">
             <div className="flex items-center gap-4 flex-1">
               <Button
                 variant="ghost"
@@ -106,8 +106,8 @@ export default function Navbar({
               {/* Logo / Title */}
               <div className="flex items-center gap-2 select-none">
                 <Link href="/" className="flex items-center gap-2 group">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-inner">
-                    <TrendingUp className="w-4 h-4 text-primary-foreground" />
+                  <div className="flex size-8 items-center justify-center rounded-[var(--radius-sm)] bg-primary shadow-inner">
+                    <TrendingUp className="size-4 text-primary-foreground" />
                   </div>
                   <span className="font-bold text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
                     FinFlow
@@ -132,7 +132,7 @@ export default function Navbar({
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2 group",
+                      "flex min-h-[var(--touch-target-min)] items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm font-medium transition-colors duration-[var(--duration-fast)] group",
                       isActive
                         ? "bg-secondary text-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
@@ -150,20 +150,20 @@ export default function Navbar({
               {/* Search Button */}
               <Button
                 variant="ghost"
-                className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-full px-3 h-9 bg-secondary/30 border border-transparent hover:border-border/50 transition-all"
+                className="hidden sm:flex h-[var(--touch-target-min)] items-center gap-2 rounded-[var(--radius-md)] border border-border bg-secondary px-3 text-muted-foreground hover:text-foreground"
                 onClick={() => setSearchOpen(true)}
               >
                 <Search className="w-4 h-4" />
                 <span className="text-xs font-normal">Search...</span>
                 <kbd className="hidden md:inline-flex h-5 items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-                  <span className="text-xs">⌘</span>K
+                  <span className="text-xs">Cmd</span>K
                 </kbd>
               </Button>
 
               <Button
                 variant="ghost"
                 size="icon"
-                className="sm:hidden text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-full h-9 w-9"
+                className="sm:hidden text-muted-foreground hover:text-foreground"
                 onClick={() => setSearchOpen(true)}
               >
                 <Search className="w-4 h-4" />
@@ -174,7 +174,7 @@ export default function Navbar({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-full h-9 w-9 transition-colors"
+                  className="text-muted-foreground hover:text-foreground"
                   onClick={toggleTheme}
                   aria-label="Toggle theme"
                 >
@@ -200,7 +200,7 @@ export default function Navbar({
           aria-modal="true"
           aria-label="Search"
         >
-          <div className="search-input-wrapper fade-in mt-[10vh]">
+          <div className="search-input-wrapper fade-in mt-[10vh] w-[min(42rem,calc(100vw-2rem))] overflow-hidden rounded-[var(--radius-2xl)] border border-border bg-card shadow-[var(--shadow-xl)]">
             <div className="flex items-center gap-3 p-4 border-b border-border/50 bg-card">
               <Search className="w-5 h-5 text-muted-foreground" />
               <input

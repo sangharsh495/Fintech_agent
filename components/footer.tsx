@@ -4,8 +4,8 @@ import Link from "next/link"
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-border/50 py-6 bg-card/10 mt-auto">
-      <div className="container-page flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+    <footer className="mt-auto w-full border-t border-border bg-card/10 py-6">
+      <div className="page-shell flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground md:flex-row">
         <div>
           © {new Date().getFullYear()} FinFlow. All rights reserved.
         </div>

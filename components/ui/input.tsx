@@ -4,14 +4,14 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const inputVariants = cva(
-  'w-full bg-background border border-input rounded-xl px-4 transition-all duration-200 ease-out outline-hidden placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-60 hover:border-border/80 text-foreground dark:bg-input/30 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+  'w-full rounded-[var(--radius-md)] border border-input bg-background px-3.5 text-foreground transition-[border-color,box-shadow,background,opacity] duration-[var(--duration-fast)] ease-out outline-none placeholder:text-muted-foreground focus:border-ring focus:shadow-[var(--shadow-primary-sm)] focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-60 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
   {
     variants: {
       size: {
-        xs: 'h-9 px-3 text-xs rounded-lg',
-        sm: 'h-10 px-4 text-sm rounded-xl',
-        default: 'h-12 px-4 text-base rounded-xl',
-        lg: 'h-14 px-5 text-lg rounded-2xl',
+        xs: 'h-[var(--input-height-xs)] text-xs',
+        sm: 'h-[var(--input-height-sm)] text-sm',
+        default: 'h-[var(--input-height-md)] text-base',
+        lg: 'h-[var(--input-height-lg)] text-lg',
       },
     },
     defaultVariants: {
@@ -34,4 +34,3 @@ function Input({ className, type, size, ...props }: InputProps) {
 }
 
 export { Input }
-

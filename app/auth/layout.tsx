@@ -1,5 +1,5 @@
 import type React from "react"
-import { TrendingUp, BarChart3, Shield, Sparkles } from "lucide-react"
+import { BarChart3, Shield, TrendingUp } from "lucide-react"
 
 export default function AuthLayout({
   children,
@@ -7,60 +7,47 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+    <div className="grid min-h-screen bg-background md:grid-cols-2">
       {/* Left side - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 lg:p-16 bg-background dark:bg-slate-950">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center justify-center p-[var(--container-padding-mobile)] md:p-[var(--section-spacing-desktop)]">
+        <div className="w-full max-w-[var(--content-max-sm)] animate-in fade-in slide-in-from-bottom-4 duration-[var(--duration-slower)]">
           {children}
         </div>
       </div>
 
       {/* Right side - Visual Panel */}
-      <div className="hidden md:flex flex-1 relative bg-gradient-to-br from-primary via-primary/95 to-accent items-center justify-center p-12 overflow-hidden select-none">
-        {/* Background Decorative Gradients / Circles */}
-        <div className="absolute top-1/4 left-1/4 w-[32rem] h-[32rem] bg-accent/25 rounded-full blur-[128px] pointer-events-none mix-blend-screen animate-pulse" />
-        <div className="absolute -bottom-24 -right-24 w-[24rem] h-[24rem] bg-white/10 rounded-full blur-[96px] pointer-events-none" />
-        
-        {/* Subtle grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        <div className="relative z-10 max-w-lg text-white text-left space-y-8 animate-in fade-in slide-in-from-right duration-700">
+      <div className="hidden select-none items-center justify-center bg-primary p-[var(--section-spacing-desktop)] text-primary-foreground md:flex">
+        <div className="max-w-[var(--content-max-sm)] space-y-8 animate-in fade-in slide-in-from-right duration-[var(--duration-slower)]">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-lg">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="flex size-12 items-center justify-center rounded-[var(--radius-lg)] border border-primary-foreground/30 bg-primary-foreground/10">
+              <TrendingUp className="size-[var(--icon-lg)]" />
             </div>
-            <span className="font-extrabold text-2xl tracking-tight">FinFlow</span>
+            <span className="app-heading-3 text-primary-foreground">FinFlow</span>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+            <h2 className="app-heading-1 text-primary-foreground">
               Smarter wealth tracking and tax optimization
             </h2>
-            <p className="text-white/80 text-lg font-light leading-relaxed">
+            <p className="app-body-lg opacity-90">
               Consolidate your bank accounts, get automated ML spending categories, and optimize your taxes in one secure dashboard.
             </p>
           </div>
 
           {/* Mini-Features grid */}
-          <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/15">
+          <div className="grid grid-cols-2 gap-6 border-t border-primary-foreground/20 pt-6">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-white/10 mt-0.5"><BarChart3 className="w-4 h-4" /></div>
+              <div className="mt-0.5 rounded-[var(--radius-sm)] bg-primary-foreground/10 p-2"><BarChart3 className="size-[var(--icon-sm)]" /></div>
               <div>
-                <p className="font-bold text-sm">Wealth Insights</p>
-                <p className="text-xs text-white/70">Consolidated analytics and performance</p>
+                <p className="app-body-sm font-bold">Wealth Insights</p>
+                <p className="text-xs opacity-75">Consolidated analytics and performance</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-white/10 mt-0.5"><Shield className="w-4 h-4" /></div>
+              <div className="mt-0.5 rounded-[var(--radius-sm)] bg-primary-foreground/10 p-2"><Shield className="size-[var(--icon-sm)]" /></div>
               <div>
-                <p className="font-bold text-sm">Secure & Private</p>
-                <p className="text-xs text-white/70">Bank-grade encryption, your data is safe</p>
+                <p className="app-body-sm font-bold">Secure & Private</p>
+                <p className="text-xs opacity-75">Bank-grade encryption, your data is safe</p>
               </div>
             </div>
           </div>
@@ -69,4 +56,3 @@ export default function AuthLayout({
     </div>
   )
 }
-

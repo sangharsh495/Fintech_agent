@@ -59,9 +59,9 @@ export default function MobileTabBar() {
   const userEmail = session?.user?.email || ""
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 z-40 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-[var(--z-fixed)] md:hidden">
       {/* Floating Bottom Tab Bar */}
-      <div className="flex h-16 w-full items-center justify-around rounded-2xl border border-border/80 bg-card/75 backdrop-blur-xl px-2 shadow-2xl shadow-black/30 dark:shadow-black/50 transition-all duration-300">
+      <div className="mx-auto flex h-[var(--mobile-tab-height)] w-full items-start justify-around border-t border-border bg-card/90 px-2 pt-3 shadow-[var(--shadow-xl)] backdrop-blur-[20px] transition-all duration-[var(--duration-normal)]">
         {mainNavItems.map((item) => {
           const Icon = item.icon
           const active = isTabActive(item.href)
@@ -69,11 +69,11 @@ export default function MobileTabBar() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center flex-1 h-full py-1 text-center group"
+              className="flex min-h-[var(--touch-target-min)] flex-1 flex-col items-center justify-center text-center group"
             >
               <div
                 className={cn(
-                  "relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
+                  "relative flex size-10 items-center justify-center rounded-[var(--radius-md)] transition-all duration-[var(--duration-normal)]",
                   active
                     ? "bg-primary/10 text-primary scale-110"
                     : "text-muted-foreground group-hover:text-foreground group-hover:scale-105"
@@ -99,10 +99,10 @@ export default function MobileTabBar() {
         {/* Drawer / Bottom Sheet trigger for More options */}
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
           <DrawerTrigger asChild>
-            <button className="flex flex-col items-center justify-center flex-1 h-full py-1 text-center group focus:outline-none">
+            <button className="flex min-h-[var(--touch-target-min)] flex-1 flex-col items-center justify-center text-center group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               <div
                 className={cn(
-                  "relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
+                  "relative flex size-10 items-center justify-center rounded-[var(--radius-md)] transition-all duration-[var(--duration-normal)]",
                   isMoreActive() || drawerOpen
                     ? "bg-primary/10 text-primary scale-110"
                     : "text-muted-foreground group-hover:text-foreground group-hover:scale-105"

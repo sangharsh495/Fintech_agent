@@ -87,12 +87,12 @@ export function EmptyState({ section, hasBank = false }: EmptyStateProps) {
 
       {/* Empty State Content */}
       <div className="text-center max-w-md space-y-4">
-        <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
+        <div className="mx-auto flex size-[var(--avatar-2xl)] items-center justify-center rounded-[var(--radius-lg)] border border-primary/20 bg-primary/10">
           {config.icon}
         </div>
         <div>
-          <h3 className="text-xl font-bold mb-2">{config.title}</h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">{config.description}</p>
+          <h3 className="app-heading-3 mb-2">{config.title}</h3>
+          <p className="app-body-sm app-muted">{config.description}</p>
         </div>
 
         {!hasBank ? (
