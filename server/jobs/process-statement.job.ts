@@ -8,9 +8,11 @@ import { categorizeTransaction } from "@/server/services/parser/categorizer"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
 import { mlClusteringQueue, QueueNames } from "@/server/jobs/queues"
 import { addJob } from "@/server/jobs/queues"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { getS3Client } from "@/server/lib/s3"
 import crypto from "crypto"
+import { safeLogError } from "@/server/lib/safe-log";
 
 /**
  * Statement Processing Worker
@@ -87,29 +89,42 @@ const worker = new Worker<StatementProcessingJobData>(
 
       // Step 4: Deduplicate transactions
       console.log(`[Worker] Checking for duplicates...`)
-      const { newTransactions, duplicates } = await deduplicateTransactions(
-        userId,
-        bankAccountId,
-        categorizedTransactions
-      )
-      console.log(`[Worker] New: ${newTransactions.length}, Duplicates: ${duplicates.length}`)
+      
+      const { newTransactions, duplicates } = await withUserScopedDb(userId, async (scopedDb) => {
+        const result = await deduplicateTransactions(
+          scopedDb,
+          userId,
+          bankAccountId,
+          categorizedTransactions
+        )
+        
+        console.log(`[Worker] New: ${result.newTransactions.length}, Duplicates: ${result.duplicates.length}`)
 
-      // Step 5: Insert new transactions
-      if (newTransactions.length > 0) {
-        console.log(`[Worker] Inserting ${newTransactions.length} transactions...`)
-        await insertTransactions(userId, bankAccountId, uploadId, newTransactions)
-      }
+        // Step 5: Insert new transactions
+        if (result.newTransactions.length > 0) {
+          console.log(`[Worker] Inserting ${result.newTransactions.length} transactions...`)
+          await insertTransactionsScoped(scopedDb, userId, bankAccountId, uploadId, result.newTransactions)
+        }
 
-      // Step 6: Update statement upload record
-      await db
-        .update(statementUploads)
-        .set({
-          processingStatus: "completed",
-          transactionsExtracted: newTransactions.length,
-          transactionsDuplicate: duplicates.length,
-          processedAt: new Date(),
-        })
-        .where(eq(statementUploads.id, uploadId))
+        // Step 6: Update statement upload record
+        await scopedDb
+          .update(statementUploads)
+          .set({
+            processingStatus: "completed",
+            transactionsExtracted: result.newTransactions.length,
+            transactionsDuplicate: result.duplicates.length,
+            processedAt: new Date(),
+          })
+          .where(eq(statementUploads.id, uploadId))
+          
+        // Step 8: Update bank account last sync
+        await scopedDb
+          .update(bankAccounts)
+          .set({ updatedAt: new Date() })
+          .where(eq(bankAccounts.id, bankAccountId))
+          
+        return result;
+      });
 
       // Step 7: Trigger ML clustering for this user
       console.log(`[Worker] Triggering ML clustering for user ${userId}`)
@@ -124,12 +139,6 @@ const worker = new Worker<StatementProcessingJobData>(
         { jobId: `cluster-${userId}-${Date.now()}` }
       )
 
-      // Step 8: Update bank account last sync
-      await db
-        .update(bankAccounts)
-        .set({ updatedAt: new Date() })
-        .where(eq(bankAccounts.id, bankAccountId))
-
       console.log(`[Worker] Successfully processed upload ${uploadId}`)
       
       return {
@@ -139,7 +148,7 @@ const worker = new Worker<StatementProcessingJobData>(
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      console.error(`[Worker] Failed to process upload ${uploadId}:`, error)
+      safeLogError(`[Worker] Failed to process upload ${uploadId}:`, error)
       
       // Update status to failed
       await db
@@ -171,11 +180,11 @@ worker.on("completed", (job) => {
 })
 
 worker.on("failed", (job, err) => {
-  console.error(`[Worker] Job ${job?.id} failed:`, err.message)
+  safeLogError(`[Worker] Job ${job?.id} failed:`, err.message)
 })
 
 worker.on("error", (err) => {
-  console.error("[Worker] Worker error:", err)
+  safeLogError("[Worker] Worker error:", err)
 })
 
 // Graceful shutdown
@@ -210,7 +219,8 @@ async function downloadFromS3(s3Key: string): Promise<Buffer> {
   return Buffer.concat(chunks)
 }
 
-async function insertTransactions(
+async function insertTransactionsScoped(
+  scopedDb: any,
   userId: string,
   bankAccountId: string,
   uploadId: string,
@@ -242,7 +252,7 @@ async function insertTransactions(
   const chunkSize = 100
   for (let i = 0; i < transactionRecords.length; i += chunkSize) {
     const chunk = transactionRecords.slice(i, i + chunkSize)
-    await db.insert(transactions).values(chunk)
+    await scopedDb.insert(transactions).values(chunk)
   }
 }
 
