@@ -1,6 +1,7 @@
 import { db } from "@/server/db"
 import { aiAccessPolicies, aiChatLogs } from "@/server/db/schema"
 import { eq, and, gte, count, sum } from "drizzle-orm"
+import { safeLogError } from "@/server/lib/safe-log";
 
 // Oracle Cloud Infrastructure (OCI) configuration
 const OCI_CONFIG = {
@@ -95,7 +96,7 @@ class OracleAccessControlService {
       // Fallback: Default policies based on user profile
       return this.getDefaultAccessPolicy(userId, email)
     } catch (error) {
-      console.error("[Oracle Access Control] Error fetching policies:", error)
+      safeLogError("[Oracle Access Control] Error fetching policies:", error)
       return this.getDefaultAccessPolicy(userId, email)
     }
   }
@@ -310,7 +311,7 @@ class OracleAccessControlService {
         })
       }
     } catch (error) {
-      console.error("[Oracle Access Control] Audit log failed:", error)
+      safeLogError("[Oracle Access Control] Audit log failed:", error)
     }
   }
 
@@ -355,7 +356,7 @@ class OracleAccessControlService {
         resetAt: Date.now() + 60000,
       }
     } catch (error) {
-      console.error("[Oracle Access Control] Rate limit check failed:", error)
+      safeLogError("[Oracle Access Control] Rate limit check failed:", error)
       return { allowed: true, remaining: 999, resetAt: Date.now() + 60000 }
     }
   }
@@ -387,7 +388,7 @@ class OracleAccessControlService {
         errorMessage: success ? null : "AI response failed",
       })
     } catch (error) {
-      console.error("[Oracle Access Control] Usage log failed:", error)
+      safeLogError("[Oracle Access Control] Usage log failed:", error)
     }
   }
 
