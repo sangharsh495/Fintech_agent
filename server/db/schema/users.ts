@@ -173,6 +173,7 @@ export const statementUploads = pgTable("statement_uploads", {
     .references(() => bankAccounts.id, { onDelete: "cascade" }),
   fileName: varchar("file_name", { length: 255 }).notNull(),
   fileType: fileTypeEnum("file_type").notNull(),
+  fileHash: varchar("file_hash", { length: 64 }),  // SHA-256 of raw file buffer for dedup
   s3Key: varchar("s3_key", { length: 512 }),
   fileSize: integer("file_size"),
   statementMonth: varchar("statement_month", { length: 7 }), // "2025-03"
