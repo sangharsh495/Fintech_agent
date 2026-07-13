@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { safeLogError } from "@/server/lib/safe-log"
 import { getSession } from "@/server/lib/get-session"
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { bankAccounts } from "@/server/db/schema"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
@@ -19,10 +19,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const accounts = await db
-    .select()
-    .from(bankAccounts)
-    .where(and(eq(bankAccounts.userId, session.user.id), eq(bankAccounts.isActive, true)))
+  const accounts = await withUserScopedDb(session.user.id, async (db) => {
+    return db
+      .select()
+      .from(bankAccounts)
+      .where(and(eq(bankAccounts.userId, session.user.id), eq(bankAccounts.isActive, true)))
+  })
 
   return NextResponse.json({ banks: accounts })
 }
@@ -37,10 +39,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = addBankSchema.parse(body)
 
-    const [bank] = await db
-      .insert(bankAccounts)
-      .values({ userId: session.user.id, ...data })
-      .returning()
+    const [bank] = await withUserScopedDb(session.user.id, async (db) => {
+      return db
+        .insert(bankAccounts)
+        .values({ userId: session.user.id, ...data })
+        .returning()
+    })
 
     return NextResponse.json({ bank }, { status: 201 })
   } catch (error) {
