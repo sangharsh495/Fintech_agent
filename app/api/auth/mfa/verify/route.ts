@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 import { TOTPService } from '@/server/services/auth/totp.service';
 import { z } from 'zod';
+import { safeLogError } from '@/server/lib/safe-log';
+import { authRateLimiter } from '@/server/lib/rate-limit';
 
 const verifyTotpSchema = z.object({
   token: z.string().length(6, 'Invalid token length'),
@@ -16,6 +18,16 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    // Rate limiting check
+    const rateLimit = await authRateLimiter.check(userId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many requests. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     
     // Validate input
@@ -48,7 +60,7 @@ export async function POST(request: NextRequest) {
       backupCodes, // Return backup codes for user to save
     });
   } catch (error) {
-    console.error('MFA verify error:', error);
+    safeLogError('MFA verify error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
