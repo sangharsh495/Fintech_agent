@@ -4,6 +4,7 @@ import { transactions, clusterMetadata, clusterRuns } from "@/server/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { mlClusteringQueue, JobNames, type MLClusteringJobData, QueueNames } from "@/server/jobs/queues"
 import { runPythonClustering } from "@/server/ml-service/run-clustering"
+import { safeLogError } from "@/server/lib/safe-log";
 
 /**
  * ML Clustering Worker
@@ -67,7 +68,7 @@ const worker = new Worker<MLClusteringJobData>(
         transactionsClustered: userTransactions.length,
       }
     } catch (error) {
-      console.error(`[ML Worker] Clustering failed for user ${userId}:`, error)
+      safeLogError(`[ML Worker] Clustering failed for user ${userId}:`, error)
       throw error
     }
   },
@@ -87,11 +88,11 @@ worker.on("completed", (job) => {
 })
 
 worker.on("failed", (job, err) => {
-  console.error(`[ML Worker] Job ${job?.id} failed:`, err.message)
+  safeLogError(`[ML Worker] Job ${job?.id} failed:`, err.message)
 })
 
 worker.on("error", (err) => {
-  console.error("[ML Worker] Worker error:", err)
+  safeLogError("[ML Worker] Worker error:", err)
 })
 
 // Graceful shutdown
