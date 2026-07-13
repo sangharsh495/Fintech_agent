@@ -11,6 +11,7 @@ import os from "os"
 import { PasswordRequiredError } from "./pdf.types"
 import type { PDFDecryptResult } from "./pdf.types"
 import { detectBank } from "./bank-profiles"
+import { safeLogError } from "@/server/lib/safe-log";
 
 const execFileAsync = promisify(execFile)
 
@@ -87,7 +88,7 @@ async function tryQpdfDecrypt(
       )
     }
 
-    console.error("[PDF DECRYPT] qpdf failed:", errMsg)
+    safeLogError("[PDF DECRYPT] qpdf failed:", errMsg)
     throw new PasswordRequiredError(
       "Could not decrypt PDF. Please ensure the password is correct.",
       undefined,
