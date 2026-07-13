@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { getUserByEmail, verifyPassword } from "@/server/services/auth.service"
 import { signMobileToken } from "@/server/lib/mobile-auth"
+import { safeLogError } from "@/server/lib/safe-log"
+import { authRateLimiter } from "@/server/lib/rate-limit"
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -21,6 +23,15 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { email, password } = loginSchema.parse(body)
+
+    // Rate limiting check
+    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many login attempts. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
+        { status: 429 }
+      )
+    }
 
     // Find user
     const user = await getUserByEmail(email)
@@ -73,7 +84,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-    console.error("[MOBILE LOGIN]", error)
+    safeLogError("[MOBILE LOGIN]", error)
     return NextResponse.json(
       { error: "Login failed. Please try again." },
       { status: 500 }
