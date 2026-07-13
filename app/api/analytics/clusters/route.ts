@@ -14,7 +14,7 @@ import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
 import * as fs from "fs"
 import * as path from "path"
 import { getSession } from "@/server/lib/get-session"
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { clusterMetadata, clusterRuns, transactions } from "@/server/db/schema"
 import { eq, and, desc } from "drizzle-orm"
 
@@ -72,26 +72,34 @@ export async function GET(request: NextRequest) {
 
     // Check if database contains real computed ML clustering for this user
     if (userId) {
-      const userMeta = await db
-        .select()
-        .from(clusterMetadata)
-        .where(eq(clusterMetadata.userId, userId))
+      const userMeta = await withUserScopedDb(userId, async (db) => {
+        return db
+          .select()
+          .from(clusterMetadata)
+          .where(eq(clusterMetadata.userId, userId))
+      })
 
       if (userMeta.length > 0) {
         safeLogInfo(`[Clusters API] Serving dynamic DB-backed ML insights for user ${userId}`)
 
-        const userRunsList = await db
-          .select()
-          .from(clusterRuns)
-          .where(eq(clusterRuns.userId, userId))
-          .orderBy(desc(clusterRuns.runAt))
+        const dbResults = await withUserScopedDb(userId, async (db) => {
+          const userRunsList = await db
+            .select()
+            .from(clusterRuns)
+            .where(eq(clusterRuns.userId, userId))
+            .orderBy(desc(clusterRuns.runAt))
 
-        const userAnomalies = await db
-          .select()
-          .from(transactions)
-          .where(and(eq(transactions.userId, userId), eq(transactions.isAnomaly, true)))
-          .orderBy(desc(transactions.date))
-          .limit(50)
+          const userAnomalies = await db
+            .select()
+            .from(transactions)
+            .where(and(eq(transactions.userId, userId), eq(transactions.isAnomaly, true)))
+            .orderBy(desc(transactions.date))
+            .limit(50)
+
+          return { userRunsList, userAnomalies }
+        })
+
+        const { userRunsList, userAnomalies } = dbResults
 
         // 1. Build cluster distributions
         const distributions: Record<string, any> = {}
