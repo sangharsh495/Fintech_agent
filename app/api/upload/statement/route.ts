@@ -9,6 +9,8 @@ import { parsePDFStatement } from "@/server/services/parser/pdf.parser"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
 import type { ParsedTransaction } from "@/server/services/parser/deduplicator"
 import { PasswordRequiredError, PDFParseError } from "@/server/services/parser/pdf.types"
+import crypto from "crypto"
+import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
 
 export async function POST(req: NextRequest) {
   const session = await getSession(req)
@@ -44,9 +46,41 @@ export async function POST(req: NextRequest) {
     if (!fileType) return NextResponse.json({ error: "Unsupported file type. Use PDF, Excel, or CSV." }, { status: 400 })
     if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "File too large. Maximum 10MB." }, { status: 400 })
 
-    // Create upload record
+    // ── PHASE 2: File-level SHA-256 hash for dedup ──────────
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const fileHash = crypto.createHash("sha256").update(buffer).digest("hex")
+
+    // Check if this exact file was already uploaded by this user
+    const [existingUpload] = await db
+      .select()
+      .from(statementUploads)
+      .where(
+        and(
+          eq(statementUploads.userId, userId),
+          eq(statementUploads.fileHash, fileHash)
+        )
+      )
+      .limit(1)
+
+    if (existingUpload) {
+      safeLogInfo("[UPLOAD] Duplicate file detected, returning cached result", {
+        userId,
+        fileHash: fileHash.substring(0, 12),
+        existingUploadId: existingUpload.id,
+      })
+      return NextResponse.json({
+        success: true,
+        uploadId: existingUpload.id,
+        transactionsAdded: existingUpload.transactionsExtracted || 0,
+        transactionsSkipped: existingUpload.transactionsDuplicate || 0,
+        duplicate: true,
+        message: `This file was already uploaded on ${existingUpload.createdAt.toLocaleDateString("en-IN")}. No re-parsing needed.`,
+      })
+    }
+
+    // Create upload record WITH fileHash
     const [upload] = await db.insert(statementUploads).values({
-      userId, bankAccountId, fileName: file.name, fileType,
+      userId, bankAccountId, fileName: file.name, fileType, fileHash,
       fileSize: file.size,
       statementMonth: statementMonth || undefined,
       statementYear: statementMonth ? parseInt(statementMonth.split("-")[0]!) : undefined,
@@ -54,7 +88,6 @@ export async function POST(req: NextRequest) {
     }).returning()
 
     // Parse file
-    const buffer = Buffer.from(await file.arrayBuffer())
     let parsed: ParsedTransaction[] = []
     let statementMetadata: Record<string, unknown> | undefined
 
@@ -105,7 +138,8 @@ export async function POST(req: NextRequest) {
         }, { status: 422 })
       }
 
-      console.error("[STATEMENT PARSE ERROR]", error);
+      // Use safeLog instead of console.error to prevent leaking sensitive data
+      safeLogError("[STATEMENT PARSE ERROR]", error);
       await db.update(statementUploads).set({ processingStatus: "failed", errorMessage: "Failed to parse file" }).where(eq(statementUploads.id, upload!.id))
       return NextResponse.json({ error: "Failed to parse statement file" }, { status: 422 })
     }
@@ -154,7 +188,8 @@ export async function POST(req: NextRequest) {
       message: `✓ ${newTransactions.length} transactions added${duplicates.length > 0 ? `, ${duplicates.length} duplicates skipped` : ""}`,
     })
   } catch (error) {
-    console.error("[UPLOAD STATEMENT]", error)
+    // Use safeLog instead of console.error to prevent leaking sensitive data
+    safeLogError("[UPLOAD STATEMENT]", error)
     return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 })
   }
 }
