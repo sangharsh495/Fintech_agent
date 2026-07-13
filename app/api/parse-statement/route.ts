@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeLogError } from "@/server/lib/safe-log";
 import { parseStatement } from "@/lib/parser/parseStatement";
 
 export const runtime = "nodejs";
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json(result, { status: 200 });
 
   } catch (err: any) {
-    console.error("[STATEMENT PARSE ERROR]", err);
+    safeLogError("[STATEMENT PARSE ERROR]", err);
     return NextResponse.json({ error: err.message ?? "Unknown parse error" }, { status: 500 });
   }
 }
