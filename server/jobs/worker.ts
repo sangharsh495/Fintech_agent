@@ -1,4 +1,5 @@
 import { Worker } from 'bullmq';
+import { safeLogError } from "@/server/lib/safe-log";
 
 
 // Redis connection options
@@ -65,11 +66,11 @@ const setupWorkerEvents = (worker: Worker, name: string) => {
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`Job ${job?.id} failed in ${name} worker:`, err);
+    safeLogError(`Job ${job?.id} failed in ${name} worker:`, err);
   });
 
   worker.on('error', (err) => {
-    console.error(`${name} worker error:`, err);
+    safeLogError(`${name} worker error:`, err);
   });
 };
 
