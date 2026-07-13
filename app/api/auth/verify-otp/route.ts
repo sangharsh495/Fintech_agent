@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { verifyOTP } from "@/server/services/auth.service"
+import { safeLogError } from "@/server/lib/safe-log"
+import { authRateLimiter } from "@/server/lib/rate-limit"
 
 const schema = z.object({
   email: z.string().email(),
@@ -10,6 +12,16 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const { email, otp } = schema.parse(await req.json())
+
+    // Rate limiting check
+    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many attempts. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
+        { status: 429 }
+      )
+    }
+
     const result = await verifyOTP(email, otp)
 
     if (!result.success) {
@@ -21,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 })
     }
-    console.error("[VERIFY_OTP]", error)
+    safeLogError("[VERIFY_OTP]", error)
     return NextResponse.json({ error: "Verification failed" }, { status: 500 })
   }
 }
