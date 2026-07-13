@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis"
+import { safeLogError } from "@/server/lib/safe-log";
 
 /**
  * Redis caching layer for performance optimization
@@ -65,7 +66,7 @@ export async function getCache<T>(
     
     return deserialize(value) as T
   } catch (error) {
-    console.error(`Cache get error for key ${key}:`, error)
+    safeLogError(`Cache get error for key ${key}:`, error)
     return null
   }
 }
@@ -98,7 +99,7 @@ export async function setCache<T>(
     
     return true
   } catch (error) {
-    console.error(`Cache set error for key ${key}:`, error)
+    safeLogError(`Cache set error for key ${key}:`, error)
     return false
   }
 }
@@ -114,7 +115,7 @@ export async function deleteCache(key: string): Promise<boolean> {
     await client.del(key)
     return true
   } catch (error) {
-    console.error(`Cache delete error for key ${key}:`, error)
+    safeLogError(`Cache delete error for key ${key}:`, error)
     return false
   }
 }
@@ -143,7 +144,7 @@ export async function invalidateByTags(tags: string[]): Promise<number> {
     
     return totalDeleted
   } catch (error) {
-    console.error(`Cache tag invalidation error:`, error)
+    safeLogError(`Cache tag invalidation error:`, error)
     return 0
   }
 }
@@ -162,7 +163,7 @@ export async function invalidateByPattern(pattern: string): Promise<number> {
     }
     return keys.length
   } catch (error) {
-    console.error(`Cache pattern invalidation error:`, error)
+    safeLogError(`Cache pattern invalidation error:`, error)
     return 0
   }
 }
