@@ -40,6 +40,12 @@ export const aiContextTypeEnum = pgEnum("ai_context_type", [
   "full-context",
 ])
 
+export const chatRoleEnum = pgEnum("chat_role", [
+  "user",
+  "assistant",
+  "system",
+])
+
 // ─── AI Chat Logs (per-user usage tracking) ─────────────────
 
 export const aiChatLogs = pgTable("ai_chat_logs", {
@@ -102,9 +108,72 @@ export const aiAccessPolicies = pgTable("ai_access_policies", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
 
+// ─── AI Audit Log (Phase 5: security audit trail) ───────────
+// Logs EVERY AI call with context HASH (not raw content) for compliance.
+// Used for anomaly detection, billing, and security reviews.
+
+export const aiAuditLog = pgTable("ai_audit_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: uuid("session_id"),  // FK to chat_sessions (nullable for one-off chats)
+  contextHash: varchar("context_hash", { length: 64 }).notNull(), // SHA-256 of system prompt (NOT raw content)
+  inputTokenCount: integer("input_token_count").default(0),
+  outputTokenCount: integer("output_token_count").default(0),
+  outputSummary: varchar("output_summary", { length: 255 }), // First 255 chars of response (truncated)
+  modelUsed: varchar("model_used", { length: 128 }).notNull(),
+  modelProvider: varchar("model_provider", { length: 32 }).notNull(),
+  latencyMs: integer("latency_ms"),
+  pageContext: varchar("page_context", { length: 64 }),
+  isError: boolean("is_error").default(false),
+  errorType: varchar("error_type", { length: 64 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+// ─── Chat Sessions (Phase 6: persistent chat history) ───────
+// Each session represents a conversation thread. user_id is redundant
+// (also on chat_messages) for direct RLS policy enforcement.
+
+export const chatSessions = pgTable("chat_sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).default("New Chat"),
+  pageContext: varchar("page_context", { length: 64 }),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+})
+
+// ─── Chat Messages (Phase 6: persistent message history) ────
+// Stores every message in a chat session. user_id on each message
+// enables direct RLS without a JOIN to chat_sessions.
+
+export const chatMessages = pgTable("chat_messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  sessionId: uuid("session_id")
+    .notNull()
+    .references(() => chatSessions.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  role: chatRoleEnum("role").notNull(),
+  content: text("content").notNull(),
+  tokenCount: integer("token_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
 // ─── Types ──────────────────────────────────────────────────
 
 export type AiChatLog = typeof aiChatLogs.$inferSelect
 export type NewAiChatLog = typeof aiChatLogs.$inferInsert
 export type AiAccessPolicy = typeof aiAccessPolicies.$inferSelect
 export type NewAiAccessPolicy = typeof aiAccessPolicies.$inferInsert
+export type AiAuditLog = typeof aiAuditLog.$inferSelect
+export type NewAiAuditLog = typeof aiAuditLog.$inferInsert
+export type ChatSession = typeof chatSessions.$inferSelect
+export type NewChatSession = typeof chatSessions.$inferInsert
+export type ChatMessage = typeof chatMessages.$inferSelect
+export type NewChatMessage = typeof chatMessages.$inferInsert
