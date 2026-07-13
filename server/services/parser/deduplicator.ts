@@ -52,7 +52,7 @@ export async function deduplicateTransactions(
     .from(transactions)
     .where(and(eq(transactions.userId, userId), eq(transactions.bankAccountId, bankAccountId)))
 
-  const existingHashes = new Set(existing.map((r) => r.hash).filter(Boolean) as string[])
+  const existingHashes = new Set(existing.map((r: { hash: string | null }) => r.hash).filter(Boolean) as string[])
 
   const newTransactions: ParsedTransaction[] = []
   const duplicates: ParsedTransaction[] = []
