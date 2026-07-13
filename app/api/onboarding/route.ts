@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError } from "@/server/lib/safe-log"
 import { auth } from "@/server/auth"
 import { saveUserProfile, markOnboardingComplete } from "@/server/services/onboarding.service"
 import { z } from "zod"
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0]?.message }, { status: 400 })
     }
-    console.error("[ONBOARDING]", error)
+    safeLogError("[ONBOARDING]", error)
     return NextResponse.json({ error: "Failed to save profile" }, { status: 500 })
   }
 }
