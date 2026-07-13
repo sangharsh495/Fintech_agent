@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
 import * as fs from "fs"
 import * as path from "path"
 import { getSession } from "@/server/lib/get-session"
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
         .where(eq(clusterMetadata.userId, userId))
 
       if (userMeta.length > 0) {
-        console.log(`[Clusters API] Serving dynamic DB-backed ML insights for user ${userId}`)
+        safeLogInfo(`[Clusters API] Serving dynamic DB-backed ML insights for user ${userId}`)
 
         const userRunsList = await db
           .select()
@@ -322,7 +323,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ error: "Invalid view parameter" }, { status: 400 })
   } catch (error: any) {
-    console.error("Cluster API Error:", error)
+    safeLogError("Cluster API Error:", error)
     return NextResponse.json(
       { error: "Internal server error", details: error.message },
       { status: 500 }
