@@ -1,5 +1,5 @@
 import crypto from "crypto"
-import { db } from "@/server/db"
+
 import { transactions } from "@/server/db/schema"
 import { eq, and } from "drizzle-orm"
 
@@ -42,11 +42,12 @@ export interface DeduplicationResult {
 }
 
 export async function deduplicateTransactions(
+  scopedDb: any,
   userId: string,
   bankAccountId: string,
   incoming: ParsedTransaction[]
 ): Promise<DeduplicationResult> {
-  const existing = await db
+  const existing = await scopedDb
     .select({ hash: transactions.hash })
     .from(transactions)
     .where(and(eq(transactions.userId, userId), eq(transactions.bankAccountId, bankAccountId)))
@@ -67,7 +68,7 @@ export async function deduplicateTransactions(
   // Check for data gaps
   let gapWarning: string | undefined
   if (newTransactions.length > 0) {
-    const latestExisting = await db
+    const latestExisting = await scopedDb
       .select({ date: transactions.date })
       .from(transactions)
       .where(and(eq(transactions.userId, userId), eq(transactions.bankAccountId, bankAccountId)))
