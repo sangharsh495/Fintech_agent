@@ -20,7 +20,7 @@ const { Pool } = pg
 
 // ─── Connection Pool Configuration ──────────────────────────
 // Strip channel_binding param (pg driver handles SSL natively)
-const rawUrl = process.env.DATABASE_URL || "postgres://localhost:5432/mock"
+const rawUrl = process.env.APP_DATABASE_URL || process.env.DATABASE_URL || "postgres://localhost:5432/mock"
 const connectionUrl = rawUrl.replace(/[&?]channel_binding=[^&]*/g, "")
 
 const pool = new Pool({
@@ -32,9 +32,24 @@ const pool = new Pool({
   ssl: connectionUrl.includes("neon.tech") ? { rejectUnauthorized: true } : undefined,
 })
 
+const adminUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || rawUrl;
+const adminConnectionUrl = adminUrl.replace(/[&?]channel_binding=[^&]*/g, "");
+
+const adminPool = new Pool({
+  connectionString: adminConnectionUrl,
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+  ssl: adminConnectionUrl.includes("neon.tech") ? { rejectUnauthorized: true } : undefined,
+})
+
 // Log pool errors (but never log connection strings or user data)
 pool.on("error", (err) => {
-  console.error("[RLS Pool] Unexpected error on idle client:", err.message)
+  safeLogError("[RLS Pool] Unexpected error on idle client:", err.message)
+})
+
+adminPool.on("error", (err) => {
+  safeLogError("[Admin Pool] Unexpected error on idle client:", err.message)
 })
 
 // ─── Type Definitions ───────────────────────────────────────
@@ -159,7 +174,7 @@ export async function adminQuery<T = Record<string, unknown>>(
   text: string,
   params?: unknown[]
 ): Promise<RLSQueryResult<T>> {
-  const client = await pool.connect()
+  const client = await adminPool.connect()
   try {
     const result = await client.query(text, params)
     return {
@@ -179,6 +194,7 @@ export async function adminQuery<T = Record<string, unknown>>(
  */
 export async function closePool(): Promise<void> {
   await pool.end()
+  await adminPool.end()
 }
 
 // ─── Connection health check ────────────────────────────────
@@ -207,4 +223,23 @@ export async function healthCheck(): Promise<{
   } finally {
     client.release()
   }
+}
+
+import { drizzle } from "drizzle-orm/node-postgres";
+import * as schema from "@/server/db/schema";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { safeLogError } from "@/server/lib/safe-log";
+
+/**
+ * Execute a callback within a user-scoped database transaction,
+ * but pass the Drizzle ORM instance initialized with the scoped connection.
+ */
+export async function withUserScopedDb<T>(
+  userId: string,
+  fn: (db: NodePgDatabase<typeof schema>) => Promise<T>
+): Promise<T> {
+  return withUserScope(userId, async (client) => {
+    const scopedDb = drizzle(client, { schema });
+    return fn(scopedDb);
+  });
 }
