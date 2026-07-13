@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { ZodError } from "zod"
+import { safeLogError } from "@/server/lib/safe-log";
 
 /**
  * Industry-standard error handling middleware
@@ -258,7 +259,7 @@ export function createErrorResponse(
   }
 
   // Unknown errors
-  console.error("[API ERROR]", {
+  safeLogError("[API ERROR]", {
     requestId,
     error: error.message,
     stack: error.stack,
