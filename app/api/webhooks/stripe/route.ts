@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { db } from '@/server/db';
+import { withUserScopedDb } from '@/server/db/rls-connection';
+import { safeLogError } from '@/server/lib/safe-log';
 import { users, payments, userSubscriptions } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
   } catch (err) {
-    console.error(`⚠️  Webhook signature verification failed.`, err);
+    safeLogError('[STRIPE WEBHOOK] Webhook signature verification failed', err);
     return NextResponse.json(
       { error: `Webhook Error: ${err instanceof Error ? err.message : 'Unknown error'}` },
       { status: 400 }
@@ -67,7 +69,7 @@ async function handleSuccessfulPayment(paymentIntent: Stripe.PaymentIntent) {
     
     console.log(`✅ Payment ${paymentIntent.id} marked as successful`);
   } catch (error) {
-    console.error('Error handling successful payment:', error);
+    safeLogError('Error handling successful payment:', error);
     // In production, you might want to retry or alert
   }
 }
@@ -84,7 +86,7 @@ async function handlePaymentMethodAttached(paymentMethod: Stripe.PaymentMethod) 
         .where(eq(users.stripeCustomerId, paymentMethod.customer as string));
     }
   } catch (error) {
-    console.error('Error handling payment method attachment:', error);
+    safeLogError('Error handling payment method attachment:', error);
   }
 }
 
@@ -100,7 +102,7 @@ async function handleRefund(charge: Stripe.Charge) {
     
     console.log(`↩️ Refund processed for charge ${charge.id}`);
   } catch (error) {
-    console.error('Error handling refund:', error);
+    safeLogError('Error handling refund:', error);
   }
 }
 
@@ -119,42 +121,44 @@ async function handleSubscriptionChange(
 
     if (!user) return;
 
-    switch (eventType) {
-      case 'customer.subscription.created':
-        await db.insert(userSubscriptions).values({
-          userId: user.id,
-          stripeSubscriptionId: subscription.id,
-          stripeCustomerId: subscription.customer as string,
-          status: subscription.status,
-          currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
-          currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
-          cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
-        });
-        break;
-        
-      case 'customer.subscription.updated':
-        await db.update(userSubscriptions)
-          .set({
+    await withUserScopedDb(user.id, async (scopedDb) => {
+      switch (eventType) {
+        case 'customer.subscription.created':
+          await scopedDb.insert(userSubscriptions).values({
+            userId: user.id,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: subscription.customer as string,
             status: subscription.status,
             currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
             currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
             cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
-          })
-          .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
-        break;
-        
-      case 'customer.subscription.deleted':
-        await db.update(userSubscriptions)
-          .set({
-            status: 'canceled',
-            endedAt: new Date(),
-          })
-          .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
-        break;
-    }
+          });
+          break;
+          
+        case 'customer.subscription.updated':
+          await scopedDb.update(userSubscriptions)
+            .set({
+              status: subscription.status,
+              currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+              currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+              cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
+            })
+            .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
+          break;
+          
+        case 'customer.subscription.deleted':
+          await scopedDb.update(userSubscriptions)
+            .set({
+              status: 'canceled',
+              endedAt: new Date(),
+            })
+            .where(eq(userSubscriptions.stripeSubscriptionId, subscription.id));
+          break;
+      }
+    });
     
     console.log(`🔄 Subscription ${subscription.id} updated: ${eventType}`);
   } catch (error) {
-    console.error('Error handling subscription change:', error);
+    safeLogError('Error handling subscription change:', error);
   }
 }
