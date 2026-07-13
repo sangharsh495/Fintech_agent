@@ -1,3 +1,4 @@
+import { safeLogError } from "@/server/lib/safe-log";
 export interface GroqKeyInfo {
   key: string;
   cooldownExpiresAt: number;
@@ -112,7 +113,7 @@ class GroqRotatorService {
         const errorMessage = error?.message || "";
         const statusCode = error?.status || error?.statusCode;
 
-        console.error(`[GROQ ROTATOR] Attempt ${attempts} failed:`, error);
+        safeLogError(`[GROQ ROTATOR] Attempt ${attempts} failed:`, error);
 
         // Check if the error indicates a rate limit (429), auth issue (401), or other server error
         const isRateLimit = statusCode === 429 || errorMessage.includes("429") || errorMessage.toLowerCase().includes("rate limit");
