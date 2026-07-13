@@ -19,8 +19,17 @@ export interface ParsedTransaction {
   tags?: any
 }
 
-export function computeHash(date: Date, amount: number, rawDescription: string): string {
-  const str = `${date.toISOString().split("T")[0]}|${amount.toFixed(2)}|${rawDescription.toLowerCase().trim()}`
+/**
+ * Compute SHA-256 dedup hash for a transaction.
+ * Includes userId to ensure per-user uniqueness matching the
+ * UNIQUE constraint on (user_id, hash) in the transactions table.
+ *
+ * Hash input: userId + date + amount + normalizedDescription
+ * This is for DEDUP/INTEGRITY only, NOT confidentiality.
+ */
+export function computeHash(date: Date, amount: number, rawDescription: string, userId?: string): string {
+  const userPrefix = userId ? `${userId}|` : ""
+  const str = `${userPrefix}${date.toISOString().split("T")[0]}|${amount.toFixed(2)}|${rawDescription.toLowerCase().trim()}`
   return crypto.createHash("sha256").update(str).digest("hex")
 }
 
