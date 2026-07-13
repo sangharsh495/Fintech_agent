@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError } from "@/server/lib/safe-log"
 import { getSession } from "@/server/lib/get-session"
 import { db } from "@/server/db"
 import { transactions } from "@/server/db/schema"
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
     const total = Number(totalResult[0]?.count || 0)
     return NextResponse.json({ transactions: data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
   } catch (error) {
-    console.error("[TRANSACTIONS]", error)
+    safeLogError("[TRANSACTIONS]", error)
     return NextResponse.json({ error: "Failed to load transactions" }, { status: 500 })
   }
 }
