@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { safeLogError } from "@/server/lib/safe-log";
 import { getSession } from "@/server/lib/get-session";
 import { db } from "@/server/db";
 import { eq } from "drizzle-orm";
@@ -129,7 +130,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, message: "Clustering completed", result });
   } catch (error) {
-    console.error("[CLUSTERING ERROR]", error);
+    safeLogError("[CLUSTERING ERROR]", error);
     return NextResponse.json({ error: "Clustering failed" }, { status: 500 });
   }
 }
