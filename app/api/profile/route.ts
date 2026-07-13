@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError } from "@/server/lib/safe-log"
 import { getSession } from "@/server/lib/get-session"
 import { db } from "@/server/db"
 import { users, userProfiles } from "@/server/db/schema"
@@ -127,7 +128,7 @@ export async function PATCH(req: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: error.errors[0]?.message }, { status: 400 })
         }
-        console.error("[PROFILE PATCH]", error)
+        safeLogError("[PROFILE PATCH]", error)
         return NextResponse.json({ error: "Failed to update profile" }, { status: 500 })
     }
 }
