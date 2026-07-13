@@ -73,13 +73,15 @@ function deriveUserKey(userId: string): Buffer {
   // HKDF: extract-then-expand
   // Salt = userId (ensures different keys per user)
   // Info = application context string
-  return crypto.hkdfSync(
-    HKDF_HASH,
-    masterKey,
-    userId,        // salt — per-user
-    HKDF_INFO,     // info — application context
-    KEY_LENGTH
-  ) as Buffer
+  return Buffer.from(
+    crypto.hkdfSync(
+      HKDF_HASH,
+      masterKey,
+      userId,        // salt — per-user
+      HKDF_INFO,     // info — application context
+      KEY_LENGTH
+    )
+  )
 }
 
 // ─── Encrypt ────────────────────────────────────────────────
