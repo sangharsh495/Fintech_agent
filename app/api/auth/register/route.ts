@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { authRateLimiter } from "@/server/lib/rate-limit"
 import { safeLogError } from "@/server/lib/safe-log"
 import { z } from "zod"
 import { getUserByEmail, createUser, hashPassword, generateOTP, storeOTP, sendOTPEmail } from "@/server/services/auth.service"
@@ -17,6 +18,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { name, email, password } = registerSchema.parse(body)
+
+    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many attempts. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
+        { status: 429 }
+      )
+    }
 
     // Check if user already exists
     const existing = await getUserByEmail(email)
