@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError } from "@/server/lib/safe-log"
 import { getSession } from "@/server/lib/get-session"
 import { db } from "@/server/db"
 import { bankAccounts } from "@/server/db/schema"
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0]?.message }, { status: 400 })
     }
-    console.error("[BANKS POST]", error)
+    safeLogError("[BANKS POST]", error)
     return NextResponse.json({ error: "Failed to add bank" }, { status: 500 })
   }
 }
