@@ -2,6 +2,7 @@ import { exec } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
 import { promisify } from "util"
+import { safeLogError } from "@/server/lib/safe-log";
 
 const execAsync = promisify(exec)
 
@@ -57,7 +58,7 @@ export async function runPythonClustering(
 
     return result as ClusteringResults
   } catch (error) {
-    console.error(`[ML Service] Python clustering failed, running JS fallback:`, error)
+    safeLogError(`[ML Service] Python clustering failed, running JS fallback:`, error)
     return getJSClusteringFallback(tempFilePath)
   }
 }
