@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { safeLogError } from "@/server/lib/safe-log"
 import { z } from "zod"
 import { getUserByEmail, createUser, hashPassword, generateOTP, storeOTP, sendOTPEmail } from "@/server/services/auth.service"
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-    console.error("[REGISTER]", error)
+    safeLogError("[REGISTER]", error)
     return NextResponse.json({ error: "Failed to create account" }, { status: 500 })
   }
 }
