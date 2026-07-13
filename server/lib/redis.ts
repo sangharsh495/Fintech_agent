@@ -1,5 +1,6 @@
 import { Redis } from "ioredis"
 import { createClient } from "redis"
+import { safeLogError } from "@/server/lib/safe-log";
 
 /**
  * Redis Connection for FinFlow
@@ -14,7 +15,7 @@ export const bullMQRedisConnection = new Redis(redisUrl, {
   maxRetriesPerRequest: null, // Required for BullMQ
   retryStrategy: (times) => {
     if (times > 10) {
-      console.error("[Redis] Max retries reached, giving up")
+      safeLogError("[Redis] Max retries reached, giving up")
       return null // Stop retrying
     }
     return Math.min(times * 100, 3000)
@@ -27,7 +28,7 @@ bullMQRedisConnection.on("connect", () => {
 })
 
 bullMQRedisConnection.on("error", (err) => {
-  console.error("[Redis] BullMQ connection error:", err)
+  safeLogError("[Redis] BullMQ connection error:", err)
 })
 
 bullMQRedisConnection.on("close", () => {
@@ -44,7 +45,7 @@ export async function getRedisClient() {
       socket: {
         reconnectStrategy: (retries) => {
           if (retries > 10) {
-            console.error("[Redis] Max retries reached")
+            safeLogError("[Redis] Max retries reached")
             return false
           }
           return Math.min(retries * 100, 3000)
@@ -53,7 +54,7 @@ export async function getRedisClient() {
     })
     
     redisClient.on("error", (err) => {
-      console.error("[Redis] Client error:", err)
+      safeLogError("[Redis] Client error:", err)
     })
     
     redisClient.on("connect", () => {
@@ -73,7 +74,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
     const value = await client.get(key)
     return value ? JSON.parse(value) : null
   } catch (error) {
-    console.error("[Redis] Cache get error:", error)
+    safeLogError("[Redis] Cache get error:", error)
     return null
   }
 }
@@ -83,7 +84,7 @@ export async function setCache<T>(key: string, value: T, ttlSeconds: number = 36
     const client = await getRedisClient()
     await client.setEx(key, ttlSeconds, JSON.stringify(value))
   } catch (error) {
-    console.error("[Redis] Cache set error:", error)
+    safeLogError("[Redis] Cache set error:", error)
   }
 }
 
@@ -92,7 +93,7 @@ export async function deleteCache(key: string): Promise<void> {
     const client = await getRedisClient()
     await client.del(key)
   } catch (error) {
-    console.error("[Redis] Cache delete error:", error)
+    safeLogError("[Redis] Cache delete error:", error)
   }
 }
 
@@ -104,7 +105,7 @@ export async function deleteCachePattern(pattern: string): Promise<void> {
       await client.del(keys)
     }
   } catch (error) {
-    console.error("[Redis] Cache pattern delete error:", error)
+    safeLogError("[Redis] Cache pattern delete error:", error)
   }
 }
 
@@ -179,7 +180,7 @@ export async function checkRedisHealth(): Promise<boolean> {
     await client.ping()
     return true
   } catch (error) {
-    console.error("[Redis] Health check failed:", error)
+    safeLogError("[Redis] Health check failed:", error)
     return false
   }
 }
