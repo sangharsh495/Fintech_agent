@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
+import { safeLogError } from '@/server/lib/safe-log';
 import { addTransactionJob, TransactionJobData } from '@/server/jobs/queue';
 import { z } from 'zod';
 
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
     });
   } catch (error) {
-    console.error('Job creation error:', error);
+    safeLogError('Job creation error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
