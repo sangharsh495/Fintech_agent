@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/server/lib/get-session"
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { chatSessions, chatMessages } from "@/server/db/schema"
 import { eq, and, desc, count, max } from "drizzle-orm"
 import { safeLogError } from "@/server/lib/safe-log"
@@ -28,31 +28,33 @@ export async function GET(req: NextRequest) {
 
   const userId = session.user.id
 
-  try {
-    // Fetch all sessions with message count and last message time
-    const sessions = await db
-      .select({
-        id: chatSessions.id,
-        title: chatSessions.title,
-        pageContext: chatSessions.pageContext,
-        isActive: chatSessions.isActive,
-        createdAt: chatSessions.createdAt,
-        updatedAt: chatSessions.updatedAt,
-        messageCount: count(chatMessages.id),
-        lastMessageAt: max(chatMessages.createdAt),
-      })
-      .from(chatSessions)
-      .leftJoin(chatMessages, eq(chatMessages.sessionId, chatSessions.id))
-      .where(eq(chatSessions.userId, userId))
-      .groupBy(chatSessions.id)
-      .orderBy(desc(chatSessions.updatedAt))
-      .limit(50)
+  return withUserScopedDb(userId, async (db) => {
+    try {
+      // Fetch all sessions with message count and last message time
+      const sessions = await db
+        .select({
+          id: chatSessions.id,
+          title: chatSessions.title,
+          pageContext: chatSessions.pageContext,
+          isActive: chatSessions.isActive,
+          createdAt: chatSessions.createdAt,
+          updatedAt: chatSessions.updatedAt,
+          messageCount: count(chatMessages.id),
+          lastMessageAt: max(chatMessages.createdAt),
+        })
+        .from(chatSessions)
+        .leftJoin(chatMessages, eq(chatMessages.sessionId, chatSessions.id))
+        .where(eq(chatSessions.userId, userId))
+        .groupBy(chatSessions.id)
+        .orderBy(desc(chatSessions.updatedAt))
+        .limit(50)
 
-    return NextResponse.json({ sessions })
-  } catch (error) {
-    safeLogError("[CHAT SESSIONS GET]", error)
-    return NextResponse.json({ error: "Failed to load chat sessions" }, { status: 500 })
-  }
+      return NextResponse.json({ sessions })
+    } catch (error) {
+      safeLogError("[CHAT SESSIONS GET]", error)
+      return NextResponse.json({ error: "Failed to load chat sessions" }, { status: 500 })
+    }
+  })
 }
 
 // ─── POST /api/ai/sessions — Create session ────────────────
@@ -65,30 +67,32 @@ export async function POST(req: NextRequest) {
 
   const userId = session.user.id
 
-  try {
-    const body = await req.json()
-    const title = body.title || "New Chat"
-    const pageContext = body.pageContext || "/"
+  return withUserScopedDb(userId, async (db) => {
+    try {
+      const body = await req.json()
+      const title = body.title || "New Chat"
+      const pageContext = body.pageContext || "/"
 
-    // Deactivate any currently active session
-    await db
-      .update(chatSessions)
-      .set({ isActive: false })
-      .where(and(eq(chatSessions.userId, userId), eq(chatSessions.isActive, true)))
+      // Deactivate any currently active session
+      await db
+        .update(chatSessions)
+        .set({ isActive: false })
+        .where(and(eq(chatSessions.userId, userId), eq(chatSessions.isActive, true)))
 
-    // Create new session
-    const [newSession] = await db.insert(chatSessions).values({
-      userId,
-      title,
-      pageContext,
-      isActive: true,
-    }).returning()
+      // Create new session
+      const [newSession] = await db.insert(chatSessions).values({
+        userId,
+        title,
+        pageContext,
+        isActive: true,
+      }).returning()
 
-    return NextResponse.json({ session: newSession }, { status: 201 })
-  } catch (error) {
-    safeLogError("[CHAT SESSIONS POST]", error)
-    return NextResponse.json({ error: "Failed to create session" }, { status: 500 })
-  }
+      return NextResponse.json({ session: newSession }, { status: 201 })
+    } catch (error) {
+      safeLogError("[CHAT SESSIONS POST]", error)
+      return NextResponse.json({ error: "Failed to create session" }, { status: 500 })
+    }
+  })
 }
 
 // ─── DELETE /api/ai/sessions?id=... — Delete session ────────
@@ -106,26 +110,28 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Session ID required" }, { status: 400 })
   }
 
-  try {
-    // Verify session belongs to this user before deleting
-    const [existing] = await db
-      .select({ id: chatSessions.id })
-      .from(chatSessions)
-      .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)))
-      .limit(1)
+  return withUserScopedDb(userId, async (db) => {
+    try {
+      // Verify session belongs to this user before deleting
+      const [existing] = await db
+        .select({ id: chatSessions.id })
+        .from(chatSessions)
+        .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)))
+        .limit(1)
 
-    if (!existing) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 })
+      if (!existing) {
+        return NextResponse.json({ error: "Session not found" }, { status: 404 })
+      }
+
+      // Cascade delete: messages are deleted automatically via FK ON DELETE CASCADE
+      await db.delete(chatSessions).where(
+        and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId))
+      )
+
+      return NextResponse.json({ success: true, deleted: sessionId })
+    } catch (error) {
+      safeLogError("[CHAT SESSIONS DELETE]", error)
+      return NextResponse.json({ error: "Failed to delete session" }, { status: 500 })
     }
-
-    // Cascade delete: messages are deleted automatically via FK ON DELETE CASCADE
-    await db.delete(chatSessions).where(
-      and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId))
-    )
-
-    return NextResponse.json({ success: true, deleted: sessionId })
-  } catch (error) {
-    safeLogError("[CHAT SESSIONS DELETE]", error)
-    return NextResponse.json({ error: "Failed to delete session" }, { status: 500 })
-  }
+  })
 }
