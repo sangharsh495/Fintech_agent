@@ -8,6 +8,7 @@ import { callGroq } from "@/lib/groq/client"
 import { categorizeTransaction } from "./categorizer"
 import { computeHash } from "./deduplicator"
 import type { ParsedStatementResult, ParsedTransaction } from "./pdf.types"
+import { safeLogError } from "@/server/lib/safe-log";
 
 // Helper to detect payment method from description
 function detectPaymentMethod(desc: string): string {
@@ -66,7 +67,7 @@ ${text.slice(0, 3000)}
     const cleaned = resStr.replace(/```json|```/g, "").trim()
     return JSON.parse(cleaned)
   } catch (err) {
-    console.error("[METADATA EXTRACTION ERROR]", err)
+    safeLogError("[METADATA EXTRACTION ERROR]", err)
     return null
   }
 }
