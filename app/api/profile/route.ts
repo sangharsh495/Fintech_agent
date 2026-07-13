@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { safeLogError } from "@/server/lib/safe-log"
 import { getSession } from "@/server/lib/get-session"
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { users, userProfiles } from "@/server/db/schema"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
@@ -29,13 +29,25 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Fetch from users and userProfiles tables
-    const userList = await db.select().from(users).where(eq(users.id, session.user.id))
-    const user = userList[0]
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+    const userId = session.user.id
 
-    const profileList = await db.select().from(userProfiles).where(eq(userProfiles.userId, session.user.id))
-    const profile = profileList[0] || {}
+    const result = await withUserScopedDb(userId, async (db) => {
+        // Fetch from users and userProfiles tables
+        const userList = await db.select().from(users).where(eq(users.id, userId))
+        const user = userList[0]
+        if (!user) return null
+
+        const profileList = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId))
+        const profile = profileList[0] || {}
+
+        return { user, profile }
+    })
+
+    if (!result) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    const { user, profile } = result
 
     let preferences = {}
     if (profile.preferences) {
@@ -80,48 +92,50 @@ export async function PATCH(req: NextRequest) {
         )
         const data = updateProfileSchema.parse(cleanBody)
 
-        // Update users table (name, phone)
-        if (data.name !== undefined || data.phone !== undefined) {
-            await db
-                .update(users)
-                .set({
-                    ...(data.name !== undefined && { name: data.name }),
-                    ...(data.phone !== undefined && { phone: data.phone }),
-                    updatedAt: new Date(),
-                })
-                .where(eq(users.id, session.user.id))
-        }
-
-        // Update user_profiles table (the rest)
-        const { name, phone, preferences, ...profileData } = data
-
-        const dbPayload: any = { ...profileData, updatedAt: new Date() }
-        if (preferences !== undefined) {
-            dbPayload.preferences = JSON.stringify(preferences)
-        }
-
-        if (Object.keys(dbPayload).length > 1) { // > 1 because updatedAt is always there
-            // Check if profile exists first
-            const profileExists = await db
-                .select({ id: userProfiles.id })
-                .from(userProfiles)
-                .where(eq(userProfiles.userId, session.user.id))
-
-            if (profileExists.length > 0) {
+        await withUserScopedDb(session.user.id, async (db) => {
+            // Update users table (name, phone)
+            if (data.name !== undefined || data.phone !== undefined) {
                 await db
-                    .update(userProfiles)
-                    .set(dbPayload)
-                    .where(eq(userProfiles.userId, session.user.id))
-            } else {
-                await db
-                    .insert(userProfiles)
-                    .values({
-                        userId: session.user.id,
-                        ...dbPayload,
-                        onboardingComplete: false, // Don't magically complete onboarding
+                    .update(users)
+                    .set({
+                        ...(data.name !== undefined && { name: data.name }),
+                        ...(data.phone !== undefined && { phone: data.phone }),
+                        updatedAt: new Date(),
                     })
+                    .where(eq(users.id, session.user.id))
             }
-        }
+
+            // Update user_profiles table (the rest)
+            const { name, phone, preferences, ...profileData } = data
+
+            const dbPayload: any = { ...profileData, updatedAt: new Date() }
+            if (preferences !== undefined) {
+                dbPayload.preferences = JSON.stringify(preferences)
+            }
+
+            if (Object.keys(dbPayload).length > 1) { // > 1 because updatedAt is always there
+                // Check if profile exists first
+                const profileExists = await db
+                    .select({ id: userProfiles.id })
+                    .from(userProfiles)
+                    .where(eq(userProfiles.userId, session.user.id))
+
+                if (profileExists.length > 0) {
+                    await db
+                        .update(userProfiles)
+                        .set(dbPayload)
+                        .where(eq(userProfiles.userId, session.user.id))
+                } else {
+                    await db
+                        .insert(userProfiles)
+                        .values({
+                            userId: session.user.id,
+                            ...dbPayload,
+                            onboardingComplete: false, // Don't magically complete onboarding
+                        })
+                }
+            }
+        })
 
         return NextResponse.json({ success: true, message: "Profile updated successfully" })
     } catch (error) {
