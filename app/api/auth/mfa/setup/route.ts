@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 import { TOTPService } from '@/server/services/auth/totp.service';
+import { safeLogError } from '@/server/lib/safe-log';
+import { authRateLimiter } from '@/server/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +13,15 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    // Rate limiting check
+    const rateLimit = await authRateLimiter.check(userId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many requests. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
+        { status: 429 }
+      );
+    }
     
     // Check if 2FA is already enabled
     const is2FAEnabled = await TOTPService.is2FAEnabled(userId);
@@ -29,7 +40,7 @@ export async function POST(request: NextRequest) {
       otpauthUrl, // This can be used to generate QR code
     });
   } catch (error) {
-    console.error('MFA setup error:', error);
+    safeLogError('MFA setup error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
