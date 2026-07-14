@@ -1,5 +1,4 @@
 import { Worker, Job } from "bullmq"
-import { db } from "@/server/db"
 import { statementUploads, transactions, bankAccounts } from "@/server/db/schema"
 import { eq, and } from "drizzle-orm"
 import { statementProcessingQueue, JobNames, type StatementProcessingJobData } from "@/server/jobs/queues"
@@ -8,7 +7,7 @@ import { categorizeTransaction } from "@/server/services/parser/categorizer"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
 import { mlClusteringQueue, QueueNames } from "@/server/jobs/queues"
 import { addJob } from "@/server/jobs/queues"
-import { withUserScopedDb } from "@/server/db/rls-connection"
+import { withUserScopedDb, adminQuery } from "@/server/db/rls-connection"
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
 import { getS3Client } from "@/server/lib/s3"
 import crypto from "crypto"
@@ -49,13 +48,11 @@ const worker = new Worker<StatementProcessingJobData>(
     
     console.log(`[Worker] Processing statement upload ${uploadId} for user ${userId}`)
     
-    // Update status to processing
-    await db
-      .update(statementUploads)
-      .set({ 
-        processingStatus: "processing",
-      })
-      .where(eq(statementUploads.id, uploadId))
+    // Update status to processing (admin-level: must work regardless of RLS scope)
+    await adminQuery(
+      `UPDATE statement_uploads SET processing_status = 'processing' WHERE id = $1`,
+      [uploadId]
+    )
 
     try {
       // Step 1: Download file from S3
@@ -150,15 +147,11 @@ const worker = new Worker<StatementProcessingJobData>(
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
       safeLogError(`[Worker] Failed to process upload ${uploadId}:`, error)
       
-      // Update status to failed
-      await db
-        .update(statementUploads)
-        .set({
-          processingStatus: "failed",
-          errorMessage,
-          processedAt: new Date(),
-        })
-        .where(eq(statementUploads.id, uploadId))
+      // Update status to failed (admin-level: must work regardless of RLS scope)
+      await adminQuery(
+        `UPDATE statement_uploads SET processing_status = 'failed', error_message = $1, processed_at = NOW() WHERE id = $2`,
+        [errorMessage, uploadId]
+      )
 
       // Re-throw to trigger retry logic
       throw error
