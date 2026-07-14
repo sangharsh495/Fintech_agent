@@ -1,9 +1,9 @@
 import { Worker, Job } from "bullmq"
-import { db } from "@/server/db"
 import { transactions, clusterMetadata, clusterRuns } from "@/server/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { mlClusteringQueue, JobNames, type MLClusteringJobData, QueueNames } from "@/server/jobs/queues"
 import { runPythonClustering } from "@/server/ml-service/run-clustering"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { safeLogError } from "@/server/lib/safe-log";
 
 /**
@@ -19,6 +19,7 @@ const worker = new Worker<MLClusteringJobData>(
     console.log(`[ML Worker] Starting clustering for user ${userId} (trigger: ${trigger})`)
     
     try {
+      return await withUserScopedDb(userId, async (db) => {
       // Step 1: Fetch user transactions
       const userTransactions = await db
         .select({
@@ -49,13 +50,13 @@ const worker = new Worker<MLClusteringJobData>(
       const clusteringResults = await runPythonClustering(userId, tempFilePath, userTransactions.length)
 
       // Step 4: Update transactions with cluster assignments
-      await updateTransactionClusters(userId, clusteringResults)
+      await updateTransactionClusters(db, userId, clusteringResults)
 
       // Step 5: Save cluster metadata
-      await saveClusterMetadata(userId, clusteringResults, trigger)
+      await saveClusterMetadata(db, userId, clusteringResults, trigger)
 
       // Step 6: Save cluster run history
-      await saveClusterRun(userId, clusteringResults, trigger)
+      await saveClusterRun(db, userId, clusteringResults, trigger)
 
       // Cleanup temp file
       await cleanupTempFile(tempFilePath)
@@ -67,6 +68,7 @@ const worker = new Worker<MLClusteringJobData>(
         clustersCreated: Object.keys(clusteringResults.clusters).length,
         transactionsClustered: userTransactions.length,
       }
+      }) // end withUserScopedDb
     } catch (error) {
       safeLogError(`[ML Worker] Clustering failed for user ${userId}:`, error)
       throw error
@@ -121,7 +123,7 @@ async function writeTransactionsToTempFile(transactions: any[], filePath: string
   await fs.writeFile(filePath, JSON.stringify(data, null, 2))
 }
 
-async function updateTransactionClusters(userId: string, results: any): Promise<void> {
+async function updateTransactionClusters(db: any, userId: string, results: any): Promise<void> {
   // Update spending behavior clusters
   if (results.clusters.spending_behavior) {
     for (const [clusterId, transactionIds] of Object.entries(results.clusters.spending_behavior)) {
@@ -188,7 +190,7 @@ async function updateTransactionClusters(userId: string, results: any): Promise<
   }
 }
 
-async function saveClusterMetadata(userId: string, results: any, trigger: string): Promise<void> {
+async function saveClusterMetadata(db: any, userId: string, results: any, trigger: string): Promise<void> {
   const metadataRecords = []
 
   // Spending behavior clusters
@@ -292,7 +294,7 @@ async function saveClusterMetadata(userId: string, results: any, trigger: string
   }
 }
 
-async function saveClusterRun(userId: string, results: any, trigger: string): Promise<void> {
+async function saveClusterRun(db: any, userId: string, results: any, trigger: string): Promise<void> {
   await db.insert(clusterRuns).values({
     userId,
     clusterType: "all",
