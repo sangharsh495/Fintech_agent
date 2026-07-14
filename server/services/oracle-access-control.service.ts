@@ -1,4 +1,4 @@
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { aiAccessPolicies, aiChatLogs } from "@/server/db/schema"
 import { eq, and, gte, count, sum } from "drizzle-orm"
 import { safeLogError } from "@/server/lib/safe-log";
@@ -74,12 +74,15 @@ class OracleAccessControlService {
     }
 
     try {
-      // Fetch from PostgreSQL via Drizzle
-      const [record] = await db
-        .select()
-        .from(aiAccessPolicies)
-        .where(eq(aiAccessPolicies.userId, userId))
-        .limit(1)
+      // Fetch from PostgreSQL via Drizzle (RLS-scoped)
+      const record = await withUserScopedDb(userId, async (db) => {
+        const [row] = await db
+          .select()
+          .from(aiAccessPolicies)
+          .where(eq(aiAccessPolicies.userId, userId))
+          .limit(1)
+        return row
+      })
 
       if (record) {
         const context: UserAccessContext = {
@@ -299,15 +302,17 @@ class OracleAccessControlService {
     try {
       // Log access check as an AI chat log entry with isError when denied
       if (!allowed) {
-        await db.insert(aiChatLogs).values({
-          userId,
-          page: "/" as const,
-          contextTypes: [],
-          modelProvider: "oracle_cloud" as const,
-          modelName: "access-control",
-          messagesCount: 0,
-          isError: true,
-          errorMessage: `Access denied: ${action} on ${resource}${details ? ` - ${JSON.stringify(details)}` : ""}`,
+        await withUserScopedDb(userId, async (db) => {
+          await db.insert(aiChatLogs).values({
+            userId,
+            page: "/" as const,
+            contextTypes: [],
+            modelProvider: "oracle_cloud" as const,
+            modelName: "access-control",
+            messagesCount: 0,
+            isError: true,
+            errorMessage: `Access denied: ${action} on ${resource}${details ? ` - ${JSON.stringify(details)}` : ""}`,
+          })
         })
       }
     } catch (error) {
@@ -320,41 +325,42 @@ class OracleAccessControlService {
    */
   async checkRateLimit(userId: string, tokensRequested: number): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
     try {
-      const windowStart = new Date(Date.now() - 60000) // Last 60 seconds
-      const now = new Date()
+      return await withUserScopedDb(userId, async (db) => {
+        const windowStart = new Date(Date.now() - 60000) // Last 60 seconds
 
-      // Get usage in the last minute from ai_chat_logs
-      const logs = await db
-        .select()
-        .from(aiChatLogs)
-        .where(
-          and(
-            eq(aiChatLogs.userId, userId),
-            gte(aiChatLogs.createdAt, windowStart)
+        // Get usage in the last minute from ai_chat_logs
+        const logs = await db
+          .select()
+          .from(aiChatLogs)
+          .where(
+            and(
+              eq(aiChatLogs.userId, userId),
+              gte(aiChatLogs.createdAt, windowStart)
+            )
           )
-        )
 
-      const tokensUsed = logs.reduce((sum: number, log: typeof aiChatLogs.$inferSelect) => sum + (log.tokensUsed || 0), 0)
-      const requestCount = logs.length
+        const tokensUsed = logs.reduce((sum: number, log: typeof aiChatLogs.$inferSelect) => sum + (log.tokensUsed || 0), 0)
+        const requestCount = logs.length
 
-      // Check daily limits from access policies table
-      const [policy] = await db
-        .select()
-        .from(aiAccessPolicies)
-        .where(eq(aiAccessPolicies.userId, userId))
-        .limit(1)
+        // Check daily limits from access policies table
+        const [policy] = await db
+          .select()
+          .from(aiAccessPolicies)
+          .where(eq(aiAccessPolicies.userId, userId))
+          .limit(1)
 
-      // Default limits if no policy exists
-      const rpmLimit = policy?.maxDailyRequests ? Math.max(1, policy.maxDailyRequests / 24 / 60) : 20
-      const tpmLimit = policy?.maxDailyTokens ? Math.max(1000, policy.maxDailyTokens / 24 / 60) : 20000
+        // Default limits if no policy exists
+        const rpmLimit = policy?.maxDailyRequests ? Math.max(1, policy.maxDailyRequests / 24 / 60) : 20
+        const tpmLimit = policy?.maxDailyTokens ? Math.max(1000, policy.maxDailyTokens / 24 / 60) : 20000
 
-      const allowed = requestCount < rpmLimit && (tokensUsed + tokensRequested) <= tpmLimit
+        const allowed = requestCount < rpmLimit && (tokensUsed + tokensRequested) <= tpmLimit
 
-      return {
-        allowed,
-        remaining: Math.max(0, tpmLimit - tokensUsed - tokensRequested),
-        resetAt: Date.now() + 60000,
-      }
+        return {
+          allowed,
+          remaining: Math.max(0, tpmLimit - tokensUsed - tokensRequested),
+          resetAt: Date.now() + 60000,
+        }
+      })
     } catch (error) {
       safeLogError("[Oracle Access Control] Rate limit check failed:", error)
       return { allowed: true, remaining: 999, resetAt: Date.now() + 60000 }
@@ -374,18 +380,20 @@ class OracleAccessControlService {
     success: boolean
   ): Promise<void> {
     try {
-      await db.insert(aiChatLogs).values({
-        userId,
-        page: this.normalizePath(pagePath) as typeof aiChatLogs.$inferInsert["page"],
-        contextTypes: contextTypes as string[],
-        modelProvider: "oracle_cloud" as const,
-        modelName: model,
-        messagesCount: 1,
-        tokensUsed,
-        promptTokens: Math.floor(tokensUsed * 0.7),
-        completionTokens: Math.floor(tokensUsed * 0.3),
-        isError: !success,
-        errorMessage: success ? null : "AI response failed",
+      await withUserScopedDb(userId, async (db) => {
+        await db.insert(aiChatLogs).values({
+          userId,
+          page: this.normalizePath(pagePath) as typeof aiChatLogs.$inferInsert["page"],
+          contextTypes: contextTypes as string[],
+          modelProvider: "oracle_cloud" as const,
+          modelName: model,
+          messagesCount: 1,
+          tokensUsed,
+          promptTokens: Math.floor(tokensUsed * 0.7),
+          completionTokens: Math.floor(tokensUsed * 0.3),
+          isError: !success,
+          errorMessage: success ? null : "AI response failed",
+        })
       })
     } catch (error) {
       safeLogError("[Oracle Access Control] Usage log failed:", error)
