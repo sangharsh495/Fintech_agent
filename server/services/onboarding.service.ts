@@ -1,4 +1,4 @@
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import { userProfiles, bankAccounts } from "@/server/db/schema"
 import { eq } from "drizzle-orm"
 
@@ -18,27 +18,31 @@ export async function saveUserProfile(
     consentMarketing: boolean
   }
 ) {
-  const existing = await db
-    .select({ id: userProfiles.id })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId))
-    .limit(1)
-
-  if (existing.length > 0) {
-    await db
-      .update(userProfiles)
-      .set({ ...data, updatedAt: new Date() })
+  return withUserScopedDb(userId, async (db) => {
+    const existing = await db
+      .select({ id: userProfiles.id })
+      .from(userProfiles)
       .where(eq(userProfiles.userId, userId))
-  } else {
-    await db.insert(userProfiles).values({ userId, ...data })
-  }
+      .limit(1)
+
+    if (existing.length > 0) {
+      await db
+        .update(userProfiles)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(userProfiles.userId, userId))
+    } else {
+      await db.insert(userProfiles).values({ userId, ...data })
+    }
+  })
 }
 
 export async function markOnboardingComplete(userId: string) {
-  await db
-    .update(userProfiles)
-    .set({ onboardingComplete: true, updatedAt: new Date() })
-    .where(eq(userProfiles.userId, userId))
+  return withUserScopedDb(userId, async (db) => {
+    await db
+      .update(userProfiles)
+      .set({ onboardingComplete: true, updatedAt: new Date() })
+      .where(eq(userProfiles.userId, userId))
+  })
 }
 
 export async function addBankAccount(
@@ -50,22 +54,28 @@ export async function addBankAccount(
     accountType: "savings" | "current" | "salary"
   }
 ) {
-  const [account] = await db
-    .insert(bankAccounts)
-    .values({ userId, ...data })
-    .returning()
-  return account
+  return withUserScopedDb(userId, async (db) => {
+    const [account] = await db
+      .insert(bankAccounts)
+      .values({ userId, ...data })
+      .returning()
+    return account
+  })
 }
 
 export async function getUserOnboardingStatus(userId: string) {
-  const [profile] = await db
-    .select({ onboardingComplete: userProfiles.onboardingComplete })
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, userId))
-    .limit(1)
-  return profile?.onboardingComplete ?? false
+  return withUserScopedDb(userId, async (db) => {
+    const [profile] = await db
+      .select({ onboardingComplete: userProfiles.onboardingComplete })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1)
+    return profile?.onboardingComplete ?? false
+  })
 }
 
 export async function getUserBankAccounts(userId: string) {
-  return db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId))
+  return withUserScopedDb(userId, async (db) => {
+    return db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId))
+  })
 }
