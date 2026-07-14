@@ -1,0 +1,61 @@
+name: RLS Security Audit
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-rls:
+    runs-on: ubuntu-latest
+    
+    # Needs a real PostgreSQL database with Neon-like properties (or a local Postgres instance)
+    # Since our tests require admin access to create users/roles, we use a local Postgres service
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: neondb_owner
+          POSTGRES_PASSWORD: npg_rotated_secure_2026_finflow
+          POSTGRES_DB: neondb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Database Migrations
+        env:
+          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
+        run: npm run db:push
+        
+      - name: Run Security Migrations
+        env:
+          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
+        run: |
+          # The drizzle-kit push doesn't apply raw SQL policies properly,
+          # so we run the migration scripts manually for RLS
+          for file in server/db/migrations/*.sql; do
+            echo "Applying $file..."
+            psql "$APP_DATABASE_URL" -f "$file"
+          done
+          
+      - name: Run RLS Isolation Tests
+        env:
+          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
+        run: npm run test:rls
