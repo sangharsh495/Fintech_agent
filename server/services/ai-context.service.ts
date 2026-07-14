@@ -14,7 +14,7 @@
  * This function replaces the previous `buildUserContext()`.
  */
 
-import { db } from "@/server/db"
+import { withUserScopedDb } from "@/server/db/rls-connection"
 import {
   bankAccounts,
   userProfiles,
@@ -229,6 +229,7 @@ export async function buildCASystemPrompt(
   }
 
   try {
+    return await withUserScopedDb(userId, async (db) => {
     // ─── Fetch profile and banks ────────────────────────────
     const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
     const banks = await db.select().from(bankAccounts).where(and(eq(bankAccounts.userId, userId), eq(bankAccounts.isActive, true)))
@@ -481,6 +482,7 @@ PAGE CONTEXT: ${currentPath} (Data scope: ${pagePolicy.dataScope}, Operations: $
       pagePolicy,
       contextHash,
     }
+    }) // end withUserScopedDb
   } catch (err) {
     safeLogError("[AI Context Builder Failed]", err)
 
