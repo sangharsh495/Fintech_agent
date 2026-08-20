@@ -1,47 +1,157 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Send, Bot, Lock, Brain, Eye, Sparkles, Shield, Zap, Info, Loader2, MessageSquare, Plus } from "lucide-react"
+import { Send, Bot, Lock, Brain, Eye, Sparkles, Shield, Zap, Info, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const mockChatHistory = [
-  { id: "c1", title: "Tax regime comparison", date: "Today" },
-  { id: "c2", title: "June expense analysis", date: "Yesterday" },
-  { id: "c3", title: "Rent deduction under 80GG", date: "4 days ago" },
-  { id: "c4", title: "FD vs RD mutual fund return", date: "1 week ago" },
-]
+const GREETING = {
+  id: "greeting",
+  role: "assistant" as const,
+  parts: [{ type: "text" as const, text: "Namaste! I'm FinFlow AI, your personal financial assistant. I have access to your real financial data and can answer specific questions about your income, expenses, tax optimization, and savings. How can I help you today?" }],
+}
+
+interface ChatSessionSummary {
+  id: string
+  title: string | null
+  updatedAt: string
+  messageCount?: number
+}
+
+/** "Today" / "Yesterday" / "4 days ago" — matches the sidebar's compact style. */
+function relativeDay(iso: string): string {
+  const then = new Date(iso)
+  if (Number.isNaN(then.getTime())) return ""
+  const days = Math.floor((Date.now() - then.getTime()) / 86_400_000)
+  if (days <= 0) return "Today"
+  if (days === 1) return "Yesterday"
+  if (days < 7) return `${days} days ago`
+  if (days < 30) return `${Math.floor(days / 7)} week${days < 14 ? "" : "s"} ago`
+  return then.toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+}
 
 export default function AICAsPage() {
-  const { messages: chatMessages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ 
+  const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [sessionsLoading, setSessionsLoading] = useState(true)
+  const [historyLoading, setHistoryLoading] = useState(false)
+
+  const { messages: chatMessages, sendMessage, setMessages, status } = useChat({
+    transport: new DefaultChatTransport({
       api: "/api/ai/chat",
       body: {
-        currentPath: typeof window !== "undefined" ? window.location.pathname : "/ai-ca"
-      }
-    }),
-    messages: [
-      {
-        id: "1",
-        role: "assistant",
-        parts: [{ type: "text", text: "Namaste! I'm FinFlow AI, your personal financial assistant. I have access to your real financial data and can answer specific questions about your income, expenses, tax optimization, and savings. How can I help you today?" }],
+        currentPath: typeof window !== "undefined" ? window.location.pathname : "/ai-ca",
       },
-    ],
+    }),
+    messages: [GREETING],
   })
 
   const [input, setInput] = useState("")
-  const [selectedChatId, setSelectedChatId] = useState("c1")
   const isLoading = status === "streaming" || status === "submitted"
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // ─── Live session history ─────────────────────────────────
+
+  const loadSessions = useCallback(async (): Promise<ChatSessionSummary[]> => {
+    try {
+      const res = await fetch("/api/ai/sessions")
+      if (!res.ok) return []
+      const data = await res.json()
+      const list: ChatSessionSummary[] = data.sessions ?? []
+      setSessions(list)
+      return list
+    } catch {
+      return []
+    } finally {
+      setSessionsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadSessions().then((list) => {
+      // Resume the most recent consultation instead of dropping the user into
+      // an empty thread they have to re-explain themselves in.
+      if (list.length > 0 && list[0]) setCurrentSessionId(list[0].id)
+    })
+  }, [loadSessions])
+
+  // Rehydrate the transcript whenever the selected session changes.
+  useEffect(() => {
+    if (!currentSessionId) return
+    let cancelled = false
+    setHistoryLoading(true)
+
+    fetch(`/api/ai/sessions/${currentSessionId}/messages`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("load failed"))))
+      .then((data) => {
+        if (cancelled) return
+        const history = (data.messages ?? []).map((m: { id: string; role: string; content: string }) => ({
+          id: m.id,
+          role: m.role as "user" | "assistant",
+          parts: [{ type: "text" as const, text: m.content }],
+        }))
+        setMessages(history.length > 0 ? history : [GREETING])
+      })
+      .catch(() => {
+        if (!cancelled) setMessages([GREETING])
+      })
+      .finally(() => {
+        if (!cancelled) setHistoryLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentSessionId, setMessages])
+
+  const createNewSession = async () => {
+    try {
+      const res = await fetch("/api/ai/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "New Chat", pageContext: "/ai-ca" }),
+      })
+      if (!res.ok) return
+      const { session } = await res.json()
+      setSessions((prev) => [session, ...prev])
+      setCurrentSessionId(session.id)
+      setMessages([GREETING])
+    } catch {
+      /* creating a thread is best-effort; the next message creates one server-side */
+    }
+  }
+
+  const deleteSession = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const remaining = sessions.filter((s) => s.id !== id)
+    setSessions(remaining)
+    if (currentSessionId === id) {
+      setCurrentSessionId(remaining[0]?.id ?? null)
+      if (!remaining[0]) setMessages([GREETING])
+    }
+    try {
+      await fetch(`/api/ai/sessions/${id}`, { method: "DELETE" })
+    } catch {
+      loadSessions() // resync if the delete did not land
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
-    sendMessage({ parts: [{ type: "text", text: input }] })
+    // The session id rides on the request so the server appends to this exact
+    // thread rather than inferring the active one.
+    sendMessage(
+      { parts: [{ type: "text", text: input }] },
+      { body: { sessionId: currentSessionId } }
+    )
     setInput("")
+    // A brand-new thread gets its title from the first question server-side;
+    // refresh shortly after so the sidebar shows it.
+    if (!currentSessionId) setTimeout(() => { loadSessions() }, 1500)
   }
 
   useEffect(() => {
@@ -134,30 +244,60 @@ export default function AICAsPage() {
           {/* Column 1 - Past Chats Sidebar */}
           <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-full">
             <Card className="flex flex-col h-full border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl p-4 overflow-hidden shadow-xs">
-              <Button className="w-full flex items-center justify-center gap-2 mb-4 bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80 h-10 font-semibold text-sm cursor-pointer rounded-xl">
+              <Button
+                onClick={createNewSession}
+                className="w-full flex items-center justify-center gap-2 mb-4 bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80 h-10 font-semibold text-sm cursor-pointer rounded-xl"
+              >
                 <Plus className="w-4 h-4" />
                 New Consultation
               </Button>
-              
+
               <div className="flex-1 overflow-y-auto space-y-1">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 mb-2">History</p>
-                {mockChatHistory.map((chat) => (
-                  <button
+
+                {sessionsLoading && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Loading history...
+                  </div>
+                )}
+
+                {!sessionsLoading && sessions.length === 0 && (
+                  <p className="px-3 py-2.5 text-[11px] text-muted-foreground leading-relaxed">
+                    No past consultations yet. Ask your first question to start one.
+                  </p>
+                )}
+
+                {sessions.map((chat) => (
+                  <div
                     key={chat.id}
-                    onClick={() => setSelectedChatId(chat.id)}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setCurrentSessionId(chat.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setCurrentSessionId(chat.id)
+                    }}
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer group",
-                      selectedChatId === chat.id
+                      currentSessionId === chat.id
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                     )}
                   >
-                    <MessageSquare className={cn("w-4 h-4 shrink-0", selectedChatId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
+                    <MessageSquare className={cn("w-4 h-4 shrink-0", currentSessionId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-foreground font-semibold">{chat.title}</p>
-                      <p className="text-[9px] text-muted-foreground mt-0.5">{chat.date}</p>
+                      <p className="truncate text-foreground font-semibold">{chat.title || "New Chat"}</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">{relativeDay(chat.updatedAt)}</p>
                     </div>
-                  </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete consultation ${chat.title || ""}`}
+                      onClick={(e) => deleteSession(chat.id, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </Card>
@@ -168,6 +308,13 @@ export default function AICAsPage() {
             <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full">
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 no-scrollbar">
+                {historyLoading && (
+                  <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading this consultation...
+                  </div>
+                )}
+
                 {chatMessages.map((message) => (
                   <div
                     key={message.id}

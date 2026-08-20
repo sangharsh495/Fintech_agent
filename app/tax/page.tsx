@@ -7,6 +7,7 @@ import { Download, Calculator, TrendingDown, TrendingUp, Percent, IndianRupee, S
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { cn } from "@/lib/utils"
 import { AIWidget } from "@/components/ai-sidebar"
+import { downloadTaxReport } from "@/lib/pdf/tax-report"
 
 interface DeductionItem {
   name: string
@@ -45,6 +46,8 @@ function AnimatedValue({ value, prefix = "₹" }: { value: number; prefix?: stri
 
 export default function TaxPage() {
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const [financialYear, setFinancialYear] = useState("2025-26")
   const [isNewRegime, setIsNewRegime] = useState(false)
   const [income, setIncome] = useState(1000000)
   const [opportunities, setOpportunities] = useState<string[]>([])
@@ -67,6 +70,7 @@ export default function TaxPage() {
           if (data.grossIncome > 0) {
             setIncome(data.grossIncome)
           }
+          if (data.fy) setFinancialYear(data.fy)
           setIsNewRegime(data.taxRegime === "new")
           setOpportunities(data.opportunities || [])
 
@@ -130,6 +134,27 @@ export default function TaxPage() {
     { regime: "Old Regime", tax: oldRegimeTax, cess: oldRegimeTax * 0.04 },
     { regime: "New Regime", tax: newRegimeTax, cess: newRegimeTax * 0.04 },
   ]
+
+  const handleExportTaxSummary = () => {
+    setExporting(true)
+    try {
+      downloadTaxReport({
+        financialYear,
+        grossIncome: income,
+        deductions,
+        taxableIncomeOld,
+        taxableIncomeNew,
+        oldRegimeTax,
+        newRegimeTax,
+        selectedRegime: isNewRegime ? "new" : "old",
+        opportunities,
+      })
+    } catch (error) {
+      console.error("Failed to export tax summary:", error)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const handleUpdateDeduction = (index: number, amount: number) => {
     const newDeductions = [...deductions]
@@ -427,9 +452,14 @@ export default function TaxPage() {
         </div>
 
         <div className="flex justify-center slide-up">
-          <Button className="rounded-full px-8 btn-interactive" size="lg">
+          <Button
+            className="rounded-full px-8 btn-interactive"
+            size="lg"
+            onClick={handleExportTaxSummary}
+            disabled={loading || exporting}
+          >
             <Download className="w-5 h-5 mr-2" />
-            Export Tax Summary
+            {exporting ? "Preparing PDF..." : "Export Tax Summary"}
           </Button>
         </div>
       </div>

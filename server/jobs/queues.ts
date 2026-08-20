@@ -1,5 +1,5 @@
 import { Queue, QueueEvents, Job } from "bullmq"
-import { bullMQRedisConnection } from "@/server/lib/redis"
+import { bullMQRedisConnection, isQueueBackendAvailable } from "@/server/lib/redis"
 
 /**
  * BullMQ Queue Definitions for FinFlow
@@ -94,42 +94,57 @@ const defaultQueueOptions = {
 }
 
 // Create queue instances
-export const statementProcessingQueue = new Queue<StatementProcessingJobData>(
-  QueueNames.STATEMENT_PROCESSING,
-  defaultQueueOptions
+//
+// Queues and QueueEvents are built behind lazy proxies: BullMQ's QueueEvents
+// opens a blocking Redis connection the moment it is constructed, which turns a
+// missing Redis server into an import-time ECONNREFUSED during `next build`.
+// Deferring construction to first use keeps module import side-effect free.
+
+function lazy<T extends object>(factory: () => T): T {
+  let instance: T | null = null
+  return new Proxy({} as T, {
+    get(_target, prop) {
+      if (!instance) instance = factory()
+      const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...args: unknown[]) => unknown).bind(instance)
+        : value
+    },
+  })
+}
+
+export const statementProcessingQueue = lazy<Queue<StatementProcessingJobData>>(
+  () => new Queue<StatementProcessingJobData>(QueueNames.STATEMENT_PROCESSING, defaultQueueOptions)
 )
 
-export const mlClusteringQueue = new Queue<MLClusteringJobData>(
-  QueueNames.ML_CLUSTERING,
-  defaultQueueOptions
+export const mlClusteringQueue = lazy<Queue<MLClusteringJobData>>(
+  () => new Queue<MLClusteringJobData>(QueueNames.ML_CLUSTERING, defaultQueueOptions)
 )
 
-export const notificationsQueue = new Queue<NotificationJobData>(
-  QueueNames.NOTIFICATIONS,
-  defaultQueueOptions
+export const notificationsQueue = lazy<Queue<NotificationJobData>>(
+  () => new Queue<NotificationJobData>(QueueNames.NOTIFICATIONS, defaultQueueOptions)
 )
 
-export const webhooksQueue = new Queue<WebhookJobData>(
-  QueueNames.WEBHOOKS,
-  defaultQueueOptions
+export const webhooksQueue = lazy<Queue<WebhookJobData>>(
+  () => new Queue<WebhookJobData>(QueueNames.WEBHOOKS, defaultQueueOptions)
 )
 
 // Queue events for monitoring
-export const statementProcessingEvents = new QueueEvents(QueueNames.STATEMENT_PROCESSING, {
-  connection: bullMQRedisConnection as any,
-})
+export const statementProcessingEvents = lazy<QueueEvents>(
+  () => new QueueEvents(QueueNames.STATEMENT_PROCESSING, { connection: bullMQRedisConnection as any })
+)
 
-export const mlClusteringEvents = new QueueEvents(QueueNames.ML_CLUSTERING, {
-  connection: bullMQRedisConnection as any,
-})
+export const mlClusteringEvents = lazy<QueueEvents>(
+  () => new QueueEvents(QueueNames.ML_CLUSTERING, { connection: bullMQRedisConnection as any })
+)
 
-export const notificationEvents = new QueueEvents(QueueNames.NOTIFICATIONS, {
-  connection: bullMQRedisConnection as any,
-})
+export const notificationEvents = lazy<QueueEvents>(
+  () => new QueueEvents(QueueNames.NOTIFICATIONS, { connection: bullMQRedisConnection as any })
+)
 
-export const webhookEvents = new QueueEvents(QueueNames.WEBHOOKS, {
-  connection: bullMQRedisConnection as any,
-})
+export const webhookEvents = lazy<QueueEvents>(
+  () => new QueueEvents(QueueNames.WEBHOOKS, { connection: bullMQRedisConnection as any })
+)
 
 // Helper functions for adding jobs
 export async function addJob<T extends JobData>(
@@ -138,8 +153,21 @@ export async function addJob<T extends JobData>(
   data: T,
   options?: Parameters<Queue["add"]>[2]
 ) {
+  if (!isQueueBackendAvailable()) {
+    // No Redis server: the caller must fall back to inline processing rather
+    // than block on a queue that can never drain.
+    throw new QueueBackendUnavailableError(queueName)
+  }
   const queue = getQueue(queueName)
   return queue.add(jobName as any, data as any, options as any) as any
+}
+
+/** Thrown by addJob() when BullMQ has no Redis server to talk to. */
+export class QueueBackendUnavailableError extends Error {
+  constructor(queueName: string) {
+    super(`Queue backend unavailable (REDIS_URL not configured) — cannot enqueue to "${queueName}"`)
+    this.name = "QueueBackendUnavailableError"
+  }
 }
 
 export function getQueue(queueName: QueueName) {
@@ -217,4 +245,8 @@ export async function closeAllQueues() {
   ])
 }
 
-console.log("[Queues] BullMQ queues initialized")
+console.log(
+  isQueueBackendAvailable()
+    ? "[Queues] BullMQ queues ready"
+    : "[Queues] REDIS_URL not set — job enqueueing disabled, callers must process inline"
+)

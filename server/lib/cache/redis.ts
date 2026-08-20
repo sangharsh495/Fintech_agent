@@ -1,27 +1,57 @@
 import { Redis } from "@upstash/redis"
 import { safeLogError } from "@/server/lib/safe-log";
+import { getMemoryStore, isBuildPhase } from "@/server/lib/cache/memory-store"
 
 /**
  * Redis caching layer for performance optimization
- * Uses Upstash Redis for serverless-compatible caching
+ * Uses Upstash Redis for serverless-compatible caching, degrading to a
+ * process-local in-memory store when Upstash is not configured or when running
+ * inside `next build`. Callers therefore always get a working client and never
+ * need a null check.
  */
 
 // Redis client singleton
 let redisClient: Redis | null = null
 
-function getRedisClient(): Redis | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return null
+/** True only when a real Upstash instance is configured. */
+function isUpstashConfigured(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL &&
+      process.env.UPSTASH_REDIS_REST_TOKEN &&
+      !isBuildPhase()
+  )
+}
+
+/**
+ * Structural surface shared by @upstash/redis and MemoryStore. Declared
+ * explicitly so callers can invoke methods without narrowing a union.
+ */
+interface CacheBackend {
+  get<T = string>(key: string): Promise<T | null>
+  setex(key: string, ttlSeconds: number, value: string): Promise<unknown>
+  del(...keys: string[]): Promise<number>
+  keys(pattern: string): Promise<string[]>
+  sadd(key: string, ...members: string[]): Promise<number>
+  smembers(key: string): Promise<string[]>
+  expire(key: string, ttlSeconds: number): Promise<unknown>
+  dbsize(): Promise<number>
+}
+
+function getRedisClient(): CacheBackend {
+  if (!isUpstashConfigured()) {
+    return getMemoryStore(
+      isBuildPhase() ? "build phase" : "UPSTASH_REDIS_REST_URL not set"
+    ) as unknown as CacheBackend
   }
 
   if (!redisClient) {
     redisClient = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
     })
   }
 
-  return redisClient
+  return redisClient as unknown as CacheBackend
 }
 
 /**
@@ -56,7 +86,6 @@ export async function getCache<T>(
   config: CacheConfig = {}
 ): Promise<T | null> {
   const client = getRedisClient()
-  if (!client) return null
 
   const { deserialize } = { ...defaultCacheConfig, ...config }
   
@@ -80,7 +109,6 @@ export async function setCache<T>(
   config: CacheConfig = {}
 ): Promise<boolean> {
   const client = getRedisClient()
-  if (!client) return false
 
   const { ttl, serialize, tags } = { ...defaultCacheConfig, ...config }
   
@@ -109,7 +137,6 @@ export async function setCache<T>(
  */
 export async function deleteCache(key: string): Promise<boolean> {
   const client = getRedisClient()
-  if (!client) return false
 
   try {
     await client.del(key)
@@ -125,7 +152,6 @@ export async function deleteCache(key: string): Promise<boolean> {
  */
 export async function invalidateByTags(tags: string[]): Promise<number> {
   const client = getRedisClient()
-  if (!client) return 0
 
   let totalDeleted = 0
   
@@ -154,7 +180,6 @@ export async function invalidateByTags(tags: string[]): Promise<number> {
  */
 export async function invalidateByPattern(pattern: string): Promise<number> {
   const client = getRedisClient()
-  if (!client) return 0
 
   try {
     const keys = await client.keys(pattern)
@@ -239,7 +264,7 @@ export const CacheTTL = {
  * Check if Redis is available
  */
 export function isCacheAvailable(): boolean {
-  return !!getRedisClient()
+  return isUpstashConfigured()
 }
 
 /**
@@ -251,13 +276,12 @@ export async function getCacheStats(): Promise<{
   keyCount?: number
 }> {
   const client = getRedisClient()
-  if (!client) return { connected: false }
 
   try {
     const dbSize = await client.dbsize()
-    
+
     return {
-      connected: true,
+      connected: isUpstashConfigured(),
       memoryUsage: "N/A", // Not supported by Upstash Redis SDK directly
       keyCount: dbSize,
     }

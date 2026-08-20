@@ -79,7 +79,16 @@ export async function POST(req: NextRequest) {
         }, { status: 400 })
       }
 
-      safeLogInfo("[DATA ERASURE] Starting cascade delete for user", { userId })
+      // ─── Scope ──────────────────────────────────────────────
+      // "account"        — full right-to-erasure: everything, including the login.
+      // "financial_data" — Settings' "Clear All Data": purges transactions,
+      //                    derived aggregates and chat history but keeps the
+      //                    account, profile and linked bank records so the user
+      //                    can start over without re-registering.
+      const scope: "account" | "financial_data" =
+        body.scope === "financial_data" ? "financial_data" : "account"
+
+      safeLogInfo("[DATA ERASURE] Starting cascade delete for user", { userId, scope })
 
       // ─── Cascade delete in dependency order ─────────────────
       // Delete leaf tables first, parent tables last
@@ -95,9 +104,6 @@ export async function POST(req: NextRequest) {
 
       // 4. AI chat logs
       await db.delete(aiChatLogs).where(eq(aiChatLogs.userId, userId))
-
-      // 5. AI access policies
-      await db.delete(aiAccessPolicies).where(eq(aiAccessPolicies.userId, userId))
 
       // 6. Transactions (FK → statement_uploads, bank_accounts)
       await db.delete(transactions).where(eq(transactions.userId, userId))
@@ -120,6 +126,24 @@ export async function POST(req: NextRequest) {
 
       // 12. Goals
       await db.delete(goals).where(eq(goals.userId, userId))
+
+      if (scope === "financial_data") {
+        safeLogInfo("[DATA ERASURE] Financial-data purge finished; account retained", { userId })
+        return NextResponse.json({
+          success: true,
+          scope,
+          message: "All financial data, derived analytics and chat history have been permanently deleted. Your account and linked bank records were kept.",
+          erasedTables: [
+            "chat_messages", "chat_sessions", "ai_audit_log", "ai_chat_logs",
+            "transactions", "cluster_metadata", "cluster_runs", "statement_uploads",
+            "monthly_summaries", "tax_summaries", "net_worth_snapshots", "goals",
+          ],
+        })
+      }
+
+      // AI access policy is account configuration, not financial data, so it is
+      // only removed on a full account erasure.
+      await db.delete(aiAccessPolicies).where(eq(aiAccessPolicies.userId, userId))
 
       // 13. Bank accounts
       await db.delete(bankAccounts).where(eq(bankAccounts.userId, userId))
@@ -145,6 +169,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
+        scope,
         message: "All your data has been permanently deleted. Your session will be invalidated.",
         erasedTables: [
           "chat_messages", "chat_sessions", "ai_audit_log", "ai_chat_logs",

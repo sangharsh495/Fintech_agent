@@ -55,3 +55,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to add bank" }, { status: 500 })
   }
 }
+
+/**
+ * DELETE /api/banks?id=<uuid>
+ *
+ * Unlinks a bank account. This is a soft delete (isActive = false): the
+ * transactions and statement uploads that reference this account stay intact,
+ * so the user's history and tax aggregates are not silently rewritten by an
+ * unlink. Reconnecting the same bank is a separate POST.
+ */
+export async function DELETE(req: NextRequest) {
+  const session = await getSession(req)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const id = req.nextUrl.searchParams.get("id")
+  if (!id) {
+    return NextResponse.json({ error: "Bank account id required" }, { status: 400 })
+  }
+
+  try {
+    const [unlinked] = await withUserScopedDb(session.user.id, async (db) => {
+      return db
+        .update(bankAccounts)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.userId, session.user.id)))
+        .returning({ id: bankAccounts.id })
+    })
+
+    if (!unlinked) {
+      return NextResponse.json({ error: "Bank account not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, unlinked: unlinked.id })
+  } catch (error) {
+    safeLogError("[BANKS DELETE]", error)
+    return NextResponse.json({ error: "Failed to unlink bank account" }, { status: 500 })
+  }
+}

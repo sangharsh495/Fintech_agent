@@ -27,6 +27,44 @@ import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
 
 export const dynamic = "force-dynamic"
 
+/**
+ * Normalises a message from either wire format into plain text.
+ *
+ * The AI SDK v6 `useChat` transport posts UIMessages shaped as
+ * `{ role, parts: [{ type: "text", text }] }`, while server-side history and
+ * older clients use `{ role, content }`. Reading only `.content` silently
+ * yields undefined for the former and violates the NOT NULL on
+ * chat_messages.content.
+ */
+function extractMessageText(message: unknown): string {
+  if (!message || typeof message !== "object") return ""
+  const m = message as { content?: unknown; parts?: unknown }
+
+  if (typeof m.content === "string") return m.content
+
+  if (Array.isArray(m.parts)) {
+    return m.parts
+      .filter((part): part is { type: string; text: string } =>
+        Boolean(part) &&
+        typeof part === "object" &&
+        (part as { type?: unknown }).type === "text" &&
+        typeof (part as { text?: unknown }).text === "string"
+      )
+      .map((part) => part.text)
+      .join("")
+  }
+
+  return ""
+}
+
+/** First line of the opening question, used as the sidebar session label. */
+function deriveSessionTitle(text: string): string {
+  const cleaned = text.replace(/\s+/g, " ").trim()
+  if (!cleaned) return "New Chat"
+  return cleaned.length > 60 ? `${cleaned.slice(0, 57)}...` : cleaned
+}
+
+
 // Configure Oracle AI endpoint
 const endpoint = process.env.ORACLE_AI_ENDPOINT
 const apiKey = process.env.ORACLE_AI_API_KEY
@@ -108,7 +146,8 @@ export async function POST(req: NextRequest) {
           const [newSession] = await db.insert(chatSessions).values({
             userId,
             pageContext: currentPath,
-            title: "New Chat",
+            title: deriveSessionTitle(extractMessageText(messages?.[messages.length - 1])),
+            isActive: true,
           }).returning()
           activeSessionId = newSession!.id
         }
@@ -117,14 +156,27 @@ export async function POST(req: NextRequest) {
       // Persist the user's message
       if (messages && messages.length > 0) {
         const lastUserMessage = messages[messages.length - 1]
-        if (lastUserMessage && lastUserMessage.role === "user") {
+        const userText = extractMessageText(lastUserMessage)
+        if (lastUserMessage && lastUserMessage.role === "user" && userText) {
           await db.insert(chatMessages).values({
             sessionId: activeSessionId,
             userId,
             role: "user",
-            content: lastUserMessage.content,
-            tokenCount: Math.ceil(lastUserMessage.content.length / 4), // rough estimate
+            content: userText,
+            tokenCount: Math.ceil(userText.length / 4), // rough estimate
           })
+
+          // A session created before the first question keeps its placeholder
+          // title; relabel it once we know what the conversation is about.
+          await db
+            .update(chatSessions)
+            .set({ title: deriveSessionTitle(userText) })
+            .where(and(
+              eq(chatSessions.id, activeSessionId),
+              eq(chatSessions.userId, userId),
+              eq(chatSessions.title, "New Chat")
+            ))
+            .catch(() => {})
         }
       }
 
@@ -159,6 +211,31 @@ export async function POST(req: NextRequest) {
       // financial directives, and RLS-scoped data are ALL in `context`.
       const systemPrompt = context
 
+      // Persists the assistant reply once the stream completes. This runs after
+      // the outer RLS transaction has already committed and released its
+      // connection, so it opens a fresh user-scoped scope of its own.
+      const persistAssistantReply = async (text: string) => {
+        if (!text) return
+        try {
+          await withUserScopedDb(userId, async (scoped) => {
+            await scoped.insert(chatMessages).values({
+              sessionId: activeSessionId,
+              userId,
+              role: "assistant",
+              content: text,
+              tokenCount: Math.ceil(text.length / 4),
+            })
+            await scoped
+              .update(chatSessions)
+              .set({ updatedAt: new Date() })
+              .where(and(eq(chatSessions.id, activeSessionId), eq(chatSessions.userId, userId)))
+          })
+        } catch (err) {
+          // Never let history bookkeeping break a delivered answer.
+          safeLogError("[AI CHAT] Failed to persist assistant reply", err)
+        }
+      }
+
       let streamResponse: Response
 
       if (isOracleConfigured) {
@@ -168,6 +245,7 @@ export async function POST(req: NextRequest) {
           model: oracleModel(modelName),
           system: systemPrompt,
           messages: modelMessages,
+          onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),
         } as any)
 
         streamResponse = result.toTextStreamResponse()
@@ -184,6 +262,7 @@ export async function POST(req: NextRequest) {
             model: groqModel(groqModelName),
             system: systemPrompt,
             messages: modelMessages,
+            onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),
           } as any)
 
           return result.toTextStreamResponse()

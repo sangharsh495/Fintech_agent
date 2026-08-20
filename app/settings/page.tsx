@@ -46,6 +46,44 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+/** Bank account as returned by GET /api/banks. */
+interface LinkedAccount {
+  id: string
+  bankName: string
+  accountNickname: string | null
+  accountLast4: string | null
+  accountType: "savings" | "current" | "salary"
+  isActive: boolean
+  currency: string
+  updatedAt: string
+}
+
+const ACCOUNT_TYPES = [
+  { value: "savings", label: "Savings" },
+  { value: "current", label: "Current" },
+  { value: "salary", label: "Salary" },
+] as const
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")
@@ -114,12 +152,20 @@ export default function SettingsPage() {
     consentMarketing: false,
   })
 
-  const [linkedAccounts, setLinkedAccounts] = useState([
-    { id: 1, name: "HDFC Bank", type: "Savings", number: "XXXX1234", connected: true, icon: Building2 },
-    { id: 2, name: "ICICI Bank", type: "Current", number: "XXXX5678", connected: true, icon: Building2 },
-    { id: 3, name: "Zerodha", type: "Demat", number: "XXXX9012", connected: true, icon: Briefcase },
-    { id: 4, name: "Google Pay", type: "UPI", number: "john@oksbi", connected: false, icon: Wallet },
-  ])
+  const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([])
+  const [accountsLoading, setAccountsLoading] = useState(true)
+  const [accountsError, setAccountsError] = useState<string | null>(null)
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
+  const [addAccountBusy, setAddAccountBusy] = useState(false)
+  const [newAccount, setNewAccount] = useState({
+    bankName: "",
+    accountNickname: "",
+    accountLast4: "",
+    accountType: "savings" as LinkedAccount["accountType"],
+  })
+  const [unlinkTarget, setUnlinkTarget] = useState<LinkedAccount | null>(null)
+  const [erasureScope, setErasureScope] = useState<"financial_data" | "account" | null>(null)
+  const [erasureBusy, setErasureBusy] = useState(false)
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light"
@@ -168,12 +214,105 @@ export default function SettingsPage() {
     document.documentElement.classList.toggle("dark", dark)
   }
 
-  const handleToggleConnect = (id: number) => {
-    setLinkedAccounts(prev =>
-      prev.map(account =>
-        account.id === id ? { ...account, connected: !account.connected } : account
-      )
-    )
+  // ─── Linked accounts (live) ─────────────────────────────
+
+  const loadLinkedAccounts = async () => {
+    setAccountsLoading(true)
+    setAccountsError(null)
+    try {
+      const res = await fetch("/api/banks")
+      if (!res.ok) throw new Error("Failed to load accounts")
+      const data = await res.json()
+      setLinkedAccounts(data.banks ?? [])
+    } catch {
+      setAccountsError("Could not load your linked accounts. Check your connection and retry.")
+    } finally {
+      setAccountsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadLinkedAccounts()
+  }, [])
+
+  const handleAddAccount = async () => {
+    if (!newAccount.bankName.trim()) return
+    setAddAccountBusy(true)
+    try {
+      const res = await fetch("/api/banks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bankName: newAccount.bankName.trim(),
+          accountNickname: newAccount.accountNickname.trim() || undefined,
+          accountLast4: newAccount.accountLast4.trim() || undefined,
+          accountType: newAccount.accountType,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setAccountsError(data.error || "Could not add that account.")
+        return
+      }
+      const { bank } = await res.json()
+      setLinkedAccounts((prev) => [...prev, bank])
+      setAddAccountOpen(false)
+      setNewAccount({ bankName: "", accountNickname: "", accountLast4: "", accountType: "savings" })
+    } catch {
+      setAccountsError("Could not add that account. Check your connection and retry.")
+    } finally {
+      setAddAccountBusy(false)
+    }
+  }
+
+  const handleUnlinkAccount = async () => {
+    if (!unlinkTarget) return
+    const target = unlinkTarget
+    setUnlinkTarget(null)
+    // Optimistic removal, resynced from the server if the call fails.
+    setLinkedAccounts((prev) => prev.filter((a) => a.id !== target.id))
+    try {
+      const res = await fetch(`/api/banks?id=${encodeURIComponent(target.id)}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("unlink failed")
+    } catch {
+      setAccountsError("Could not unlink that account. Refreshing the list.")
+      loadLinkedAccounts()
+    }
+  }
+
+  // ─── Data erasure (DPDP Act / GDPR) ─────────────────────
+
+  const handleErasure = async () => {
+    if (!erasureScope) return
+    const scope = erasureScope
+    setErasureBusy(true)
+    try {
+      const res = await fetch("/api/user/data-erasure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: "DELETE_ALL_MY_DATA", scope }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setAccountsError(data.error || "Erasure failed. Please contact support.")
+        return
+      }
+
+      if (scope === "account") {
+        // The account no longer exists — drop local state and sign out.
+        localStorage.removeItem("isAuthenticated")
+        localStorage.removeItem("userEmail")
+        localStorage.removeItem("userName")
+        router.push("/auth/login")
+      } else {
+        await loadLinkedAccounts()
+      }
+    } catch {
+      setAccountsError("Erasure failed. Check your connection and retry.")
+    } finally {
+      setErasureBusy(false)
+      setErasureScope(null)
+    }
   }
 
   const handleLogout = () => {
@@ -1049,66 +1188,90 @@ export default function SettingsPage() {
                         Manage your connected banks and financial accounts
                       </p>
                     </div>
-                    <Button className="btn-interactive rounded-xl">
+                    <Button className="btn-interactive rounded-xl" onClick={() => setAddAccountOpen(true)}>
                       <Building2 className="w-4 h-4 mr-2" />
                       Add Account
                     </Button>
                   </div>
 
+                  {accountsError && (
+                    <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-sm text-destructive">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>{accountsError}</span>
+                    </div>
+                  )}
+
                   <div className="space-y-4">
-                    {linkedAccounts.map((account) => {
-                      const Icon = account.icon
-                      return (
-                        <div
-                          key={account.id}
-                          className="flex items-center justify-between p-5 rounded-xl bg-secondary/30 border border-border"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                              <Icon className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-semibold flex items-center gap-2">
-                                {account.name}
-                                {account.connected ? (
-                                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center gap-1">
-                                    <Check className="w-3 h-3" /> Connected
-                                  </span>
-                                ) : (
-                                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 flex items-center gap-1">
-                                    <X className="w-3 h-3" /> Disconnected
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {account.type} • {account.number}
-                              </p>
-                            </div>
+                    {accountsLoading && (
+                      <div className="flex items-center gap-2 p-5 text-sm text-muted-foreground">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Loading your linked accounts...
+                      </div>
+                    )}
+
+                    {!accountsLoading && linkedAccounts.length === 0 && (
+                      <div className="p-8 rounded-xl border-2 border-dashed border-border text-center">
+                        <Building2 className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+                        <p className="font-semibold text-sm mb-1">No accounts linked yet</p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Add a bank account so uploaded statements can be attributed to it.
+                        </p>
+                        <Button size="sm" className="rounded-xl" onClick={() => setAddAccountOpen(true)}>
+                          <Building2 className="w-4 h-4 mr-2" />
+                          Add your first account
+                        </Button>
+                      </div>
+                    )}
+
+                    {linkedAccounts.map((account) => (
+                      <div
+                        key={account.id}
+                        className="flex items-center justify-between p-5 rounded-xl bg-secondary/30 border border-border"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-primary" />
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="rounded-lg">
-                              <RefreshCw className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant={account.connected ? "outline" : "default"}
-                              size="sm"
-                              className="rounded-lg"
-                              onClick={() => handleToggleConnect(account.id)}
-                            >
-                              {account.connected ? (
-                                <>
-                                  <Unlink className="w-4 h-4 mr-1" /> Unlink
-                                </>
+                          <div>
+                            <p className="font-semibold flex items-center gap-2">
+                              {account.accountNickname || account.bankName}
+                              {account.isActive ? (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center gap-1">
+                                  <Check className="w-3 h-3" /> Connected
+                                </span>
                               ) : (
-                                <>
-                                  <Link2 className="w-4 h-4 mr-1" /> Reconnect
-                                </>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 flex items-center gap-1">
+                                  <X className="w-3 h-3" /> Disconnected
+                                </span>
                               )}
-                            </Button>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {account.bankName} • {ACCOUNT_TYPES.find((t) => t.value === account.accountType)?.label ?? account.accountType}
+                              {account.accountLast4 ? ` • XXXX${account.accountLast4}` : ""}
+                            </p>
                           </div>
                         </div>
-                      )
-                    })}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-lg"
+                            onClick={loadLinkedAccounts}
+                            aria-label="Refresh accounts"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg"
+                            onClick={() => setUnlinkTarget(account)}
+                          >
+                            <Unlink className="w-4 h-4 mr-1" /> Unlink
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </Card>
 
@@ -1592,10 +1755,15 @@ export default function SettingsPage() {
                         <Button
                           variant="outline"
                           className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10 bg-transparent"
+                          onClick={() => setErasureScope("financial_data")}
                         >
                           Clear All Data
                         </Button>
-                        <Button variant="destructive" className="rounded-xl">
+                        <Button
+                          variant="destructive"
+                          className="rounded-xl"
+                          onClick={() => setErasureScope("account")}
+                        >
                           Delete Account
                         </Button>
                       </div>
@@ -1698,6 +1866,140 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── Add bank account ─────────────────────────────── */}
+      <Dialog open={addAccountOpen} onOpenChange={setAddAccountOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add a bank account</DialogTitle>
+            <DialogDescription>
+              We never ask for your net-banking credentials. Only the last 4 digits are stored, so
+              uploaded statements can be attributed to the right account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="bank-name">Bank name</Label>
+              <Input
+                id="bank-name"
+                placeholder="HDFC Bank"
+                value={newAccount.bankName}
+                onChange={(e) => setNewAccount((prev) => ({ ...prev, bankName: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bank-nickname">Nickname (optional)</Label>
+              <Input
+                id="bank-nickname"
+                placeholder="Salary account"
+                value={newAccount.accountNickname}
+                onChange={(e) => setNewAccount((prev) => ({ ...prev, accountNickname: e.target.value }))}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bank-last4">Last 4 digits</Label>
+                <Input
+                  id="bank-last4"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="1234"
+                  value={newAccount.accountLast4}
+                  onChange={(e) =>
+                    setNewAccount((prev) => ({
+                      ...prev,
+                      accountLast4: e.target.value.replace(/\D/g, "").slice(0, 4),
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bank-type">Account type</Label>
+                <select
+                  id="bank-type"
+                  value={newAccount.accountType}
+                  onChange={(e) =>
+                    setNewAccount((prev) => ({
+                      ...prev,
+                      accountType: e.target.value as LinkedAccount["accountType"],
+                    }))
+                  }
+                  className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm"
+                >
+                  {ACCOUNT_TYPES.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddAccountOpen(false)} disabled={addAccountBusy}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddAccount} disabled={addAccountBusy || !newAccount.bankName.trim()}>
+              {addAccountBusy ? "Adding..." : "Add account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Confirm unlink ───────────────────────────────── */}
+      <AlertDialog open={Boolean(unlinkTarget)} onOpenChange={(open) => !open && setUnlinkTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Unlink {unlinkTarget?.accountNickname || unlinkTarget?.bankName}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This account stops receiving new statement uploads. Transactions already imported from
+              it are kept, so your history and tax figures do not change. You can add the account
+              again at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnlinkAccount}>Unlink account</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ─── Danger zone: DPDP Act / GDPR erasure ─────────── */}
+      <AlertDialog open={Boolean(erasureScope)} onOpenChange={(open) => !open && setErasureScope(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {erasureScope === "account" ? "Delete your account permanently?" : "Clear all your financial data?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {erasureScope === "account"
+                ? "This erases every record we hold about you — transactions, statements, analytics, chat history, linked accounts, profile and login — and signs you out. It cannot be undone, and support cannot restore it."
+                : "This permanently deletes your transactions, uploaded statements, derived analytics, tax aggregates, goals and AI chat history. Your account, profile and linked bank records are kept so you can start fresh. It cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={erasureBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleErasure}
+              disabled={erasureBusy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {erasureBusy
+                ? "Erasing..."
+                : erasureScope === "account"
+                  ? "Delete everything"
+                  : "Clear my data"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
