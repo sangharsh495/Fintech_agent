@@ -1041,6 +1041,37 @@
     30% { transform: translateY(-8px); }
   }
 
+  @keyframes scanline {
+    0% { top: 0%; opacity: 0; }
+    30% { opacity: 0.8; }
+    70% { opacity: 0.8; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes aurora {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    50% { transform: translate(-30px, 20px) rotate(180deg) scale(1.15); }
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: float 4.5s ease-in-out 2s infinite;
+  }
+  .animate-float-slow {
+    animation: float 6s ease-in-out 1s infinite;
+  }
+  .animate-scanline {
+    animation: scanline 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .animate-aurora {
+    animation: aurora 16s ease-in-out infinite alternate;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 3s infinite;
+  }
+
   /* === UTILITY CLASSES === */
   .scrollbar-hide {
     -ms-overflow-style: none;
