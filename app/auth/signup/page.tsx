@@ -366,9 +366,9 @@ export default function SignupPage() {
           />
           <span className="text-muted-foreground">
             I agree to the{" "}
-            <Link href="#" className="text-primary hover:underline">Terms of Service</Link>{" "}
+            <Link href="/settings" target="_blank" className="text-primary hover:underline font-medium">Terms of Service</Link>{" "}
             and{" "}
-            <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>
+            <Link href="/settings" target="_blank" className="text-primary hover:underline font-medium">Privacy Policy</Link>
           </span>
         </label>
 

@@ -14,11 +14,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
+  const [showForgotModal, setShowForgotModal] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!forgotEmail) return
+    setForgotSubmitted(true)
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,13 +131,22 @@ export default function LoginPage() {
 
         {/* Remember Me & Forgot */}
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="w-4 h-4 rounded border-border" />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 rounded border-border"
+            />
             <span className="text-muted-foreground">Remember me</span>
           </label>
-          <Link href="#" className="text-primary hover:underline">
+          <button
+            type="button"
+            onClick={() => setShowForgotModal(true)}
+            className="text-primary hover:underline font-medium text-xs sm:text-sm"
+          >
             Forgot password?
-          </Link>
+          </button>
         </div>
 
         {/* Login Button */}
@@ -163,6 +181,63 @@ export default function LoginPage() {
           Sign up
         </Link>
       </p>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold text-foreground">Reset Password</h3>
+            <p className="text-xs text-muted-foreground">
+              Enter your registered email address. We will send a secure password reset link and verification code.
+            </p>
+            {forgotSubmitted ? (
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs">
+                If an account exists with {forgotEmail}, a password reset link has been dispatched to your inbox.
+              </div>
+            ) : (
+              <form onSubmit={handleForgotSubmit} className="space-y-3">
+                <input
+                  type="email"
+                  required
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowForgotModal(false)
+                      setForgotSubmitted(false)
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="sm">
+                    Send Reset Link
+                  </Button>
+                </div>
+              </form>
+            )}
+            {forgotSubmitted && (
+              <Button
+                type="button"
+                className="w-full"
+                size="sm"
+                onClick={() => {
+                  setShowForgotModal(false)
+                  setForgotSubmitted(false)
+                }}
+              >
+                Close
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
