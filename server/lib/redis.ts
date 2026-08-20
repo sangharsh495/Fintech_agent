@@ -89,7 +89,18 @@ export interface CacheClient {
   ping(): Promise<unknown>
 }
 
-let redisClient: ReturnType<typeof createClient> | null = null
+/**
+ * Only the two members we actually touch outside connectRedis(). Typing this as
+ * `ReturnType<typeof createClient>` does not work: passing an options object
+ * makes node-redis infer empty module/function/script maps, which is not
+ * assignable to the default `RedisClientType`.
+ */
+interface NodeRedisHandle {
+  isOpen: boolean
+  quit(): Promise<unknown>
+}
+
+let redisClient: NodeRedisHandle | null = null
 let clientPromise: Promise<CacheClient> | null = null
 /** Once a real connection fails we stay on memory for the process lifetime. */
 let fellBackToMemory = false

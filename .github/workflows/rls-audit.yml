@@ -8,16 +8,18 @@ on:
 
 jobs:
   test-rls:
+    name: RLS Isolation Tests
     runs-on: ubuntu-latest
-    
-    # Needs a real PostgreSQL database with Neon-like properties (or a local Postgres instance)
-    # Since our tests require admin access to create users/roles, we use a local Postgres service
+
+    # A real PostgreSQL instance is required: the RLS policies and the
+    # finflow_app role are created by raw SQL migrations, and the tests assert
+    # that cross-user reads return zero rows.
     services:
       postgres:
         image: postgres:15
         env:
           POSTGRES_USER: neondb_owner
-          POSTGRES_PASSWORD: npg_rotated_secure_2026_finflow
+          POSTGRES_PASSWORD: ci_local_throwaway_password
           POSTGRES_DB: neondb
         ports:
           - 5432:5432
@@ -27,35 +29,80 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      # Two distinct roles, and the distinction is the whole point of the test:
+      #
+      #   ADMIN_URL / DIRECT_URL — neondb_owner, the table owner. Used by the
+      #     suite's adminQuery() to seed fixtures. In the postgres:15 image this
+      #     role is a SUPERUSER, and both superusers and table owners bypass RLS.
+      #
+      #   APP_DATABASE_URL — finflow_app, which is neither. This is what
+      #     withUserScope() connects as, so the policies are actually enforced.
+      #
+      # Pointing APP_DATABASE_URL at the owner would make every isolation
+      # assertion fail, because the owner can read every row.
+      ADMIN_URL: postgresql://neondb_owner:ci_local_throwaway_password@localhost:5432/neondb
+      DIRECT_URL: postgresql://neondb_owner:ci_local_throwaway_password@localhost:5432/neondb
+      DATABASE_URL: postgresql://neondb_owner:ci_local_throwaway_password@localhost:5432/neondb
+      APP_DATABASE_URL: postgresql://finflow_app:ci_app_role_password@localhost:5432/neondb
+
     steps:
       - uses: actions/checkout@v4
-      
+
+      # This project uses pnpm — there is no package-lock.json, so `npm ci`
+      # and `cache: npm` both fail before any code runs.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          
+          node-version: 22
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
-        
-      - name: Run Database Migrations
-        env:
-          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
-        run: npm run db:push
-        
-      - name: Run Security Migrations
-        env:
-          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for PostgreSQL
         run: |
-          # The drizzle-kit push doesn't apply raw SQL policies properly,
-          # so we run the migration scripts manually for RLS
-          for file in server/db/migrations/*.sql; do
-            echo "Applying $file..."
-            psql "$APP_DATABASE_URL" -f "$file"
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 -U neondb_owner && exit 0
+            sleep 1
           done
-          
-      - name: Run RLS Isolation Tests
-        env:
-          APP_DATABASE_URL: postgresql://neondb_owner:npg_rotated_secure_2026_finflow@localhost:5432/neondb
-        run: npm run test:rls
+          echo "PostgreSQL did not become ready in time"
+          exit 1
+
+      # The SQL migrations are the source of truth for RLS: 0000 builds the
+      # schema, 0002 creates the finflow_app role and the policies, and later
+      # files add tables plus their own policies. `drizzle-kit push` is
+      # deliberately not used here — it syncs table shape but not the raw
+      # policy statements, which are the thing under test.
+      #
+      # ON_ERROR_STOP makes a failed migration fail the job instead of
+      # surfacing later as a confusing assertion failure.
+      - name: Apply migrations
+        run: |
+          for file in $(ls server/db/migrations/*.sql | sort); do
+            echo "── Applying $file"
+            psql "$ADMIN_URL" -v ON_ERROR_STOP=1 -f "$file"
+          done
+
+      # Migration 0002 creates finflow_app as NOLOGIN, which is correct for
+      # production where the app connects through a pooler. CI needs it to
+      # accept a direct connection, so grant LOGIN and a password here rather
+      # than weakening the migration.
+      - name: Enable login for the application role
+        run: |
+          psql "$ADMIN_URL" -v ON_ERROR_STOP=1 -c "ALTER ROLE finflow_app WITH LOGIN PASSWORD 'ci_app_role_password';"
+
+      # Guard against a silently meaningless test run: if the app role could
+      # bypass RLS, every isolation assertion would pass for the wrong reason.
+      - name: Verify the app role cannot bypass RLS
+        run: |
+          psql "$ADMIN_URL" -v ON_ERROR_STOP=1 -t -c \
+            "DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'finflow_app' AND (rolsuper OR rolbypassrls)) THEN RAISE EXCEPTION 'finflow_app can bypass RLS - the isolation tests would be meaningless'; END IF; END \$\$;"
+
+      - name: Run RLS isolation tests
+        run: pnpm test:rls

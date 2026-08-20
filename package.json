@@ -7,7 +7,10 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "test:pipeline": "node --experimental-strip-types scripts/test-pipeline.mjs"
+    "test:pipeline": "node --experimental-strip-types scripts/test-pipeline.mjs",
+    "typecheck": "tsc --noEmit",
+    "test:rls": "tsx server/tests/rls-isolation.test.ts",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
@@ -121,6 +124,7 @@
     "pg": "^8.19.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
+    "tsx": "^4.23.12",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
   }
