@@ -13,6 +13,7 @@ export default function TaxScreen() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedRegime, setSelectedRegime] = useState<"old" | "new">("new")
+  const [error, setError] = useState<string | null>(null)
 
   const fetchTax = useCallback(async () => {
     if (!token) return
@@ -20,8 +21,11 @@ export default function TaxScreen() {
       const result = await taxApi.get(token)
       setData(result)
       if (result?.regime) setSelectedRegime(result.regime)
-    } catch (error) {
-      console.error("Tax fetch error:", error)
+      setError(null)
+    } catch (err) {
+      // Surface the failure instead of falling through to the "no data" empty
+      // state, which reads as "upload a statement" for what is really an error.
+      setError(err instanceof Error ? err.message : "Could not load your tax summary.")
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -54,6 +58,19 @@ export default function TaxScreen() {
     )
   }
 
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={{ fontSize: 48, marginBottom: 16 }}>⚠️</Text>
+        <Text style={styles.emptyTitle}>Could not load your tax summary</Text>
+        <Text style={styles.emptyText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => { setLoading(true); fetchTax() }}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   if (!data?.hasData) {
     return (
       <View style={styles.emptyContainer}>
@@ -66,10 +83,10 @@ export default function TaxScreen() {
     )
   }
 
-  const oldTax = data.oldRegime || {}
-  const newTax = data.newRegime || {}
-  const activeTax = selectedRegime === "old" ? oldTax : newTax
-  const deductions = data.deductions || []
+  const activeTax = selectedRegime === "old" ? data.oldRegime : data.newRegime
+  // `deductionList` is the array shape; `deductions` on the same response is a
+  // keyed object used by the web page.
+  const deductions = data.deductionList || []
   const suggestions = data.suggestions || []
 
   return (
@@ -134,13 +151,13 @@ export default function TaxScreen() {
       </View>
 
       {/* Regime Comparison */}
-      {data.savingsComparison && (
+      {data.savingsComparison > 0 && (
         <View style={styles.comparisonCard}>
           <Ionicons name="swap-horizontal" size={20} color="#6366f1" />
           <Text style={styles.comparisonText}>
-            {data.savingsComparison > 0
-              ? `You save ${formatCurrency(Math.abs(data.savingsComparison))} more with the ${selectedRegime === "old" ? "Old" : "New"} Regime`
-              : `Consider switching to ${selectedRegime === "old" ? "New" : "Old"} Regime to save ${formatCurrency(Math.abs(data.savingsComparison))}`}
+            {data.betterRegime === selectedRegime
+              ? `The ${selectedRegime === "old" ? "Old" : "New"} Regime is the cheaper of the two by ${formatCurrency(data.savingsComparison)}`
+              : `Switching to the ${data.betterRegime === "old" ? "Old" : "New"} Regime would cost ${formatCurrency(data.savingsComparison)} less`}
           </Text>
         </View>
       )}
@@ -152,7 +169,7 @@ export default function TaxScreen() {
           {deductions.map((d: any, i: number) => (
             <View key={i} style={styles.deductionCard}>
               <View style={styles.deductionHeader}>
-                <Text style={styles.deductionSection}>{d.section}</Text>
+                <Text style={styles.deductionSection}>{d.label || d.section}</Text>
                 <Text style={styles.deductionAmount}>{formatCurrency(d.amount)}</Text>
               </View>
               <Text style={styles.deductionDesc}>{d.description}</Text>
@@ -195,6 +212,11 @@ const styles = StyleSheet.create({
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f172a", padding: 24 },
   emptyTitle: { fontSize: 22, color: "#f8fafc", fontWeight: "700", marginBottom: 8 },
   emptyText: { fontSize: 14, color: "#64748b", textAlign: "center", lineHeight: 20 },
+  retryButton: {
+    marginTop: 20, paddingHorizontal: 24, paddingVertical: 10,
+    backgroundColor: "#6366f1", borderRadius: 12,
+  },
+  retryText: { color: "#f8fafc", fontWeight: "600", fontSize: 14 },
   regimeToggle: {
     flexDirection: "row", marginHorizontal: 20, marginTop: 16, marginBottom: 16,
     backgroundColor: "#1e293b", borderRadius: 14, padding: 4,

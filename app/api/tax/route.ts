@@ -1,34 +1,48 @@
+/**
+ * app/api/tax/route.ts
+ *
+ * The tax overview for a financial year, used by the web /tax page and by the
+ * mobile app's tax tab.
+ *
+ * Computation is delegated to server/services/tax/tax-calculator so this
+ * endpoint, the filing wizard and the AI assistant cannot disagree about a
+ * number. Reads come from the pre-aggregated tax_summaries table, never from
+ * raw transactions.
+ *
+ * The response is deliberately a superset: flat fields for the web page and
+ * nested per-regime objects for the mobile screen. Both name the same figures.
+ */
+
 import { NextRequest, NextResponse } from "next/server"
+import { eq, and } from "drizzle-orm"
 import { getSession } from "@/server/lib/get-session"
 import { withUserScopedDb } from "@/server/db/rls-connection"
 import { taxSummaries, userProfiles } from "@/server/db/schema"
-import { eq, and, sum } from "drizzle-orm"
 import { safeLogError } from "@/server/lib/safe-log"
+import { computeIndianTax } from "@/server/services/tax/tax-calculator"
+import {
+  emptyDeductions,
+  normaliseFinancialYear,
+  shortFinancialYear,
+  type FinancialYear,
+} from "@/server/services/tax/types"
 
-const OLD_REGIME = [
-  { min: 0, max: 250000, rate: 0 },
-  { min: 250000, max: 500000, rate: 0.05 },
-  { min: 500000, max: 1000000, rate: 0.20 },
-  { min: 1000000, max: Infinity, rate: 0.30 },
+/** Chapter VI-A sections the statement pipeline can tag a transaction with. */
+const DEDUCTION_SECTIONS: Array<{
+  section: string
+  label: string
+  description: string
+  limit: number
+  /** Key on DeductionInput this maps to. */
+  key: keyof ReturnType<typeof emptyDeductions>
+}> = [
+  { section: "80C", label: "Section 80C", description: "PPF, ELSS, LIC premium, EPF, tuition fees", limit: 150000, key: "section80C" },
+  { section: "80CCD(1B)", label: "Section 80CCD(1B)", description: "Additional NPS Tier-1 contribution", limit: 50000, key: "section80CCD1B" },
+  { section: "80D", label: "Section 80D", description: "Health insurance premium for you and your parents", limit: 75000, key: "section80D" },
+  { section: "80E", label: "Section 80E", description: "Interest on an education loan (no upper limit)", limit: 0, key: "section80E" },
+  { section: "80G", label: "Section 80G", description: "Donations to approved institutions", limit: 0, key: "section80G" },
+  { section: "80TTA", label: "Section 80TTA", description: "Savings bank interest", limit: 10000, key: "section80TTA" },
 ]
-
-const NEW_REGIME = [
-  { min: 0, max: 300000, rate: 0 },
-  { min: 300000, max: 600000, rate: 0.05 },
-  { min: 600000, max: 900000, rate: 0.10 },
-  { min: 900000, max: 1200000, rate: 0.15 },
-  { min: 1200000, max: 1500000, rate: 0.20 },
-  { min: 1500000, max: Infinity, rate: 0.30 },
-]
-
-function calcTax(income: number, slabs: typeof OLD_REGIME): number {
-  let tax = 0
-  for (const slab of slabs) {
-    if (income <= slab.min) break
-    tax += (Math.min(income, slab.max) - slab.min) * slab.rate
-  }
-  return tax * 1.04 // 4% cess
-}
 
 export async function GET(req: NextRequest) {
   const session = await getSession(req)
@@ -37,16 +51,37 @@ export async function GET(req: NextRequest) {
   }
 
   const userId = session.user.id
-  const fy = req.nextUrl.searchParams.get("fy") || "2025-26"
+  const requestedFy = req.nextUrl.searchParams.get("fy") ?? "2025-26"
+  const financialYear: FinancialYear = normaliseFinancialYear(requestedFy) ?? "2025-2026"
+  const shortFy = shortFinancialYear(financialYear)
 
   return withUserScopedDb(userId, async (db) => {
     try {
-      const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
-      const taxRegime = profile?.taxRegime || "new"
+      const [profile] = await db
+        .select({ taxRegime: userProfiles.taxRegime, dob: userProfiles.dob })
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, userId))
+        .limit(1)
 
-      // ── READ FROM AGGREGATED tax_summaries TABLE ──
+      const taxRegime: "old" | "new" = profile?.taxRegime ?? "new"
 
-      // Fetch all tax summary rows for this user and FY
+      // Age changes the old-regime basic exemption and the 80D/80TTB ceilings.
+      let age = 35
+      if (profile?.dob) {
+        const dob = new Date(profile.dob)
+        if (!Number.isNaN(dob.getTime())) {
+          const now = new Date()
+          age = now.getFullYear() - dob.getFullYear()
+          if (
+            now.getMonth() < dob.getMonth() ||
+            (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())
+          ) {
+            age--
+          }
+        }
+      }
+
+      // ── Read from the aggregate table ──
       const summaries = await db
         .select({
           section: taxSummaries.section,
@@ -56,59 +91,135 @@ export async function GET(req: NextRequest) {
           txCount: taxSummaries.txCount,
         })
         .from(taxSummaries)
-        .where(and(eq(taxSummaries.userId, userId), eq(taxSummaries.fy, fy)))
+        .where(and(eq(taxSummaries.userId, userId), eq(taxSummaries.fy, shortFy)))
 
-      // Calculate totals from aggregated data
-      const incomeRows = summaries.filter((s) => s.section === "income" && s.type === "credit")
-      const salaryRows = summaries.filter((s) => s.category === "salary" && s.type === "credit")
-      const insuranceRows = summaries.filter((s) => s.section === "80C" && s.type === "debit")
-      const healthcareRows = summaries.filter((s) => s.section === "80D" && s.type === "debit")
-      const charityRows = summaries.filter((s) => s.section === "80G" && s.type === "debit")
+      const sumWhere = (predicate: (row: (typeof summaries)[number]) => boolean) =>
+        summaries.filter(predicate).reduce((total, row) => total + (parseFloat(row.totalAmount) || 0), 0)
 
-      const grossIncome = salaryRows.reduce((s, r) => s + parseFloat(r.totalAmount), 0)
-      const deduction80C = Math.min(
-        insuranceRows.reduce((s, r) => s + parseFloat(r.totalAmount), 0),
-        150000
-      )
-      const deduction80D = healthcareRows.reduce((s, r) => s + parseFloat(r.totalAmount), 0)
-      const deduction80G = charityRows.reduce((s, r) => s + parseFloat(r.totalAmount), 0)
+      const grossIncome = sumWhere((row) => row.category === "salary" && row.type === "credit")
+      const savingsInterest = sumWhere((row) => row.type === "credit" && /interest/i.test(row.category))
+      const rentalIncome = sumWhere((row) => row.category === "rental_income" && row.type === "credit")
 
-      const standardOld = 50000
-      const standardNew = 75000
+      // ── Assemble deductions ──
+      const deductions = emptyDeductions()
+      const deductionList = DEDUCTION_SECTIONS.map((definition) => {
+        const detected = sumWhere((row) => row.section === definition.section && row.type === "debit")
+        deductions[definition.key] = detected
+        return {
+          section: definition.section,
+          label: definition.label,
+          description: definition.description,
+          amount: detected,
+          limit: definition.limit || null,
+          detected: detected > 0,
+        }
+      }).filter((item) => item.amount > 0)
 
-      const oldTax = calcTax(Math.max(0, grossIncome - deduction80C - standardOld), OLD_REGIME)
-      const newTax = calcTax(Math.max(0, grossIncome - standardNew), NEW_REGIME)
-      const taxPayable = taxRegime === "old" ? oldTax : newTax
-      const effectiveRate = grossIncome > 0 ? Math.round((taxPayable / grossIncome) * 1000) / 10 : 0
-      const betterRegime = oldTax < newTax ? "old" : "new"
+      // 80TTA is capped by the interest actually earned, not by spending.
+      deductions.section80TTA = Math.min(savingsInterest, 10000)
 
+      // ── Run the deterministic engine ──
+      const result = computeIndianTax({
+        financialYear,
+        age,
+        salaryIncome: grossIncome,
+        hraExemption: 0,
+        ltaExemption: 0,
+        professionalTax: 0,
+        // 30% standard deduction under Sec 24(a) on let-out property.
+        housePropertyIncome: rentalIncome * 0.7,
+        presumptiveIncome44ADA: 0,
+        presumptiveIncome44AD: 0,
+        businessIncome: 0,
+        shortTermCapitalGains111A: 0,
+        longTermCapitalGains112A: 0,
+        otherCapitalGains: 0,
+        otherSourcesIncome: 0,
+        savingsInterest,
+        deductions,
+      })
+
+      const active = taxRegime === "old" ? result.old : result.new
+      const effectiveRate =
+        active.grossTotalIncome > 0
+          ? Math.round((active.totalTaxPayable / active.grossTotalIncome) * 1000) / 10
+          : 0
+
+      // ── Opportunities ──
       const opportunities: string[] = []
-      const remaining80C = Math.max(0, 150000 - deduction80C)
-      if (remaining80C > 0) {
-        opportunities.push(`Invest ₹${remaining80C.toLocaleString("en-IN")} more in 80C instruments (ELSS/PPF/LIC) to save up to ₹${Math.round(remaining80C * 0.3).toLocaleString("en-IN")} in tax.`)
+      const remaining80C = Math.max(0, 150000 - deductions.section80C)
+      if (remaining80C > 0 && taxRegime === "old") {
+        opportunities.push(
+          `Investing ₹${remaining80C.toLocaleString("en-IN")} more under Section 80C (ELSS, PPF or LIC) would reduce your taxable income by the same amount. The saving depends on your marginal slab.`
+        )
       }
-      if (grossIncome > 1000000) {
-        opportunities.push("Consider NPS (₹50,000 under 80CCD(1B)) for additional tax deduction beyond 80C limit.")
+      if (deductions.section80CCD1B < 50000) {
+        opportunities.push(
+          "Section 80CCD(1B) allows an extra ₹50,000 for NPS Tier-1, over and above the 80C ceiling. It is available under the old regime only."
+        )
+      }
+      if (result.recommendedRegime.toLowerCase() !== taxRegime && result.savingsWithRecommended > 0) {
+        opportunities.push(
+          `The ${result.recommendedRegime === "OLD" ? "old" : "new"} regime would cost ₹${result.savingsWithRecommended.toLocaleString("en-IN")} less on these figures. You may switch when you file.`
+        )
+      }
+      if (savingsInterest > 10000 && age < 60) {
+        opportunities.push(
+          `Savings interest of ₹${Math.round(savingsInterest).toLocaleString("en-IN")} exceeds the ₹10,000 Section 80TTA limit. The excess is taxable at your slab rate.`
+        )
       }
 
-      // Deduction breakdown by section
-      const deductionBreakdown = {
-        "80C": deduction80C,
-        "80D": deduction80D,
-        "80G": deduction80G,
-        standard: taxRegime === "old" ? standardOld : standardNew,
-        total: deduction80C + deduction80D + deduction80G + (taxRegime === "old" ? standardOld : standardNew),
-      }
+      const shapeRegime = (computation: typeof result.old) => ({
+        regime: computation.regime,
+        grossTotalIncome: computation.grossTotalIncome,
+        totalDeductions: computation.totalDeductions,
+        taxableIncome: computation.taxableIncome,
+        taxPayable: computation.totalTaxPayable,
+        effectiveRate:
+          computation.grossTotalIncome > 0
+            ? Math.round((computation.totalTaxPayable / computation.grossTotalIncome) * 1000) / 10
+            : 0,
+        rebate87A: computation.rebate87A,
+        surcharge: computation.surcharge,
+        cess: computation.cess,
+        workings: computation.workings,
+      })
 
       return NextResponse.json({
-        fy, grossIncome, taxRegime,
-        deductions: deductionBreakdown,
-        taxableIncome: Math.max(0, grossIncome - deductionBreakdown.total),
-        taxPayable: Math.round(taxPayable), effectiveRate,
-        oldRegimeTax: Math.round(oldTax), newRegimeTax: Math.round(newTax),
-        betterRegime, savingsVsOtherRegime: Math.abs(Math.round(oldTax - newTax)),
+        // ── Shared ──
+        fy: shortFy,
+        financialYear,
+        assessmentYear: result.assessmentYear,
+        hasData: grossIncome > 0 || summaries.length > 0,
+
+        // ── Mobile shape ──
+        regime: taxRegime,
+        oldRegime: shapeRegime(result.old),
+        newRegime: shapeRegime(result.new),
+        savingsComparison: result.savingsWithRecommended,
+        deductionList,
+        suggestions: opportunities,
+
+        // ── Web shape (unchanged field names) ──
+        grossIncome: active.grossTotalIncome,
+        taxRegime,
+        deductions: {
+          "80C": deductions.section80C,
+          "80D": deductions.section80D,
+          "80E": deductions.section80E,
+          "80G": deductions.section80G,
+          "80TTA": deductions.section80TTA,
+          standard: grossIncome > 0 ? (taxRegime === "old" ? 50000 : 75000) : 0,
+          total: active.totalDeductions,
+        },
+        taxableIncome: active.taxableIncome,
+        taxPayable: active.totalTaxPayable,
+        effectiveRate,
+        oldRegimeTax: result.totalTaxPayableOld,
+        newRegimeTax: result.totalTaxPayableNew,
+        betterRegime: result.recommendedRegime.toLowerCase(),
+        savingsVsOtherRegime: result.savingsWithRecommended,
         opportunities,
-        // Raw transaction drill-down is available via a separate endpoint (explicit, audited)
         drillDownAvailable: true,
       })
     } catch (error) {
@@ -125,9 +236,15 @@ export async function POST(req: NextRequest) {
   return withUserScopedDb(session.user.id, async (db) => {
     try {
       const { regime } = await req.json()
-      if (!["old", "new"].includes(regime)) return NextResponse.json({ error: "Invalid regime" }, { status: 400 })
+      if (!["old", "new"].includes(regime)) {
+        return NextResponse.json({ error: "Invalid regime" }, { status: 400 })
+      }
 
-      await db.update(userProfiles).set({ taxRegime: regime }).where(eq(userProfiles.userId, session.user.id))
+      await db
+        .update(userProfiles)
+        .set({ taxRegime: regime, updatedAt: new Date() })
+        .where(eq(userProfiles.userId, session.user.id))
+
       return NextResponse.json({ success: true, regime })
     } catch (error) {
       safeLogError("[TAX REGIME]", error)

@@ -54,15 +54,26 @@ function figuresIn(text: string): number[] {
     .filter((n): n is number => n !== null)
 }
 
+/** Strips parenthesised section references like "17(2)" or "(1B)" from a line. */
+function stripSectionRefs(line: string): string {
+  return line.replace(/\b\d{1,3}\s*\([0-9A-Za-z]{1,3}\)/g, " ").replace(/\([0-9A-Za-z]{1,3}\)/g, " ")
+}
+
 /**
  * Finds the figure that belongs to a label.
  *
  * Form 16 lines look like:
- *   "1(a) Gross Salary as per provisions contained in sec 17(1)   12,50,000.00"
- * The label itself often contains section numbers ("17(1)", "80CCD(1B)") that
- * look like figures, so we only scan the text *after* the label match and stop
- * at the first plausible rupee amount — optionally continuing onto the next
- * line, since narrow templates wrap the amount.
+ *   "(a) Salary as per provisions contained in sec 17(1)   12,50,000.00"
+ *
+ * Two traps this avoids:
+ * 1. The label itself contains section numbers that look like figures, so
+ *    section references are stripped before scanning.
+ * 2. A field that is legitimately zero ("Profits in lieu of salary   0.00")
+ *    must return 0, NOT fall through to the next line's number. Reading ahead
+ *    past a zero silently absorbed the gross-salary total into an unrelated
+ *    field. So the same line is authoritative whenever it carries any figure;
+ *    only a label with no figure at all continues onto the following line,
+ *    which is how narrow templates wrap the amount.
  */
 function findAmount(text: string, patterns: RegExp[], opts: { lookaheadChars?: number } = {}): number | null {
   const lookahead = opts.lookaheadChars ?? 160
@@ -71,13 +82,20 @@ function findAmount(text: string, patterns: RegExp[], opts: { lookaheadChars?: n
     const match = pattern.exec(text)
     if (!match) continue
 
-    const tail = text.slice(match.index + match[0].length, match.index + match[0].length + lookahead)
-    // Drop parenthesised section references like "(1B)" or "17(2)" that precede
-    // the real amount on the same line.
-    const withoutSectionRefs = tail.replace(/\b\d{1,3}\s*\([0-9A-Za-z]{1,3}\)/g, " ")
-    const candidates = figuresIn(withoutSectionRefs)
-    const amount = candidates.find((n) => Math.abs(n) >= 1)
-    if (amount !== undefined) return amount
+    const from = match.index + match[0].length
+    const tail = text.slice(from, from + lookahead)
+
+    const newlineAt = tail.indexOf("\n")
+    const sameLine = newlineAt === -1 ? tail : tail.slice(0, newlineAt)
+
+    const onLine = figuresIn(stripSectionRefs(sameLine))
+    if (onLine.length > 0) return onLine[0]!
+
+    if (newlineAt === -1) continue
+
+    // Nothing on the label's own line — take the first figure that follows.
+    const rest = figuresIn(stripSectionRefs(tail.slice(newlineAt + 1)))
+    if (rest.length > 0) return rest[0]!
   }
 
   return null

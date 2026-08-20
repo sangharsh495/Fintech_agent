@@ -131,6 +131,22 @@ function splitIntoSchemeBlocks(lines: string[]): SchemeBlock[] {
   return blocks
 }
 
+/**
+ * Parses a plain decimal number.
+ *
+ * Distinct from parseRupees, which caps at two decimal places because it is a
+ * money parser. Mutual fund units and NAVs are quoted to three or four decimals
+ * ("1377.2160", "333.2670"), and feeding those through the money parser
+ * silently yields null — which showed up as every holding reporting zero units.
+ */
+function parseDecimal(raw: string | undefined | null): number | null {
+  if (!raw) return null
+  const cleaned = raw.replace(/[,\s]/g, "").trim()
+  if (!/^-?\d+(\.\d{1,6})?$/.test(cleaned)) return null
+  const value = Number(cleaned)
+  return Number.isFinite(value) ? value : null
+}
+
 /** Pulls closing units, closing NAV and market value out of a scheme block. */
 function readClosingFigures(blockLines: string[]): {
   units: number
@@ -140,11 +156,11 @@ function readClosingFigures(blockLines: string[]): {
   const text = blockLines.join("\n")
 
   const units =
-    parseRupees(/closing\s+unit\s+balance\s*:?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
+    parseDecimal(/closing\s+unit\s+balance\s*:?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
   const nav =
-    parseRupees(/NAV\s+on\s+[\d]{1,2}-[A-Za-z]{3}-\d{4}\s*:?\s*(?:INR)?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
+    parseDecimal(/NAV\s+on\s+[\d]{1,2}-[A-Za-z]{3}-\d{4}\s*:?\s*(?:INR)?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
   const marketValue =
-    parseRupees(/market\s+value\s+on\s+[\d]{1,2}-[A-Za-z]{3}-\d{4}\s*:?\s*(?:INR)?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
+    parseDecimal(/market\s+value\s+on\s+[\d]{1,2}-[A-Za-z]{3}-\d{4}\s*:?\s*(?:INR)?\s*([\d,]+\.?\d*)/i.exec(text)?.[1]) ?? 0
 
   return { units, nav, marketValue: marketValue || units * nav }
 }

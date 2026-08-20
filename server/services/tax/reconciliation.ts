@@ -51,20 +51,38 @@ export interface ReconciliationResult {
 /** Divergences below this are rounding noise, not a reporting problem. */
 const MATERIALITY_THRESHOLD = 100
 
+type SourceKey = "form16" | "ais" | "bank" | "cas"
+
 function compare(
   item: string,
-  values: Partial<Record<"form16" | "ais" | "bank" | "cas", number>>,
-  options: { citation?: string; prefer?: "highest" | "form16" } = {}
+  values: Partial<Record<SourceKey, number>>,
+  options: {
+    citation?: string
+    prefer?: "highest" | "form16"
+    /**
+     * Sources that inform the adopted figure but must not, on their own, raise
+     * a divergence. Bank credits are net of TDS and of any salary deduction, so
+     * they are always lower than certified gross salary — treating that gap as
+     * a discrepancy would flag every single salaried user.
+     */
+    contextOnly?: SourceKey[]
+  } = {}
 ): { adopted: number; finding: ReconciliationFinding | null } {
   const present = Object.entries(values).filter(([, v]) => typeof v === "number" && v > 0) as Array<[string, number]>
 
   if (present.length === 0) return { adopted: 0, finding: null }
 
-  const highest = Math.max(...present.map(([, v]) => v));
-  const lowest = Math.min(...present.map(([, v]) => v))
+  const contextOnly = new Set<string>(options.contextOnly ?? [])
+  const authoritative = present.filter(([source]) => !contextOnly.has(source))
+  // Fall back to every source when all of them are context-only, so a figure is
+  // still adopted rather than silently dropped.
+  const forComparison = authoritative.length > 0 ? authoritative : present
+
+  const highest = Math.max(...forComparison.map(([, v]) => v))
+  const lowest = Math.min(...forComparison.map(([, v]) => v))
   const adopted = options.prefer === "form16" && values.form16 ? values.form16 : highest
 
-  if (present.length === 1 || highest - lowest <= MATERIALITY_THRESHOLD) {
+  if (forComparison.length === 1 || highest - lowest <= MATERIALITY_THRESHOLD) {
     return {
       adopted,
       finding: {
@@ -73,15 +91,15 @@ function compare(
         values,
         adopted,
         message:
-          present.length === 1
-            ? `Reported by ${present[0]![0]} only: Rs. ${Math.round(adopted).toLocaleString("en-IN")}.`
+          forComparison.length === 1
+            ? `Reported by ${forComparison[0]![0]} only: Rs. ${Math.round(adopted).toLocaleString("en-IN")}.`
             : `All sources agree within Rs. ${MATERIALITY_THRESHOLD}: Rs. ${Math.round(adopted).toLocaleString("en-IN")}.`,
         citation: options.citation,
       },
     }
   }
 
-  const detail = present
+  const detail = forComparison
     .map(([source, value]) => `${source} Rs. ${Math.round(value).toLocaleString("en-IN")}`)
     .join(", ")
 
@@ -168,7 +186,7 @@ export function harmoniseTaxSources(
       ais: ais?.totals.salary || undefined,
       bank: bankDerived?.salaryCredits || undefined,
     },
-    { citation: "Sec 15–17, Income Tax Act 1961" }
+    { citation: "Sec 15–17, Income Tax Act 1961", contextOnly: ["bank"] }
   )
   record(salaryComparison.finding)
 
@@ -236,7 +254,7 @@ export function harmoniseTaxSources(
       ais: ais?.totals.rent || undefined,
       bank: bankDerived?.rentalIncome || undefined,
     },
-    { citation: "Sec 22–24" }
+    { citation: "Sec 22–24", contextOnly: ["bank"] }
   )
   record(rentComparison.finding)
 
