@@ -17,16 +17,58 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true)
   const [showForgotModal, setShowForgotModal] = useState(false)
   const [forgotEmail, setForgotEmail] = useState("")
+  const [forgotOtp, setForgotOtp] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [forgotStep, setForgotStep] = useState<"email" | "otp" | "success">("email")
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotError, setForgotError] = useState("")
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
 
-  const handleForgotSubmit = (e: React.FormEvent) => {
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!forgotEmail) return
-    setForgotSubmitted(true)
+    setForgotLoading(true)
+    setForgotError("")
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to send reset code")
+      setForgotStep("otp")
+    } catch (err: any) {
+      setForgotError(err.message || "Failed to send reset code")
+    } finally {
+      setForgotLoading(false)
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!forgotEmail || !forgotOtp || !newPassword) return
+    setForgotLoading(true)
+    setForgotError("")
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail, otp: forgotOtp, newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to reset password")
+      setForgotStep("success")
+    } catch (err: any) {
+      setForgotError(err.message || "Failed to reset password")
+    } finally {
+      setForgotLoading(false)
+    }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -187,15 +229,18 @@ export default function LoginPage() {
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
             <h3 className="text-lg font-bold text-foreground">Reset Password</h3>
-            <p className="text-xs text-muted-foreground">
-              Enter your registered email address. We will send a secure password reset link and verification code.
-            </p>
-            {forgotSubmitted ? (
-              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs">
-                If an account exists with {forgotEmail}, a password reset link has been dispatched to your inbox.
+            
+            {forgotError && (
+              <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                {forgotError}
               </div>
-            ) : (
-              <form onSubmit={handleForgotSubmit} className="space-y-3">
+            )}
+
+            {forgotStep === "email" && (
+              <form onSubmit={handleRequestOtp} className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Enter your registered email address. We will send a 6-digit verification code.
+                </p>
                 <input
                   type="email"
                   required
@@ -211,29 +256,82 @@ export default function LoginPage() {
                     size="sm"
                     onClick={() => {
                       setShowForgotModal(false)
-                      setForgotSubmitted(false)
+                      setForgotStep("email")
+                      setForgotError("")
                     }}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" size="sm">
-                    Send Reset Link
+                  <Button type="submit" size="sm" disabled={forgotLoading}>
+                    {forgotLoading ? "Sending..." : "Send OTP"}
                   </Button>
                 </div>
               </form>
             )}
-            {forgotSubmitted && (
-              <Button
-                type="button"
-                className="w-full"
-                size="sm"
-                onClick={() => {
-                  setShowForgotModal(false)
-                  setForgotSubmitted(false)
-                }}
-              >
-                Close
-              </Button>
+
+            {forgotStep === "otp" && (
+              <form onSubmit={handleResetPassword} className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Enter the 6-digit code sent to <strong className="text-foreground">{forgotEmail}</strong> and your new password.
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-muted-foreground">Verification Code</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={forgotOtp}
+                    onChange={(e) => setForgotOtp(e.target.value)}
+                    placeholder="123456"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background text-foreground font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-muted-foreground">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForgotStep("email")}
+                  >
+                    Back
+                  </Button>
+                  <Button type="submit" size="sm" disabled={forgotLoading}>
+                    {forgotLoading ? "Updating..." : "Set New Password"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {forgotStep === "success" && (
+              <div className="space-y-4">
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs">
+                  Your password has been reset successfully! You can now log in with your new credentials.
+                </div>
+                <Button
+                  type="button"
+                  className="w-full"
+                  size="sm"
+                  onClick={() => {
+                    setShowForgotModal(false)
+                    setForgotStep("email")
+                    setForgotError("")
+                  }}
+                >
+                  Back to Sign In
+                </Button>
+              </div>
             )}
           </div>
         </div>

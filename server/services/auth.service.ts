@@ -180,3 +180,17 @@ export async function getUserById(id: string) {
 
   return user || null
 }
+
+export async function updateUserPassword(email: string, hashedPassword: string) {
+  const [updated] = await db
+    .update(users)
+    .set({
+      passwordHash: hashedPassword,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, email))
+    .returning({ id: users.id, email: users.email })
+
+  return updated || null
+}
+
