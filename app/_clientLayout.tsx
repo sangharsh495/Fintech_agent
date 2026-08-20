@@ -57,6 +57,7 @@ export default function ClientLayout({
 
   const isAuthPage = pathname?.startsWith("/auth")
   const isOnboardingPage = pathname?.startsWith("/onboarding")
+  const isPublicPage = pathname === "/" || pathname?.startsWith("/calculators")
   const isAuthenticated = !!session?.user
 
   // Auth page — show as-is
@@ -64,6 +65,9 @@ export default function ClientLayout({
 
   // Onboarding page — full screen without sidebar/navbar
   if (isOnboardingPage) return <>{children}</>
+
+  // Public landing & calculators page for unauthenticated visitors
+  if (!isAuthenticated && isPublicPage) return <>{children}</>
 
   // Authenticated — show full layout
   if (isAuthenticated) {

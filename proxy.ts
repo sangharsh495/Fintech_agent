@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server"
 // Routes that don't require auth.
 const PUBLIC_ROUTES = [
     "/auth",
+    "/calculators",
     "/api/auth",
     "/api/health",
     "/api/docs",
@@ -14,38 +15,51 @@ export default auth(async function middleware(req) {
     const { nextUrl, auth: session } = req as NextRequest & { auth: { user?: { id: string; onboardingComplete?: boolean } } | null }
     const pathname = nextUrl.pathname
 
-    // Allow public routes
+    // Determine the real public origin from request headers (prevents any localhost redirect on Vercel)
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || nextUrl.host
+    const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https")
+    const origin = `${proto}://${host}`
+
+    // 1. Root page "/" is public for unauthenticated users (shows Landing Page)
+    if (pathname === "/") {
+        if (session?.user && session.user.onboardingComplete === false) {
+            return NextResponse.redirect(new URL("/onboarding", origin))
+        }
+        return NextResponse.next()
+    }
+
+    // 2. Allow public routes
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
     
-    // Redirect authenticated users away from auth pages
+    // Redirect authenticated users away from auth login/signup pages
     if (session?.user && pathname.startsWith("/auth/")) {
-        return NextResponse.redirect(new URL("/", nextUrl))
+        return NextResponse.redirect(new URL("/", origin))
     }
 
     if (isPublicRoute) return NextResponse.next()
 
-    // Allow API routes - they handle their own authentication (Bearer tokens for mobile, NextAuth for web)
+    // 3. Allow API routes - they handle their own authentication (Bearer tokens for mobile, NextAuth for web)
     if (pathname.startsWith("/api/")) {
         return NextResponse.next()
     }
 
-    // Redirect unauthenticated users to login
+    // 4. Redirect unauthenticated users to login for protected pages
     if (!session?.user) {
-        const loginUrl = new URL("/auth/login", nextUrl)
+        const loginUrl = new URL("/auth/login", origin)
         loginUrl.searchParams.set("callbackUrl", pathname)
         return NextResponse.redirect(loginUrl)
     }
 
-    // Enforce onboarding flow
+    // 5. Enforce onboarding flow for authenticated users
     const onboardingComplete = session.user.onboardingComplete === true
     const isOnboardingRoute = pathname.startsWith("/onboarding")
 
     if (!onboardingComplete && !isOnboardingRoute) {
-        return NextResponse.redirect(new URL("/onboarding", nextUrl))
+        return NextResponse.redirect(new URL("/onboarding", origin))
     }
 
     if (onboardingComplete && isOnboardingRoute) {
-        return NextResponse.redirect(new URL("/", nextUrl))
+        return NextResponse.redirect(new URL("/", origin))
     }
 
     return NextResponse.next()
