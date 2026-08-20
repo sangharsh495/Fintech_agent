@@ -109,9 +109,10 @@ export async function sendOTPEmail(
     try {
       const { Resend } = await import("resend")
       const resend = new Resend(process.env.RESEND_API_KEY)
+      const fromAddress = process.env.EMAIL_FROM || "FinFlow <onboarding@resend.dev>"
 
       const { data, error } = await resend.emails.send({
-        from: "FinFlow <onboarding@resend.dev>",
+        from: fromAddress,
         to: normalizedEmail,
         subject: "Your FinFlow verification code",
         html: htmlContent,
@@ -129,7 +130,7 @@ export async function sendOTPEmail(
   }
 
   // Option 2: If SMTP is configured and Resend didn't deliver, try Nodemailer
-  if (!emailSent && process.env.SMTP_USER && process.env.SMTP_USER !== "your@gmail.com") {
+  if (!emailSent && process.env.SMTP_USER && process.env.SMTP_USER !== "your@gmail.com" && process.env.SMTP_PASS && process.env.SMTP_PASS !== "your-app-password") {
     try {
       const nodemailer = await import("nodemailer")
 
@@ -143,8 +144,10 @@ export async function sendOTPEmail(
         },
       })
 
+      const fromAddress = process.env.EMAIL_FROM || `"FinFlow" <${process.env.SMTP_USER}>`
+
       await transporter.sendMail({
-        from: `"FinFlow" <${process.env.SMTP_USER}>`,
+        from: fromAddress,
         to: normalizedEmail,
         subject: "Your FinFlow verification code",
         html: htmlContent,
