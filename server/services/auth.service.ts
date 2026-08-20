@@ -81,7 +81,11 @@ export async function verifyOTP(
 
 // ─── Email ───────────────────────────────────────────────────
 
-export async function sendOTPEmail(email: string, otp: string, name?: string): Promise<void> {
+export async function sendOTPEmail(
+  email: string,
+  otp: string,
+  name?: string
+): Promise<{ sent: boolean; method: "resend" | "smtp" | "console" }> {
   const normalizedEmail = email.toLowerCase().trim()
 
   const htmlContent = `
@@ -98,6 +102,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
   `
 
   let emailSent = false
+  let deliveryMethod: "resend" | "smtp" | "console" = "console"
 
   // Option 1: If Resend API key is configured, try sending via Resend
   if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith("re_your_")) {
@@ -116,6 +121,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
         safeLogError("[RESEND EMAIL ERROR]", error)
       } else if (data) {
         emailSent = true
+        deliveryMethod = "resend"
       }
     } catch (err) {
       safeLogError("[RESEND SEND EXCEPTION]", err)
@@ -145,6 +151,7 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
       })
 
       emailSent = true
+      deliveryMethod = "smtp"
     } catch (err) {
       safeLogError("[SMTP SEND EXCEPTION]", err)
     }
@@ -160,9 +167,11 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
   ║                                      ║
   ║  Your OTP is: ${otp.padEnd(23)}║
   ║  Valid for: 5 minutes                ║
-  ║  Dispatched: ${(emailSent ? "Delivered via Mailer" : "Logged to Console").padEnd(24)}║
+  ║  Dispatched: ${(emailSent ? `Delivered (${deliveryMethod.toUpperCase()})` : "Logged to Console").padEnd(24)}║
   ╚══════════════════════════════════════╝
   `)
+
+  return { sent: emailSent, method: deliveryMethod }
 }
 
 // ─── User Management ─────────────────────────────────────────

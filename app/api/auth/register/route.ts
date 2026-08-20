@@ -62,12 +62,13 @@ export async function POST(req: NextRequest) {
     // Generate & store OTP
     const otp = generateOTP()
     await storeOTP(email, otp)
-    await sendOTPEmail(email, otp, name)
+    const emailDelivery = await sendOTPEmail(email, otp, name)
 
     return NextResponse.json({
       success: true,
       message: "Account created. Check your email for the verification code.",
       userId,
+      devOtp: (!emailDelivery.sent || process.env.NODE_ENV !== "production") ? otp : undefined,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -28,9 +28,13 @@ export async function POST(req: NextRequest) {
 
     const otp = generateOTP()
     await storeOTP(email, otp)
-    await sendOTPEmail(email, otp, user.name ?? undefined)
+    const emailDelivery = await sendOTPEmail(email, otp, user.name ?? undefined)
 
-    return NextResponse.json({ success: true, message: "OTP sent to your email" })
+    return NextResponse.json({
+      success: true,
+      message: "OTP sent to your email",
+      devOtp: (!emailDelivery.sent || process.env.NODE_ENV !== "production") ? otp : undefined,
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0]?.message || "Invalid email" }, { status: 400 })
