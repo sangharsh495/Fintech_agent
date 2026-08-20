@@ -111,6 +111,10 @@ function shapeDraft(draft: Awaited<ReturnType<typeof buildFilingDraft>>) {
     itrFormDisqualifiers: draft.itrSelection.disqualifiers,
     itrFormWarnings: draft.itrSelection.warnings,
 
+    // Section-wise deductions actually carried into the return, so the audit
+    // report can cite each one without recomputing anything.
+    deductions: draft.reconciliation.input.deductions,
+
     findings: draft.reconciliation.findings,
     gaps: draft.reconciliation.gaps,
     sourcesUsed: draft.reconciliation.sourcesUsed,

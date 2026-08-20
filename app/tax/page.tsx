@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Download, Calculator, TrendingDown, TrendingUp, Percent, IndianRupee, Sparkles, AlertCircle } from "lucide-react"
+import { Download, Calculator, TrendingDown, TrendingUp, Percent, IndianRupee, Sparkles, AlertCircle, FileText } from "lucide-react"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { cn } from "@/lib/utils"
 import { AIWidget } from "@/components/ai-sidebar"
@@ -451,8 +452,9 @@ export default function TaxPage() {
           </Card>
         </div>
 
-        <div className="flex justify-center slide-up">
+        <div className="flex flex-wrap justify-center gap-3 slide-up">
           <Button
+            variant="outline"
             className="rounded-full px-8 btn-interactive"
             size="lg"
             onClick={handleExportTaxSummary}
@@ -461,6 +463,13 @@ export default function TaxPage() {
             <Download className="w-5 h-5 mr-2" />
             {exporting ? "Preparing PDF..." : "Export Tax Summary"}
           </Button>
+
+          <Link href="/tax/filing">
+            <Button className="rounded-full px-8 btn-interactive" size="lg">
+              <FileText className="w-5 h-5 mr-2" />
+              File your return
+            </Button>
+          </Link>
         </div>
       </div>
       
