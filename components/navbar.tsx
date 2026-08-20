@@ -1,11 +1,68 @@
 "use client"
 
-import { Menu, Search, X, User, BarChart3, Brain, Calculator, TrendingUp, LayoutDashboard, Sun, Moon } from "lucide-react"
+import {
+  Menu,
+  Search,
+  X,
+  User,
+  BarChart3,
+  Brain,
+  Calculator,
+  TrendingUp,
+  LayoutDashboard,
+  Sun,
+  Moon,
+  Upload,
+  Settings,
+  ShieldCheck,
+  PiggyBank,
+  Landmark,
+  Wallet,
+  Coins,
+  FileText,
+  Home,
+  Briefcase,
+  Shield,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+
+const searchableCatalog = [
+  // Core Pages
+  { href: "/", label: "Dashboard", category: "Navigation", icon: LayoutDashboard },
+  { href: "/analytics", label: "Financial Analytics & Trends", category: "Navigation", icon: BarChart3 },
+  { href: "/analytics/clusters", label: "ML Spending Clusters & Anomalies", category: "Navigation", icon: Brain },
+  { href: "/ai-ca", label: "AI Virtual Chartered Accountant", category: "Navigation", icon: Brain },
+  { href: "/tax", label: "Tax Optimization Engine (Old vs New)", category: "Navigation", icon: TrendingUp },
+  { href: "/tax/filing", label: "ITR-1 (Sahaj) Autonomous Filing Wizard", category: "Tax Filing", icon: ShieldCheck },
+  { href: "/tax/report", label: "Certified CA Tax Audit Working Paper", category: "Tax Report", icon: FileText },
+  { href: "/upload", label: "Upload Bank Statement (PDF/CSV/Excel)", category: "Data Ingestion", icon: Upload },
+  { href: "/settings", label: "Settings & Linked Bank Accounts", category: "Settings", icon: Settings },
+  
+  // Calculators & Tools
+  { href: "/calculators?tool=sip", label: "SIP Calculator (Systematic Investment)", category: "Calculators", icon: TrendingUp },
+  { href: "/calculators?tool=emi", label: "EMI Calculator (Loans & Mortgages)", category: "Calculators", icon: Calculator },
+  { href: "/calculators?tool=fd", label: "Fixed Deposit (FD) Calculator", category: "Calculators", icon: Landmark },
+  { href: "/calculators?tool=rd", label: "Recurring Deposit (RD) Calculator", category: "Calculators", icon: PiggyBank },
+  { href: "/calculators?tool=budget", label: "50/30/20 Budget Planner", category: "Calculators", icon: Wallet },
+  { href: "/calculators?tool=loan", label: "Loan Comparison Matrix", category: "Calculators", icon: Calculator },
+  { href: "/calculators?tool=ppf", label: "Public Provident Fund (PPF) Calculator", category: "Calculators", icon: Shield },
+  { href: "/calculators?tool=nps", label: "National Pension Scheme (NPS) Calculator", category: "Calculators", icon: ShieldCheck },
+  { href: "/calculators?tool=epf", label: "Employee Provident Fund (EPF) Calculator", category: "Calculators", icon: Briefcase },
+  { href: "/calculators?tool=swp", label: "Systematic Withdrawal Plan (SWP) Calculator", category: "Calculators", icon: Coins },
+  { href: "/calculators?tool=hra", label: "HRA Tax Exemption Calculator (Sec 10(13A))", category: "Tax Tools", icon: Home },
+  { href: "/calculators?tool=cagr", label: "CAGR Compound Annual Growth Calculator", category: "Calculators", icon: TrendingUp },
+  
+  // Tax Law Concepts
+  { href: "/tax", label: "Section 80C Deductions (ELSS, PPF, LIC - ₹1.5L)", category: "Tax Codex", icon: FileText },
+  { href: "/tax", label: "Section 80D Health Insurance (Self & Parents)", category: "Tax Codex", icon: FileText },
+  { href: "/tax", label: "Section 80CCD(1B) Additional NPS (₹50,000)", category: "Tax Codex", icon: FileText },
+  { href: "/tax", label: "Section 24(b) Home Loan Interest (₹2 Lakhs)", category: "Tax Codex", icon: Home },
+  { href: "/tax", label: "Section 87A Full Tax Rebate (Zero Tax under ₹7L)", category: "Tax Codex", icon: ShieldCheck },
+]
 
 const navLinks = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -28,7 +85,7 @@ export default function Navbar({
 }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<typeof navLinks>([])
+  const [searchResults, setSearchResults] = useState<typeof searchableCatalog>([])
   const searchInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -48,8 +105,9 @@ export default function Navbar({
   // Handle search
   useEffect(() => {
     if (searchQuery.trim()) {
-      const filtered = navLinks.filter((link) =>
-        link.label.toLowerCase().includes(searchQuery.toLowerCase())
+      const q = searchQuery.toLowerCase()
+      const filtered = searchableCatalog.filter(
+        (item) => item.label.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
       )
       setSearchResults(filtered)
     } else {
@@ -240,17 +298,22 @@ export default function Navbar({
                     const Icon = result.icon
                     return (
                       <button
-                        key={result.href}
+                        key={`${result.href}-${result.label}`}
                         onClick={() => handleSearchSelect(result.href)}
-                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors text-left group"
+                        className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/80 transition-colors text-left group cursor-pointer"
                       >
-                        <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center group-hover:bg-background transition-colors border border-transparent group-hover:border-border/50">
-                          <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center group-hover:bg-background transition-colors border border-transparent group-hover:border-border/50 shrink-0">
+                            <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors truncate">{result.label}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono truncate">{result.href}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-foreground">{result.label}</p>
-                          <p className="text-xs text-muted-foreground">{result.href}</p>
-                        </div>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary/80 text-muted-foreground group-hover:text-foreground shrink-0 ml-2">
+                          {result.category}
+                        </span>
                       </button>
                     )
                   })}

@@ -5,12 +5,15 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "eslint .",
+    "lint": "next lint",
     "start": "next start",
     "test:pipeline": "node --experimental-strip-types scripts/test-pipeline.mjs",
     "typecheck": "tsc --noEmit",
     "test:rls": "tsx server/tests/rls-isolation.test.ts",
-    "db:push": "drizzle-kit push"
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",

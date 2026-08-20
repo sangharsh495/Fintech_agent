@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { AIWidget } from "@/components/ai-sidebar"
+import LandingPage from "@/components/landing-page"
 
 interface BankBalanceItem {
   bankId: string
@@ -166,23 +167,7 @@ export default function Dashboard() {
   }
 
   if (hasData === false || !data) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col items-center justify-center p-6 text-center pt-24">
-        <div className="w-24 h-24 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-primary/10 animate-bounce">
-          <Wallet className="w-12 h-12 text-primary" />
-        </div>
-        <h1 className="text-3xl font-extrabold mb-4">Welcome to FinFlow</h1>
-        <p className="text-muted-foreground max-w-md mb-8">
-          Upload your bank statements to unlock INDmoney-style wealth tracking, automatic spending categorization, and AI-powered tax optimizations.
-        </p>
-        <Link href="/upload">
-          <button className="inline-flex items-center justify-center px-6 py-3 font-semibold rounded-xl text-white bg-primary hover:bg-primary/95 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-            <Plus className="w-5 h-5 mr-2" />
-            Upload Your First Statement
-          </button>
-        </Link>
-      </div>
-    )
+    return <LandingPage />
   }
 
   const userName = session?.user?.name?.split(" ")[0] || "Member"

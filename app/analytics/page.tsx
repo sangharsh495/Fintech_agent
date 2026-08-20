@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils"
 import ClusterAnalytics from "@/components/cluster-analytics"
 import { AIWidget } from "@/components/ai-sidebar"
+import FinancialHealthScore from "@/components/financial-health-score"
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -280,6 +281,15 @@ export default function AnalyticsPage() {
               )
             })}
           </div>
+        </section>
+
+        {/* Financial Health Index & FIRE Runway */}
+        <section aria-label="Financial Health & FIRE Runway" className="slide-up">
+          <FinancialHealthScore
+            monthlyIncome={analyticsData?.totalIncome || 150000}
+            monthlyExpense={analyticsData?.totalExpense || 65000}
+            totalSavings={analyticsData?.netSavings || 850000}
+          />
         </section>
 
         {/* Main Charts Row */}

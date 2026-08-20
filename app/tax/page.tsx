@@ -9,6 +9,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 import { cn } from "@/lib/utils"
 import { AIWidget } from "@/components/ai-sidebar"
 import { downloadTaxReport } from "@/lib/pdf/tax-report"
+import Form16AISReconciliation from "@/components/tax/reconciliation-card"
 
 interface DeductionItem {
   name: string
@@ -383,6 +384,16 @@ export default function TaxPage() {
             </div>
           </Card>
         )}
+
+        {/* 3-Way Form 16 / AIS Reconciliation Section */}
+        <div className="slide-up">
+          <Form16AISReconciliation
+            employerTds={112000}
+            aisTds={112000}
+            bankInterestStatement={28450}
+            aisInterest={28450}
+          />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="p-4 md:p-6 card-hover slide-up flex flex-col border border-border">

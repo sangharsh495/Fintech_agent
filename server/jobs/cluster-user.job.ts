@@ -1,6 +1,6 @@
 import { Worker, Job } from "bullmq"
 import { transactions, clusterMetadata, clusterRuns } from "@/server/db/schema"
-import { eq, and, sql } from "drizzle-orm"
+import { eq, and, inArray, sql } from "drizzle-orm"
 import { mlClusteringQueue, JobNames, type MLClusteringJobData, QueueNames } from "@/server/jobs/queues"
 import { runPythonClustering } from "@/server/ml-service/run-clustering"
 import { withUserScopedDb } from "@/server/db/rls-connection"
@@ -132,7 +132,7 @@ async function updateTransactionClusters(db: any, userId: string, results: any):
         await db
           .update(transactions)
           .set({ spendingCluster: parseInt(clusterId) })
-          .where(and(eq(transactions.userId, userId), sql`${transactions.id} IN (${txnIds.map(() => '?').join(',')})`))
+          .where(and(eq(transactions.userId, userId), inArray(transactions.id, txnIds)))
       }
     }
   }
@@ -145,7 +145,7 @@ async function updateTransactionClusters(db: any, userId: string, results: any):
         await db
           .update(transactions)
           .set({ sizeCluster: parseInt(clusterId) })
-          .where(and(eq(transactions.userId, userId), sql`${transactions.id} IN (${txnIds.map(() => '?').join(',')})`))
+          .where(and(eq(transactions.userId, userId), inArray(transactions.id, txnIds)))
       }
     }
   }
@@ -158,7 +158,7 @@ async function updateTransactionClusters(db: any, userId: string, results: any):
         await db
           .update(transactions)
           .set({ temporalCluster: parseInt(clusterId) })
-          .where(and(eq(transactions.userId, userId), sql`${transactions.id} IN (${txnIds.map(() => '?').join(',')})`))
+          .where(and(eq(transactions.userId, userId), inArray(transactions.id, txnIds)))
       }
     }
   }
@@ -171,7 +171,7 @@ async function updateTransactionClusters(db: any, userId: string, results: any):
         await db
           .update(transactions)
           .set({ categoryCluster: parseInt(clusterId) })
-          .where(and(eq(transactions.userId, userId), sql`${transactions.id} IN (${txnIds.map(() => '?').join(',')})`))
+          .where(and(eq(transactions.userId, userId), inArray(transactions.id, txnIds)))
       }
     }
   }
