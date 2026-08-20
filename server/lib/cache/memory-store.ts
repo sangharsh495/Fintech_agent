@@ -82,7 +82,7 @@ export class MemoryStore {
 
   /** Redis glob (`*`, `?`) → RegExp. */
   private globToRegExp(pattern: string): RegExp {
-    const escaped = pattern.replace(/[.+^${}()|[\]\]/g, "\$&")
+    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&")
     return new RegExp(`^${escaped.replace(/\*/g, ".*").replace(/\?/g, ".")}$`)
   }
 

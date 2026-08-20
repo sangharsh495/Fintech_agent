@@ -31,33 +31,17 @@ import {
 } from "@/server/services/oracle-access-control.service"
 import { safeLogError } from "@/server/lib/safe-log"
 import crypto from "crypto"
+import { computeIndianTax } from "@/server/services/tax/tax-calculator"
+import { emptyDeductions, normaliseFinancialYear, type FinancialYear } from "@/server/services/tax/types"
+import {
+  buildLegalKnowledgeBlock,
+  DETERMINISTIC_ENGINE_CONTRACT,
+} from "@/server/services/tax/legal-knowledge"
 
-// ─── Tax Calculation Helpers ────────────────────────────────
-
-const OLD_REGIME_SLABS = [
-  { min: 0, max: 250000, rate: 0 },
-  { min: 250000, max: 500000, rate: 0.05 },
-  { min: 500000, max: 1000000, rate: 0.20 },
-  { min: 1000000, max: Infinity, rate: 0.30 },
-]
-
-const NEW_REGIME_SLABS = [
-  { min: 0, max: 300000, rate: 0 },
-  { min: 300000, max: 600000, rate: 0.05 },
-  { min: 600000, max: 900000, rate: 0.10 },
-  { min: 900000, max: 1200000, rate: 0.15 },
-  { min: 1200000, max: 1500000, rate: 0.20 },
-  { min: 1500000, max: Infinity, rate: 0.30 },
-]
-
-function calcTax(income: number, slabs: typeof OLD_REGIME_SLABS): number {
-  let tax = 0
-  for (const slab of slabs) {
-    if (income <= slab.min) break
-    tax += (Math.min(income, slab.max) - slab.min) * slab.rate
-  }
-  return tax * 1.04 // 4% cess
-}
+// ─── Deterministic tax engine ───────────────────────────────
+// The AI never computes tax. Figures come from server/services/tax, the same
+// engine the /tax page and the filing wizard use, so the number the assistant
+// quotes is byte-identical to the number on screen.
 
 // ─── Page Context Configuration ─────────────────────────────
 
@@ -325,14 +309,37 @@ export async function buildCASystemPrompt(
       150000
     )
     const taxRegime = profile?.taxRegime || "new"
-    const standardOld = 50000
-    const standardNew = 75000
 
-    const oldTax = calcTax(Math.max(0, grossIncome - deduction80C - standardOld), OLD_REGIME_SLABS)
-    const newTax = calcTax(Math.max(0, grossIncome - standardNew), NEW_REGIME_SLABS)
-    const taxPayable = taxRegime === "old" ? oldTax : newTax
+    // Run the deterministic engine rather than an inline slab loop, so the
+    // assistant, the /tax page and the filing wizard cannot disagree.
+    const engineFy: FinancialYear = normaliseFinancialYear(currentFy) ?? "2025-2026"
+    const deductions = emptyDeductions()
+    deductions.section80C = deduction80C
+
+    const taxResult = computeIndianTax({
+      financialYear: engineFy,
+      salaryIncome: grossIncome,
+      hraExemption: 0,
+      ltaExemption: 0,
+      professionalTax: 0,
+      housePropertyIncome: 0,
+      presumptiveIncome44ADA: 0,
+      presumptiveIncome44AD: 0,
+      businessIncome: 0,
+      shortTermCapitalGains111A: 0,
+      longTermCapitalGains112A: 0,
+      otherCapitalGains: 0,
+      otherSourcesIncome: 0,
+      savingsInterest: 0,
+      deductions,
+    })
+
+    const oldTax = taxResult.totalTaxPayableOld
+    const newTax = taxResult.totalTaxPayableNew
+    const selected = taxRegime === "old" ? taxResult.old : taxResult.new
+    const taxPayable = selected.totalTaxPayable
     const effectiveRate = grossIncome > 0 ? (taxPayable / grossIncome) * 100 : 0
-    const betterRegime = oldTax < newTax ? "old" : "new"
+    const betterRegime = taxResult.recommendedRegime.toLowerCase()
 
     const taxOpportunities: string[] = []
     const remaining80C = Math.max(0, 150000 - deduction80C)
@@ -386,14 +393,24 @@ USER PROFILE & ACCOUNT DETAILS:
 
     if (allowedContextTypes.includes("tax")) {
       contextSections.tax = `
-TAX LIABILITY SUMMARY (FY ${currentFy}):
-- Tax Regime: ${taxRegime.toUpperCase()}
-- Better Alternative: ${betterRegime.toUpperCase()} (Savings vs other: ₹${Math.abs(Math.round(oldTax - newTax)).toLocaleString("en-IN")})
-- Gross FY Salary Income: ₹${Math.round(grossIncome).toLocaleString("en-IN")}
-- Standard Deduction: ₹${(taxRegime === "old" ? standardOld : standardNew).toLocaleString("en-IN")}
-- 80C Utilized: ₹${Math.round(deduction80C).toLocaleString("en-IN")}
-- Estimated Tax: ₹${Math.round(taxPayable).toLocaleString("en-IN")}
-- Effective Rate: ${effectiveRate.toFixed(1)}%
+VERIFIED TAX COMPUTATION (FY ${currentFy}) - produced by the deterministic
+engine. Quote these figures exactly; do not recompute them.
+
+- Tax regime in use: ${taxRegime.toUpperCase()}
+- Cheaper regime: ${betterRegime.toUpperCase()} (difference: ₹${Math.abs(Math.round(oldTax - newTax)).toLocaleString("en-IN")})
+- Gross FY salary income: ₹${Math.round(grossIncome).toLocaleString("en-IN")}
+- 80C utilised: ₹${Math.round(deduction80C).toLocaleString("en-IN")} of the ₹1,50,000 ceiling
+- Taxable income (old / new): ₹${Math.round(taxResult.taxableIncomeOld).toLocaleString("en-IN")} / ₹${Math.round(taxResult.taxableIncomeNew).toLocaleString("en-IN")}
+- Total tax payable (old / new): ₹${Math.round(oldTax).toLocaleString("en-IN")} / ₹${Math.round(newTax).toLocaleString("en-IN")}
+- Tax payable on the regime in use: ₹${Math.round(taxPayable).toLocaleString("en-IN")}
+- Effective rate: ${effectiveRate.toFixed(1)}% of gross income
+
+STEP-BY-STEP WORKINGS FOR THE REGIME IN USE:
+${selected.workings.map((line) => `- ${line}`).join("\n")}
+
+SCOPE OF THIS COMPUTATION: salary and detected 80C only. Capital gains, house
+property, business income and other Chapter VI-A claims are NOT included unless
+the user completed the filing wizard. Say so before quoting a total as final.
 
 TAX SAVING OPPORTUNITIES:
 ${taxOpportunities.length > 0 ? taxOpportunities.map((o) => `- ${o}`).join("\n") : "- Fully optimized!"}
@@ -463,8 +480,18 @@ DOCUMENT ACCESS STATUS:
     }
 
     // ─── Final system prompt with defense preamble ──────────
+    // The statutory reference and the dual-core rule are large, so they are
+    // attached only where tax reasoning is actually in scope.
+    const legalBlock = allowedContextTypes.includes("tax")
+      ? `
+
+${DETERMINISTIC_ENGINE_CONTRACT}
+
+${buildLegalKnowledgeBlock(engineFy)}`
+      : ""
+
     const fullContext = `
-${SYSTEM_PROMPT_PREAMBLE}
+${SYSTEM_PROMPT_PREAMBLE}${legalBlock}
 
 --- USER FINANCIAL DATA (RLS-ISOLATED, THIS USER ONLY) ---
 
