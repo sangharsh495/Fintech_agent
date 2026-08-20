@@ -6,7 +6,7 @@ import { safeLogError } from "@/server/lib/safe-log"
 import { authRateLimiter } from "@/server/lib/rate-limit"
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Invalid email address").transform((val) => val.toLowerCase().trim()),
   password: z.string().min(1, "Password is required"),
 })
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = loginSchema.parse(body)
 
     // Rate limiting check
-    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    const rateLimit = await authRateLimiter.check(`mobile-login:${email}`)
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: `Too many login attempts. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },

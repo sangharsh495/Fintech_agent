@@ -5,7 +5,7 @@ import { safeLogError } from "@/server/lib/safe-log"
 import { authRateLimiter } from "@/server/lib/rate-limit"
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().email("Invalid email address").transform((val) => val.toLowerCase().trim()),
 })
 
 export async function POST(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const { email } = schema.parse(await req.json())
 
     // Rate limiting check
-    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    const rateLimit = await authRateLimiter.check(`send-otp:${email}`)
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: `Too many requests. Please try again in ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: "OTP sent to your email" })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 })
+      return NextResponse.json({ error: error.errors[0]?.message || "Invalid email" }, { status: 400 })
     }
     safeLogError("[SEND_OTP]", error)
-    return NextResponse.json({ error: "Failed to send OTP" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to send OTP. Please try again." }, { status: 500 })
   }
 }

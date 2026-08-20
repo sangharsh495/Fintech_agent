@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import { CredentialsSignin } from "next-auth"
 import { db } from "@/server/db"
 import { users, userProfiles } from "@/server/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
 class EmailNotVerifiedError extends CredentialsSignin {
@@ -21,14 +21,14 @@ export const authConfig: NextAuthConfig = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        const email = credentials.email as string
+        const email = (credentials.email as string).toLowerCase().trim()
         const password = credentials.password as string
 
         try {
           const [user] = await db
             .select()
             .from(users)
-            .where(eq(users.email, email))
+            .where(sql`lower(${users.email}) = ${email}`)
             .limit(1)
 
           if (!user || !user.passwordHash) return null

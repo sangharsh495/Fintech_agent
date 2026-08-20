@@ -13,9 +13,9 @@ import { safeLogError } from "@/server/lib/safe-log"
 import { authRateLimiter } from "@/server/lib/rate-limit"
 
 const requestSchema = z.object({
-  email: z.string().email(),
-  otp: z.string().length(6).optional(),
-  newPassword: z.string().min(8).optional(),
+  email: z.string().email("Invalid email address").transform((val) => val.toLowerCase().trim()),
+  otp: z.string().length(6, "OTP must be 6 digits").optional(),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const { email, otp, newPassword } = requestSchema.parse(body)
 
     // Rate limit check
-    const rateLimit = await authRateLimiter.check(email.toLowerCase())
+    const rateLimit = await authRateLimiter.check(`forgot:${email}`)
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: `Too many attempts. Please wait ${Math.ceil(rateLimit.resetMs / 1000 / 60)} minutes.` },
@@ -68,9 +68,9 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input fields" }, { status: 400 })
+      return NextResponse.json({ error: error.errors[0]?.message || "Invalid input fields" }, { status: 400 })
     }
     safeLogError("[FORGOT_PASSWORD]", error)
-    return NextResponse.json({ error: "Failed to process password reset" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to process password reset. Please try again." }, { status: 500 })
   }
 }

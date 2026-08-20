@@ -26,6 +26,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState("")
+  const [infoMessage, setInfoMessage] = useState("")
   const [agreed, setAgreed] = useState(false)
   const router = useRouter()
 
@@ -41,14 +42,18 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setInfoMessage("")
 
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    const cleanName = formData.name.trim()
+    const cleanEmail = formData.email.trim().toLowerCase()
+
+    if (!cleanName || !cleanEmail || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields")
       return
     }
 
     if (!isPasswordStrong) {
-      setError("Password is not strong enough")
+      setError("Password is not strong enough (must include 8+ chars, uppercase, and numbers)")
       return
     }
 
@@ -69,8 +74,8 @@ export default function SignupPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
+          name: cleanName,
+          email: cleanEmail,
           password: formData.password,
         }),
       })
@@ -83,6 +88,8 @@ export default function SignupPage() {
         return
       }
 
+      // Update state with normalized email
+      setFormData((prev) => ({ ...prev, email: cleanEmail, name: cleanName }))
       // Move to OTP step
       setStep("otp")
       setIsLoading(false)
@@ -95,9 +102,13 @@ export default function SignupPage() {
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setInfoMessage("")
     setIsLoading(true)
 
-    if (otp.length !== 6) {
+    const cleanEmail = formData.email.trim().toLowerCase()
+    const cleanOtp = otp.trim()
+
+    if (cleanOtp.length !== 6) {
       setError("Please enter the 6-digit code")
       setIsLoading(false)
       return
@@ -107,7 +118,7 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, otp }),
+        body: JSON.stringify({ email: cleanEmail, otp: cleanOtp }),
       })
 
       const data = await res.json()
@@ -120,13 +131,13 @@ export default function SignupPage() {
 
       // Auto sign in after verification
       const result = await signIn("credentials", {
-        email: formData.email,
+        email: cleanEmail,
         password: formData.password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError("Verification successful but login failed. Please sign in manually.")
+        setError("Verification successful! Please sign in with your credentials.")
         router.push("/auth/login")
         return
       }
@@ -143,16 +154,26 @@ export default function SignupPage() {
   const handleResendOTP = async () => {
     setIsResending(true)
     setError("")
+    setInfoMessage("")
+    const cleanEmail = formData.email.trim().toLowerCase()
+
     try {
-      await fetch("/api/auth/send-otp", {
+      const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ email: cleanEmail }),
       })
+      const data = await res.json()
+      if (res.ok) {
+        setInfoMessage("A new verification code has been dispatched to your email.")
+      } else {
+        setError(data.error || "Failed to resend OTP code.")
+      }
     } catch {
-      // Silent fail — don't confuse user
+      setError("Failed to resend code. Please try again.")
+    } finally {
+      setIsResending(false)
     }
-    setIsResending(false)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,6 +199,12 @@ export default function SignupPage() {
         {error && (
           <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
             {error}
+          </div>
+        )}
+
+        {infoMessage && (
+          <div className="mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm">
+            {infoMessage}
           </div>
         )}
 

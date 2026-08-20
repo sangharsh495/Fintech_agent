@@ -3,15 +3,11 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 // Routes that don't require auth.
-// "/api/auth" covers the NextAuth.js handler (GET/POST for signIn, signOut, session, csrf, etc.)
-// The three routes below are custom API routes — not handled by NextAuth handlers.
 const PUBLIC_ROUTES = [
-    "/auth/login",
-    "/auth/signup",
-    "/api/auth",           // NextAuth handler (and all sub-paths like /api/auth/session)
-    "/api/auth/register",  // Custom: user registration
-    "/api/auth/send-otp",  // Custom: resend OTP
-    "/api/auth/verify-otp", // Custom: OTP verification
+    "/auth",
+    "/api/auth",
+    "/api/health",
+    "/api/docs",
 ]
 
 export default auth(async function middleware(req) {
@@ -42,14 +38,14 @@ export default auth(async function middleware(req) {
 
     // Enforce onboarding flow
     const onboardingComplete = session.user.onboardingComplete === true
-    const isOnboardingRoute = pathname.startsWith('/onboarding')
+    const isOnboardingRoute = pathname.startsWith("/onboarding")
 
     if (!onboardingComplete && !isOnboardingRoute) {
-        return NextResponse.redirect(new URL('/onboarding', nextUrl))
+        return NextResponse.redirect(new URL("/onboarding", nextUrl))
     }
 
     if (onboardingComplete && isOnboardingRoute) {
-        return NextResponse.redirect(new URL('/', nextUrl))
+        return NextResponse.redirect(new URL("/", nextUrl))
     }
 
     return NextResponse.next()

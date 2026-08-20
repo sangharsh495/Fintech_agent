@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs"
 import { db } from "@/server/db"
 import { users, otpVerifications } from "@/server/db/schema"
-import { eq, and, gt } from "drizzle-orm"
-import type { NewUser } from "@/server/db/schema"
+import { eq, and, gt, sql } from "drizzle-orm"
+import { safeLogError } from "@/server/lib/safe-log"
 
 // ─── Password ────────────────────────────────────────────────
 
@@ -22,17 +22,19 @@ export function generateOTP(): string {
 }
 
 export async function storeOTP(email: string, otp: string): Promise<void> {
+  const normalizedEmail = email.toLowerCase().trim()
+
   // Expire previous OTPs for this email
   await db
     .update(otpVerifications)
     .set({ used: true })
-    .where(eq(otpVerifications.email, email))
+    .where(sql`lower(${otpVerifications.email}) = ${normalizedEmail}`)
 
   // Store new OTP with 5-minute TTL
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
   await db.insert(otpVerifications).values({
-    email,
-    otp,
+    email: normalizedEmail,
+    otp: otp.trim(),
     expiresAt,
     used: false,
   })
@@ -42,13 +44,16 @@ export async function verifyOTP(
   email: string,
   otp: string
 ): Promise<{ success: boolean; message: string }> {
+  const normalizedEmail = email.toLowerCase().trim()
+  const normalizedOtp = otp.trim()
+
   const [record] = await db
     .select()
     .from(otpVerifications)
     .where(
       and(
-        eq(otpVerifications.email, email),
-        eq(otpVerifications.otp, otp),
+        sql`lower(${otpVerifications.email}) = ${normalizedEmail}`,
+        eq(otpVerifications.otp, normalizedOtp),
         eq(otpVerifications.used, false),
         gt(otpVerifications.expiresAt, new Date())
       )
@@ -56,7 +61,7 @@ export async function verifyOTP(
     .limit(1)
 
   if (!record) {
-    return { success: false, message: "Invalid or expired OTP" }
+    return { success: false, message: "Invalid or expired OTP code" }
   }
 
   // Mark OTP as used
@@ -68,8 +73,8 @@ export async function verifyOTP(
   // Mark user email as verified
   await db
     .update(users)
-    .set({ emailVerified: new Date() })
-    .where(eq(users.email, email))
+    .set({ emailVerified: new Date(), updatedAt: new Date() })
+    .where(sql`lower(${users.email}) = ${normalizedEmail}`)
 
   return { success: true, message: "Email verified successfully" }
 }
@@ -77,6 +82,8 @@ export async function verifyOTP(
 // ─── Email ───────────────────────────────────────────────────
 
 export async function sendOTPEmail(email: string, otp: string, name?: string): Promise<void> {
+  const normalizedEmail = email.toLowerCase().trim()
+
   const htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#0f172a;color:#f8fafc;border-radius:12px;">
       <h1 style="font-size:24px;margin-bottom:8px;">₹ FinFlow</h1>
@@ -90,57 +97,73 @@ export async function sendOTPEmail(email: string, otp: string, name?: string): P
     </div>
   `
 
-  // Option 1: If Resend API key is configured, send a real email using Resend
+  let emailSent = false
+
+  // Option 1: If Resend API key is configured, try sending via Resend
   if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.startsWith("re_your_")) {
-    const { Resend } = await import("resend")
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    try {
+      const { Resend } = await import("resend")
+      const resend = new Resend(process.env.RESEND_API_KEY)
 
-    await resend.emails.send({
-      from: "FinFlow <onboarding@resend.dev>",
-      to: email,
-      subject: "Your FinFlow verification code",
-      html: htmlContent,
-    })
-    return
+      const { data, error } = await resend.emails.send({
+        from: "FinFlow <onboarding@resend.dev>",
+        to: normalizedEmail,
+        subject: "Your FinFlow verification code",
+        html: htmlContent,
+      })
+
+      if (error) {
+        safeLogError("[RESEND EMAIL ERROR]", error)
+      } else if (data) {
+        emailSent = true
+      }
+    } catch (err) {
+      safeLogError("[RESEND SEND EXCEPTION]", err)
+    }
   }
 
-  // Option 2: If SMTP (Gmail) is configured, use Nodemailer
-  if (process.env.SMTP_USER && process.env.SMTP_USER !== "your@gmail.com") {
-    const nodemailer = await import("nodemailer")
-    
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
+  // Option 2: If SMTP is configured and Resend didn't deliver, try Nodemailer
+  if (!emailSent && process.env.SMTP_USER && process.env.SMTP_USER !== "your@gmail.com") {
+    try {
+      const nodemailer = await import("nodemailer")
 
-    await transporter.sendMail({
-      from: `"FinFlow" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Your FinFlow verification code",
-      html: htmlContent,
-    })
-    return
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      })
+
+      await transporter.sendMail({
+        from: `"FinFlow" <${process.env.SMTP_USER}>`,
+        to: normalizedEmail,
+        subject: "Your FinFlow verification code",
+        html: htmlContent,
+      })
+
+      emailSent = true
+    } catch (err) {
+      safeLogError("[SMTP SEND EXCEPTION]", err)
+    }
   }
 
-  // Development fallback — OTP printed to server terminal
+  // Always output OTP to server terminal for instant development & local testing visibility
   console.log(`
   ╔══════════════════════════════════════╗
   ║        FinFlow Email Verification    ║
   ╠══════════════════════════════════════╣
-  ║  To: ${email.padEnd(33)}║
+  ║  To: ${normalizedEmail.padEnd(33)}║
   ║  Hi ${(name || "there").padEnd(33)}║
   ║                                      ║
   ║  Your OTP is: ${otp.padEnd(23)}║
   ║  Valid for: 5 minutes                ║
+  ║  Dispatched: ${(emailSent ? "Delivered via Mailer" : "Logged to Console").padEnd(24)}║
   ╚══════════════════════════════════════╝
   `)
 }
-
 
 // ─── User Management ─────────────────────────────────────────
 
@@ -148,24 +171,48 @@ export async function createUser(
   email: string,
   hashedPassword: string,
   name: string
-): Promise<{ id: string; email: string; name: string }> {
+): Promise<{ id: string; email: string; name: string | null }> {
+  const normalizedEmail = email.toLowerCase().trim()
+
   const [user] = await db
     .insert(users)
     .values({
-      email,
+      email: normalizedEmail,
       passwordHash: hashedPassword,
-      name,
+      name: name.trim(),
     })
     .returning({ id: users.id, email: users.email, name: users.name })
 
-  return user as { id: string; email: string; name: string }
+  return user
+}
+
+export async function updateUserUnverified(
+  email: string,
+  hashedPassword: string,
+  name: string
+): Promise<{ id: string; email: string; name: string | null } | null> {
+  const normalizedEmail = email.toLowerCase().trim()
+
+  const [updated] = await db
+    .update(users)
+    .set({
+      passwordHash: hashedPassword,
+      name: name.trim(),
+      updatedAt: new Date(),
+    })
+    .where(sql`lower(${users.email}) = ${normalizedEmail}`)
+    .returning({ id: users.id, email: users.email, name: users.name })
+
+  return updated || null
 }
 
 export async function getUserByEmail(email: string) {
+  const normalizedEmail = email.toLowerCase().trim()
+
   const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(sql`lower(${users.email}) = ${normalizedEmail}`)
     .limit(1)
 
   return user || null
@@ -182,15 +229,16 @@ export async function getUserById(id: string) {
 }
 
 export async function updateUserPassword(email: string, hashedPassword: string) {
+  const normalizedEmail = email.toLowerCase().trim()
+
   const [updated] = await db
     .update(users)
     .set({
       passwordHash: hashedPassword,
       updatedAt: new Date(),
     })
-    .where(eq(users.email, email))
+    .where(sql`lower(${users.email}) = ${normalizedEmail}`)
     .returning({ id: users.id, email: users.email })
 
   return updated || null
 }
-

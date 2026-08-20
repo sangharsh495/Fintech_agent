@@ -51,5 +51,5 @@ class InMemoryRateLimiter {
 }
 
 // Instantiate specific rate limiters
-export const authRateLimiter = new InMemoryRateLimiter(15 * 60 * 1000, 5) // 5 requests per 15 minutes
-export const uploadRateLimiter = new InMemoryRateLimiter(15 * 60 * 1000, 5) // 5 uploads per 15 minutes
+export const authRateLimiter = new InMemoryRateLimiter(15 * 60 * 1000, 20) // 20 requests per 15 minutes
+export const uploadRateLimiter = new InMemoryRateLimiter(15 * 60 * 1000, 10) // 10 uploads per 15 minutes

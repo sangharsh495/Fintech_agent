@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, ShieldAlert, CheckCircle2 } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -23,8 +23,17 @@ export default function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotError, setForgotError] = useState("")
 
+  // Unverified account verification modal
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
+  const [verifyEmail, setVerifyEmail] = useState("")
+  const [verifyOtp, setVerifyOtp] = useState("")
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifyError, setVerifyError] = useState("")
+  const [verifySuccess, setVerifySuccess] = useState(false)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [needsVerification, setNeedsVerification] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
@@ -38,7 +47,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail }),
+        body: JSON.stringify({ email: forgotEmail.trim().toLowerCase() }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to send reset code")
@@ -59,7 +68,11 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail, otp: forgotOtp, newPassword }),
+        body: JSON.stringify({
+          email: forgotEmail.trim().toLowerCase(),
+          otp: forgotOtp.trim(),
+          newPassword,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to reset password")
@@ -71,12 +84,59 @@ export default function LoginPage() {
     }
   }
 
+  const handleDirectVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!verifyEmail || !verifyOtp) return
+    setVerifyLoading(true)
+    setVerifyError("")
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: verifyEmail.trim().toLowerCase(),
+          otp: verifyOtp.trim(),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Invalid verification code")
+      setVerifySuccess(true)
+    } catch (err: any) {
+      setVerifyError(err.message || "Failed to verify email")
+    } finally {
+      setVerifyLoading(false)
+    }
+  }
+
+  const handleResendVerificationCode = async () => {
+    if (!verifyEmail) return
+    setVerifyLoading(true)
+    setVerifyError("")
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: verifyEmail.trim().toLowerCase() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to resend code")
+      setVerifyError("A new verification code has been dispatched to your email.")
+    } catch (err: any) {
+      setVerifyError(err.message || "Failed to resend code")
+    } finally {
+      setVerifyLoading(false)
+    }
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setNeedsVerification(false)
     setIsLoading(true)
 
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase()
+
+    if (!cleanEmail || !password) {
       setError("Please fill in all fields")
       setIsLoading(false)
       return
@@ -84,7 +144,7 @@ export default function LoginPage() {
 
     try {
       const result = await signIn("credentials", {
-        email,
+        email: cleanEmail,
         password,
         redirect: false,
       })
@@ -95,9 +155,11 @@ export default function LoginPage() {
           (result as any).code === "EMAIL_NOT_VERIFIED" ||
           result.error?.includes("EMAIL_NOT_VERIFIED")
         ) {
-          setError("Please verify your email first. Check your inbox for the OTP.")
+          setError("Your email is not verified yet. Please enter your verification code.")
+          setNeedsVerification(true)
+          setVerifyEmail(cleanEmail)
         } else if (result.error === "CredentialsSignin" || result.error === "Configuration") {
-          setError("Invalid email or password, or email not verified.")
+          setError("Invalid email or password. Please check your credentials.")
         } else {
           setError("Invalid email or password")
         }
@@ -127,8 +189,22 @@ export default function LoginPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
-          {error}
+        <div className="mb-6 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm space-y-2">
+          <div>{error}</div>
+          {needsVerification && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 text-xs border-destructive/30 hover:bg-destructive/10"
+              onClick={() => {
+                setShowVerifyModal(true)
+                handleResendVerificationCode()
+              }}
+            >
+              Verify Email with OTP →
+            </Button>
+          )}
         </div>
       )}
 
@@ -184,7 +260,10 @@ export default function LoginPage() {
           </label>
           <button
             type="button"
-            onClick={() => setShowForgotModal(true)}
+            onClick={() => {
+              setForgotEmail(email.trim())
+              setShowForgotModal(true)
+            }}
             className="text-primary hover:underline font-medium text-xs sm:text-sm"
           >
             Forgot password?
@@ -213,7 +292,7 @@ export default function LoginPage() {
 
       {/* Security Message */}
       <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground text-center">
-        Your data is encrypted & secure. Login is protected by industry-standard protocols.
+        Your data is encrypted & secure. Protected by institutional-grade authentication protocols.
       </div>
 
       {/* Sign Up Link */}
@@ -224,12 +303,94 @@ export default function LoginPage() {
         </Link>
       </p>
 
+      {/* Verification Modal for unverified accounts */}
+      {showVerifyModal && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-bold text-foreground">Verify Your Email</h3>
+            </div>
+
+            {verifyError && (
+              <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs">
+                {verifyError}
+              </div>
+            )}
+
+            {!verifySuccess ? (
+              <form onSubmit={handleDirectVerify} className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Enter the 6-digit code dispatched to <strong className="text-foreground">{verifyEmail}</strong>.
+                </p>
+                <div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={verifyOtp}
+                    onChange={(e) => setVerifyOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="000000"
+                    className="w-full px-3 py-2 text-base rounded-lg border border-border bg-background text-foreground font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={handleResendVerificationCode}
+                    disabled={verifyLoading}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Resend Code
+                  </button>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowVerifyModal(false)
+                      setVerifyError("")
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="sm" disabled={verifyLoading || verifyOtp.length !== 6}>
+                    {verifyLoading ? "Verifying..." : "Verify Code"}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  Your email has been verified successfully! You can now sign in with your password.
+                </div>
+                <Button
+                  type="button"
+                  className="w-full"
+                  size="sm"
+                  onClick={() => {
+                    setShowVerifyModal(false)
+                    setError("")
+                    setNeedsVerification(false)
+                  }}
+                >
+                  Continue to Sign In
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Forgot Password Modal */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
             <h3 className="text-lg font-bold text-foreground">Reset Password</h3>
-            
+
             {forgotError && (
               <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
                 {forgotError}
