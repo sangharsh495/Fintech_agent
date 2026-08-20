@@ -66,9 +66,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Account created. Check your email for the verification code.",
+      message: "Account created. A verification code has been sent to your email address.",
       userId,
-      devOtp: (!emailDelivery.sent || process.env.NODE_ENV !== "production") ? otp : undefined,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -142,51 +142,52 @@ export default function OnboardingPage() {
   const firstName = session?.user?.name?.split(" ")[0] || ""
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-10 py-12 bg-gradient-to-b from-background via-card/30 to-background">
       {/* Progress Bar */}
-      <div className="w-full max-w-lg mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-muted-foreground">
-            Step {step} of {TOTAL_STEPS}
+      <div className="w-full max-w-2xl lg:max-w-3xl mb-8">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-xs sm:text-sm font-bold text-foreground">
+            Step {step} of {TOTAL_STEPS} • <span className="text-primary font-medium">{STEP_CONFIG[step - 1]?.label}</span>
           </span>
-          <span className="text-sm text-muted-foreground">{Math.round(progress)}% complete</span>
+          <span className="text-xs sm:text-sm font-mono font-bold text-primary">{Math.round(progress)}% complete</span>
         </div>
-        <div className="h-2 bg-border rounded-full overflow-hidden">
+        <div className="h-2.5 bg-secondary rounded-full overflow-hidden border border-border/50">
           <div
-            className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+            className="h-full bg-gradient-to-r from-primary via-indigo-500 to-accent transition-all duration-500 rounded-full"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between mt-3">
+        <div className="flex justify-between mt-4">
           {STEP_CONFIG.map(({ icon: Icon, label }, idx) => (
             <div
               key={label}
-              className={`flex flex-col items-center gap-1 ${idx + 1 <= step ? "text-primary" : "text-muted-foreground"}`}
+              className={`flex flex-col items-center gap-1.5 ${idx + 1 <= step ? "text-primary font-bold" : "text-muted-foreground font-medium"}`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center border-2 transition-all shadow-sm ${
                   idx + 1 < step
-                    ? "bg-primary border-primary"
+                    ? "bg-primary border-primary text-white"
                     : idx + 1 === step
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-background"
+                    ? "border-primary bg-primary/10 text-primary scale-110 shadow-primary/20"
+                    : "border-border bg-card text-muted-foreground"
                 }`}
               >
                 {idx + 1 < step ? (
-                  <CheckCircle className="w-4 h-4 text-white" />
+                  <CheckCircle className="w-4 h-4" />
                 ) : (
                   <Icon className="w-4 h-4" />
                 )}
               </div>
-              <span className="text-xs hidden sm:block">{label}</span>
+              <span className="text-xs hidden sm:block tracking-tight">{label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <Card className="w-full max-w-lg p-8">
+      <Card className="w-full max-w-2xl lg:max-w-3xl p-6 sm:p-10 rounded-3xl border-border/80 bg-card/90 shadow-2xl backdrop-blur-2xl transition-all">
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+          <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs font-semibold flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-destructive animate-ping" />
             {error}
           </div>
         )}
@@ -531,7 +532,12 @@ export default function OnboardingPage() {
                 </div>
               </div>
             </div>
-            <Button className="w-full" onClick={() => router.push("/")}>
+            <Button
+              className="w-full h-12 text-sm font-bold rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+              onClick={() => {
+                window.location.href = "/"
+              }}
+            >
               Go to Dashboard →
             </Button>
           </div>

@@ -90,9 +90,7 @@ export default function SignupPage() {
 
       // Update state with normalized email
       setFormData((prev) => ({ ...prev, email: cleanEmail, name: cleanName }))
-      if (data.devOtp) {
-        setInfoMessage(`Verification code dispatched! (Development Code: ${data.devOtp})`)
-      }
+      setInfoMessage("We sent a 6-digit verification code to your email. Please check your inbox.")
       // Move to OTP step
       setStep("otp")
       setIsLoading(false)
@@ -168,11 +166,7 @@ export default function SignupPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setInfoMessage(
-          data.devOtp
-            ? `New verification code dispatched! (Development Code: ${data.devOtp})`
-            : "A new verification code has been dispatched to your email."
-        )
+        setInfoMessage("A new verification code has been dispatched to your email.")
       } else {
         setError(data.error || "Failed to resend OTP code.")
       }

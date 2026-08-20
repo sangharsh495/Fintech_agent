@@ -29,7 +29,7 @@ async function runE2EAuthTest() {
   console.log("2. Creating fresh user...")
   const hash = await hashPassword(testPassword)
   const createdUser = await createUser(testEmail, hash, testName)
-  console.log(`✓ User created with ID: ${createdUser.id}, email: ${createdUser.email}, emailVerified: ${createdUser.emailVerified}\n`)
+  console.log(`✓ User created with ID: ${createdUser.id}, email: ${createdUser.email}\n`)
 
   // 3. Test case-insensitive lookup
   console.log("3. Testing case-insensitive lookup with UPPERCASE email...")

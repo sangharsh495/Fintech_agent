@@ -23,17 +23,16 @@ export async function POST(req: NextRequest) {
 
     const user = await getUserByEmail(email)
     if (!user) {
-      return NextResponse.json({ error: "No account found with this email" }, { status: 404 })
+      return NextResponse.json({ error: "No account found with this email address. Please check and try again." }, { status: 404 })
     }
 
     const otp = generateOTP()
     await storeOTP(email, otp)
-    const emailDelivery = await sendOTPEmail(email, otp, user.name ?? undefined)
+    await sendOTPEmail(email, otp, user.name ?? undefined)
 
     return NextResponse.json({
       success: true,
-      message: "OTP sent to your email",
-      devOtp: (!emailDelivery.sent || process.env.NODE_ENV !== "production") ? otp : undefined,
+      message: "Verification code sent to your email address.",
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

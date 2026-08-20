@@ -188,11 +188,162 @@ export default function Dashboard() {
     )
   }
 
-  if (hasData === false || !data) {
+  const userName = session?.user?.name?.split(" ")[0] || "Member"
+
+  const handleLoadDemoData = () => {
+    setData({
+      totalBalance: 4892450,
+      monthlyIncome: 285000,
+      monthlyExpense: 92400,
+      netWorth: 4892450,
+      savingsRate: 67.5,
+      recentTransactions: [
+        { id: "1", date: "2026-08-20", merchant: "Salary Credit (Tech Corp)", description: "Monthly Professional Salary", amount: 245000, type: "credit", category: "Income", bankName: "HDFC Bank" },
+        { id: "2", date: "2026-08-18", merchant: "Zerodha Broking Ltd", description: "Monthly Mutual Fund SIP 80C", amount: 25000, type: "debit", category: "Investments", bankName: "HDFC Bank" },
+        { id: "3", date: "2026-08-17", merchant: "Swiggy UPI", description: "Food & Dining", amount: 840, type: "debit", category: "Dining", bankName: "ICICI Bank" },
+        { id: "4", date: "2026-08-15", merchant: "Amazon India", description: "Office Equipment & Tech", amount: 4200, type: "debit", category: "Shopping", bankName: "State Bank of India" },
+        { id: "5", date: "2026-08-12", merchant: "Cult.fit Wellness", description: "Annual Fitness Plan", amount: 14500, type: "debit", category: "Health", bankName: "HDFC Bank" },
+      ],
+      perBankBalances: [
+        { bankId: "hdfc-1", bankName: "HDFC Bank", accountNickname: "Primary Salary", accountLast4: "4921", accountType: "savings", balance: 2845200 },
+        { bankId: "icici-1", bankName: "ICICI Bank", accountNickname: "Wealth Account", accountLast4: "8820", accountType: "savings", balance: 1420150 },
+        { bankId: "sbi-1", bankName: "State Bank of India", accountNickname: "Family Savings", accountLast4: "1039", accountType: "savings", balance: 627100 },
+      ],
+    })
+    setHasData(true)
+  }
+
+  // 1. Unauthenticated users see the public marketing landing page
+  if (!session?.user) {
     return <LandingPage />
   }
 
-  const userName = session?.user?.name?.split(" ")[0] || "Member"
+  // 2. Authenticated users who haven't uploaded bank statements see the Onboarding / Welcome Dashboard
+  if (hasData === false || !data) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col space-y-8 animate-in fade-in duration-300">
+        
+        {/* Welcome Header */}
+        <header className="rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-card/90 via-card to-card/90 border border-border/80 shadow-sm backdrop-blur-xl flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 inline-flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Account Active &amp; Ready
+              </span>
+              <span className="text-xs text-muted-foreground">• FY 2025–26</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight mt-2">
+              Welcome to FinFlow, {userName}!
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Your autonomous financial cockpit is configured. Upload your first statement to unlock live analytics.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleLoadDemoData}
+              className="inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground transition-all cursor-pointer shadow-xs"
+            >
+              <Zap className="w-3.5 h-3.5 mr-1.5 text-primary" />
+              1-Click Demo Mode
+            </button>
+            <Link href="/upload">
+              <button className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-bold rounded-xl text-primary-foreground bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/25 cursor-pointer">
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Upload Statement
+              </button>
+            </Link>
+          </div>
+        </header>
+
+        {/* Hero Getting Started Banner */}
+        <Card className="p-8 sm:p-12 rounded-[2.5rem] border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card relative overflow-hidden shadow-xl text-left">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+          <div className="relative z-10 max-w-3xl space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">Step 1 of 2</span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              Ingest Your First Bank Statement
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              FinFlow automatically unlocks password-protected PDFs across 21+ Indian banks (HDFC, ICICI, SBI, Axis, Kotak, etc.), categorizes spending with Scikit-Learn DBSCAN cohorts, and computes real-time tax deductions.
+            </p>
+            <div className="pt-3 flex flex-wrap items-center gap-3">
+              <Link href="/upload">
+                <button className="inline-flex items-center px-6 py-3.5 rounded-2xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/25 transition-all">
+                  Go to Statement Ingestion <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+              </Link>
+              <button
+                onClick={handleLoadDemoData}
+                className="inline-flex items-center px-5 py-3.5 rounded-2xl text-xs font-semibold bg-background/80 border border-border hover:bg-secondary transition-all cursor-pointer"
+              >
+                Preview with Sample Data (Instant)
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        {/* 3 Exploration Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <Link href="/ai-ca" className="group">
+            <Card className="p-6 rounded-2xl border-border/70 bg-card hover:border-primary/50 transition-all h-full flex flex-col justify-between group-hover:shadow-lg">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-foreground">AI Virtual CA Copilot</h3>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  Ask complex Indian income tax questions under IT Act 1961 with statutory legal citations.
+                </p>
+              </div>
+              <div className="mt-5 flex items-center text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                Consult Virtual CA <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/tax" className="group">
+            <Card className="p-6 rounded-2xl border-border/70 bg-card hover:border-primary/50 transition-all h-full flex flex-col justify-between group-hover:shadow-lg">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-foreground">Tax Strategy &amp; Slabs</h3>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  Compare Old vs New Regime liability under Budget 2024–26 slabs and maximize 80C/80D/44ADA.
+                </p>
+              </div>
+              <div className="mt-5 flex items-center text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                Open Tax Simulator <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/calculators" className="group">
+            <Card className="p-6 rounded-2xl border-border/70 bg-card hover:border-primary/50 transition-all h-full flex flex-col justify-between group-hover:shadow-lg">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  <PieChart className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-foreground">30+ Universal Calculators</h3>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  Precision financial calculators for SIP, SWP, EMI, NPS, Gratuity, HRA, and Capital Gains.
+                </p>
+              </div>
+              <div className="mt-5 flex items-center text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                Explore Calculators <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </div>
+            </Card>
+          </Link>
+
+        </div>
+
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col space-y-8">

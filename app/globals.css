@@ -598,13 +598,13 @@
 
   /* === LAYOUT UTILITIES === */
   .container-page {
-    @apply mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 xl:px-12;
+    @apply mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-8 xl:px-10;
   }
   .container-narrow {
-    @apply mx-auto max-w-3xl px-5 sm:px-6;
+    @apply mx-auto w-full max-w-4xl px-4 sm:px-6;
   }
   .container-wide {
-    @apply mx-auto max-w-[1400px] px-5 sm:px-6 lg:px-8 xl:px-12;
+    @apply mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12;
   }
 
   /* Section spacing */
