@@ -99,6 +99,15 @@ export const authConfig: NextAuthConfig = {
       // Returning true allows the request; middleware handles redirects
       return !!auth?.user
     },
+    async redirect({ url, baseUrl }) {
+      // If relative URL, prepend baseUrl
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // If same origin, allow
+      try {
+        if (new URL(url).origin === baseUrl) return url
+      } catch {}
+      return baseUrl
+    },
   },
   trustHost: true,
 }
