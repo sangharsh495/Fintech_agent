@@ -115,6 +115,12 @@ export const taxFilings = pgTable(
     /** Why that form was selected — reasons, disqualifiers, warnings. */
     itrFormRationale: jsonb("itr_form_rationale"),
 
+    /**
+     * The wizard's own inputs — declared deductions, capital gains, presumptive
+     * income and yes/no declarations. Stored separately from the computation so
+     * a rebuild after a new document upload keeps what the user asserted.
+     */
+    wizardInputs: jsonb("wizard_inputs"),
     /** TaxComputationInput after reconciliation. */
     computationInput: jsonb("computation_input"),
     /** TaxComputationResult, both regimes. */

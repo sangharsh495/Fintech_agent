@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS tax_filings (
   status filing_status NOT NULL DEFAULT 'draft',
   itr_form itr_form,
   itr_form_rationale JSONB,
+  wizard_inputs JSONB,
   computation_input JSONB,
   computation_result JSONB,
   reconciliation_findings JSONB,
