@@ -239,16 +239,20 @@ export async function POST(req: NextRequest) {
       let streamResponse: Response
 
       if (isOracleConfigured) {
-        const oracleModel = createOpenAI({ baseURL: endpoint, apiKey: apiKey })
+        const oracleModel = (createOpenAI as any)({
+          baseURL: endpoint,
+          apiKey: apiKey,
+          compatibility: "compatible",
+        })
 
         const result = streamText({
-          model: oracleModel(modelName),
+          model: oracleModel.chat(modelName),
           system: systemPrompt,
           messages: modelMessages,
           onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),
         } as any)
 
-        streamResponse = result.toTextStreamResponse()
+        streamResponse = result.toUIMessageStreamResponse()
       } else {
         // Groq fallback with key rotation
         streamResponse = await groqRotator.execute(async (currentKey) => {
@@ -275,7 +279,7 @@ export async function POST(req: NextRequest) {
             onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),
           } as any)
 
-          return result.toTextStreamResponse()
+          return result.toUIMessageStreamResponse()
         })
       }
 
