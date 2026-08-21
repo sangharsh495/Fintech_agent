@@ -150,8 +150,9 @@ export async function POST(req: NextRequest) {
 
         // Use safeLog instead of console.error to prevent leaking sensitive data
         safeLogError("[STATEMENT PARSE ERROR]", error);
-        await db.update(statementUploads).set({ processingStatus: "failed", errorMessage: "Failed to parse file" }).where(eq(statementUploads.id, upload!.id))
-        return NextResponse.json({ error: "Failed to parse statement file" }, { status: 422 })
+        const errMsg = error instanceof Error ? error.message : "Failed to parse statement file";
+        await db.update(statementUploads).set({ processingStatus: "failed", errorMessage: errMsg.slice(0, 500) }).where(eq(statementUploads.id, upload!.id))
+        return NextResponse.json({ error: errMsg }, { status: 422 })
       }
 
       if (!parsed.length) {

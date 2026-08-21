@@ -1,7 +1,7 @@
 import { groqKeyManager } from "./keyManager";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL = "llama-3.3-70b-versatile";
+const MODEL = process.env.GROQ_PARSER_MODEL || process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
 export async function callGroq(prompt: string, maxAttempts = 6): Promise<string> {
   let lastError: Error | null = null;

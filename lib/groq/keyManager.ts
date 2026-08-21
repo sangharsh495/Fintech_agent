@@ -56,15 +56,30 @@ class GroqKeyManager {
     return 0;
   }
 
+  private getKeys(): string[] {
+    const envKeys = [
+      process.env.GROQ_KEY_1,
+      process.env.GROQ_KEY_2,
+      process.env.GROQ_KEY_3,
+      process.env.GROQ_API_KEY_1,
+      process.env.GROQ_API_KEY_2,
+      process.env.GROQ_API_KEY_3,
+      process.env.GROQ_API_KEY,
+    ].filter((k): k is string => Boolean(k))
+
+    return Array.from(new Set([...this.keys, ...envKeys]))
+  }
+
   /** Returns the next available key, round-robin, skipping ones on cooldown. */
   async getNextAvailable(): Promise<string | null> {
-    if (this.keys.length === 0) {
-      throw new Error("No Groq API keys configured (check GROQ_KEY_1/2/3 env vars)");
+    const activeKeys = this.getKeys();
+    if (activeKeys.length === 0) {
+      throw new Error("No Groq API keys configured (check GROQ_API_KEY / GROQ_KEY_1 env vars)");
     }
-    const n = this.keys.length;
+    const n = activeKeys.length;
     for (let i = 0; i < n; i++) {
       const idx = (this.cursor + i) % n;
-      const key = this.keys[idx];
+      const key = activeKeys[idx];
       const isCooling = await this.isCoolingDown(key);
       if (!isCooling) {
         this.cursor = (idx + 1) % n;

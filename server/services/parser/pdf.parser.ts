@@ -125,7 +125,7 @@ export async function parsePDFStatement(
       rawDescription: row.description,
       amount,
       type,
-      balance: row.balance,
+      balance: row.balance ?? undefined,
       category: cat.category,
       subcategory: cat.subcategory || "",
       merchant: cat.merchant || "",

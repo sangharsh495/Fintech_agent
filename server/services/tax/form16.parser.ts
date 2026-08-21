@@ -17,6 +17,7 @@
 
 import { extractPdfText } from "@/lib/pdf/extractText"
 import { decryptPDF } from "@/server/services/parser/pdf.decrypt"
+import { PasswordRequiredError } from "@/server/services/parser/pdf.types"
 import type { Form16Data } from "./types"
 import { safeLogError } from "@/server/lib/safe-log"
 
@@ -214,6 +215,9 @@ export async function parseForm16(
     const extracted = await extractPdfText(decrypted.buffer)
     text = extracted.text
   } catch (error) {
+    if (error instanceof PasswordRequiredError) {
+      throw error
+    }
     safeLogError("[FORM16] Text extraction failed", error)
     throw new Error("Could not read this Form 16 PDF. If it is password-protected, supply the password.")
   }

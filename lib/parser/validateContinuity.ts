@@ -14,12 +14,14 @@ export function validateBalanceContinuity(transactions: Transaction[]): Continui
     const prev = transactions[i - 1];
     const curr = transactions[i];
 
-    const delta = (curr.credit ?? 0) - (curr.debit ?? 0);
-    const expected = round2(prev.balance + delta);
-    const actual = round2(curr.balance);
+    if (prev?.balance != null && curr?.balance != null) {
+      const delta = (curr.credit ?? 0) - (curr.debit ?? 0);
+      const expected = round2(prev.balance + delta);
+      const actual = round2(curr.balance);
 
-    if (Math.abs(expected - actual) > EPSILON) {
-      errors.push({ index: i, expected, actual, row: curr });
+      if (Math.abs(expected - actual) > EPSILON) {
+        errors.push({ index: i, expected, actual, row: curr });
+      }
     }
   }
 

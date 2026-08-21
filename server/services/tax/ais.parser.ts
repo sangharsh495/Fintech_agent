@@ -16,6 +16,7 @@
 
 import { extractPdfText } from "@/lib/pdf/extractText"
 import { decryptPDF } from "@/server/services/parser/pdf.decrypt"
+import { PasswordRequiredError } from "@/server/services/parser/pdf.types"
 import { parseRupees } from "./form16.parser"
 import type { AISData, AISEntry } from "./types"
 import { safeLogError } from "@/server/lib/safe-log"
@@ -268,6 +269,9 @@ export async function parseAIS(
     const { text } = await extractPdfText(decrypted.buffer)
     return parseAISText(text)
   } catch (error) {
+    if (error instanceof PasswordRequiredError) {
+      throw error
+    }
     safeLogError("[AIS] PDF parse failed", error)
     throw new Error("Could not read this AIS PDF. If it is password-protected, the password is your PAN in lowercase followed by your date of birth as DDMMYYYY.")
   }
