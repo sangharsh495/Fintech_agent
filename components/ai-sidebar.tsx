@@ -90,22 +90,28 @@ export function AIWidget({
           if (done) break
           
           const chunk = decoder.decode(value)
-          // Parse streaming chunks (AI SDK format)
-          const lines = chunk.split("\n")
-          for (const line of lines) {
-            if (line.startsWith("0:")) {
-              // Text content chunk
-              const content = line.slice(2)
-              assistantContent += content
-              setMessages(prev => {
-                const last = prev[prev.length - 1]
-                if (last && last.role === "assistant") {
-                  return [...prev.slice(0, -1), { ...last, content: assistantContent }]
+          if (chunk.includes("0:")) {
+            const lines = chunk.split("\n")
+            for (const line of lines) {
+              if (line.startsWith("0:")) {
+                try {
+                  assistantContent += JSON.parse(line.slice(2))
+                } catch {
+                  assistantContent += line.slice(2).replace(/^"/, "").replace(/"$/, "")
                 }
-                return [...prev, { role: "assistant" as const, content: assistantContent, timestamp: new Date() }]
-              })
+              }
             }
+          } else {
+            assistantContent += chunk
           }
+
+          setMessages(prev => {
+            const last = prev[prev.length - 1]
+            if (last && last.role === "assistant") {
+              return [...prev.slice(0, -1), { ...last, content: assistantContent }]
+            }
+            return [...prev, { role: "assistant" as const, content: assistantContent, timestamp: new Date() }]
+          })
         }
       }
 

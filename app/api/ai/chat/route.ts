@@ -252,14 +252,24 @@ export async function POST(req: NextRequest) {
       } else {
         // Groq fallback with key rotation
         streamResponse = await groqRotator.execute(async (currentKey) => {
-          const groqModelName = modelName.includes("oracle") ? "qwen2.5-coder-32b" : modelName
-          const groqModel = createOpenAI({
+          const VALID_GROQ_MODELS = [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.6-27b",
+            "groq/compound",
+          ]
+          const groqModelName =
+            process.env.GROQ_MODEL ||
+            (VALID_GROQ_MODELS.includes(modelName) ? modelName : "openai/gpt-oss-120b")
+
+          const groqModel = (createOpenAI as any)({
             baseURL: "https://api.groq.com/openai/v1",
             apiKey: currentKey || "",
+            compatibility: "compatible",
           })
 
           const result = streamText({
-            model: groqModel(groqModelName),
+            model: groqModel.chat(groqModelName),
             system: systemPrompt,
             messages: modelMessages,
             onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),

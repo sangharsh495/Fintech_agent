@@ -338,9 +338,13 @@ export default function AICAsPage() {
                       )}
                     >
                       <div className="whitespace-pre-wrap break-words">
-                        {message.parts
-                          ? renderMessageContent(message.parts.map((p) => (p.type === "text" ? p.text : "")).join(""))
-                          : renderMessageContent("")}
+                        {renderMessageContent(
+                          Array.isArray(message.parts) && message.parts.length > 0
+                            ? message.parts.map((p) => (p.type === "text" ? (p as { text: string }).text : "")).join("")
+                            : typeof (message as any)?.content === "string"
+                            ? (message as any).content
+                            : ""
+                        )}
                       </div>
                       <div className={cn("text-[9px] mt-1 font-medium", (message.role as string) === "user" ? "text-primary-foreground/75 text-right" : "text-muted-foreground")}>
                         {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

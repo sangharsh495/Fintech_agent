@@ -27,10 +27,12 @@ export const aiPageEnum = pgEnum("ai_page", [
   "/upload",
   "/onboarding",
   "/settings",
+  "/ai-ca",
 ])
 
 export const aiContextTypeEnum = pgEnum("ai_context_type", [
   "profile",
+  "aggregates",
   "transactions",
   "analytics",
   "ml-clusters",

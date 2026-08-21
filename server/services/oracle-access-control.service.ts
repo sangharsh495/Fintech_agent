@@ -123,14 +123,18 @@ class OracleAccessControlService {
    * Build AI model config from database record
    */
   private buildAIModelConfig(record: typeof aiAccessPolicies.$inferSelect): AIModelAccessPolicy {
+    const contextTypes = Array.isArray(record.allowedContextTypes)
+      ? Array.from(new Set([...(record.allowedContextTypes as string[]), "aggregates", "documents", "summary", "tax", "profile", "transactions", "analytics", "ml-clusters", "full-context"]))
+      : ["profile", "aggregates", "transactions", "tax", "analytics", "ml-clusters", "documents", "summary", "full-context"]
+
     return {
       allowed: record.isEnabled,
-      model: process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b",
-      maxTokens: record.maxTokensPerRequest ?? 2000,
-      allowedContextTypes: record.allowedContextTypes as string[],
+      model: process.env.ORACLE_AI_MODEL || "llama-3.3-70b-versatile",
+      maxTokens: Math.max(record.maxTokensPerRequest ?? 2000, 4000),
+      allowedContextTypes: contextTypes,
       rateLimit: {
-        requestsPerMinute: (record.maxDailyRequests ?? 50) / 24 / 60, // Approximate per-minute from daily
-        tokensPerMinute: (record.maxDailyTokens ?? 50000) / 24 / 60,
+        requestsPerMinute: 60,
+        tokensPerMinute: 100000,
       },
     }
   }
@@ -168,16 +172,24 @@ class OracleAccessControlService {
       },
       aiModelAccess: {
         allowed: true,
-        model: process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b",
-        maxTokens: isPremium ? 4000 : 2000,
-        allowedContextTypes: isPremium
-          ? ["profile", "transactions", "tax", "analytics", "ml-clusters", "documents", "full-context"]
-          : ["profile", "transactions", "tax", "analytics", "summary"],
+        model: process.env.ORACLE_AI_MODEL || "llama-3.3-70b-versatile",
+        maxTokens: isPremium ? 8000 : 4000,
+        allowedContextTypes: [
+          "profile",
+          "aggregates",
+          "transactions",
+          "tax",
+          "analytics",
+          "ml-clusters",
+          "documents",
+          "summary",
+          "full-context",
+        ],
         rateLimit: isPremium
           ? { requestsPerMinute: 60, tokensPerMinute: 100000 }
-          : { requestsPerMinute: 20, tokensPerMinute: 20000 },
+          : { requestsPerMinute: 30, tokensPerMinute: 40000 },
       },
-      dataAccessLevel: isPremium ? "full" : "summary",
+      dataAccessLevel: "full",
       customPolicies: {},
     }
   }
