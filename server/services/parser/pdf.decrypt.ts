@@ -42,16 +42,19 @@ export async function decryptPDF(
     )
   }
 
-  // ── Attempt qpdf (required for encrypted files) ──
+  // ── Attempt qpdf if available, otherwise fallback to pure JS pdfjs-dist in extractPdfText ──
   const qpdfAvailable = await isQpdfAvailable()
   if (qpdfAvailable) {
-    return tryQpdfDecrypt(fileBuffer, password)
+    try {
+      return await tryQpdfDecrypt(fileBuffer, password)
+    } catch (qpdfErr) {
+      if (qpdfErr instanceof PasswordRequiredError) throw qpdfErr
+      safeLogError("[PDF DECRYPT] qpdf failed, falling back to pure JS:", qpdfErr)
+    }
   }
 
-  throw new Error(
-    "This PDF is password-protected and qpdf is not installed on the server. " +
-    "Please install qpdf to decrypt it, or upload an unencrypted PDF."
-  )
+  // Pure JavaScript decryption fallback handled directly by pdfjs-dist
+  return { buffer: fileBuffer, wasEncrypted: true, decryptMethod: "pdfjs-dist" }
 }
 
 // ─── qpdf Decryption ────────────────────────────────────────

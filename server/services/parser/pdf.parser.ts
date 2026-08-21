@@ -86,7 +86,7 @@ export async function parsePDFStatement(
   )
 
   // 2. Extract plain text and page count using pdf-parse
-  const { text, numPages } = await extractPdfText(cleanBuffer)
+  const { text, numPages } = await extractPdfText(cleanBuffer, options?.password)
 
   // 3. Extract metadata from the header text snippet
   const metaObj = await extractMetadataWithGroq(text)
@@ -107,7 +107,7 @@ export async function parsePDFStatement(
   }
 
   // 4. Run the Groq rotating transaction extraction pipeline
-  const extractResult = await parseStatement(cleanBuffer)
+  const extractResult = await parseStatement(cleanBuffer, options?.password)
 
   // 5. Map the Zod transactions to the expected ParsedTransaction structure
   const mappedTransactions: ParsedTransaction[] = extractResult.transactions.map((row) => {

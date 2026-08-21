@@ -12,8 +12,8 @@ export type ParseResult = {
   pagesProcessed: number;
 };
 
-export async function parseStatement(buffer: Buffer): Promise<ParseResult> {
-  const { text, numPages } = await extractPdfText(buffer);
+export async function parseStatement(buffer: Buffer, password?: string): Promise<ParseResult> {
+  const { text, numPages } = await extractPdfText(buffer, password);
 
   if (!text || text.trim().length === 0) {
     throw new Error("No readable text could be extracted from this PDF. Please ensure it is an authentic electronic statement and not a scanned image.");
