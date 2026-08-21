@@ -71,6 +71,8 @@ export default function ClientLayout({
 
   // Authenticated — show full layout
   if (isAuthenticated) {
+    const isChatPage = pathname === "/ai-ca"
+
     return (
       <>
         {showLaunchScreen && (
@@ -90,12 +92,12 @@ export default function ClientLayout({
         <div className="flex pt-16">
           <Sidebar isOpen={sidebarOpen} />
           <main
-            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 pb-28 md:pb-0 ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
+            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 ${isChatPage ? "pb-0 overflow-hidden" : "pb-28 md:pb-0"} ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
           >
-            <div className="container-page py-8 w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className={isChatPage ? "w-full flex-1 flex flex-col min-h-0" : "container-page py-8 w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
               {children}
             </div>
-            <Footer />
+            {!isChatPage && <Footer />}
           </main>
           <MobileTabBar />
         </div>

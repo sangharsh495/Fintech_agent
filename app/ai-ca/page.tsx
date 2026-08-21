@@ -5,13 +5,35 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Send, Bot, Lock, Brain, Eye, Sparkles, Shield, Zap, Info, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react"
+import {
+  Send,
+  Bot,
+  Lock,
+  Brain,
+  Eye,
+  Sparkles,
+  Shield,
+  Zap,
+  Info,
+  Loader2,
+  MessageSquare,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Copy,
+  Check,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const GREETING = {
   id: "greeting",
   role: "assistant" as const,
-  parts: [{ type: "text" as const, text: "Namaste! I'm FinFlow AI, your personal financial assistant. I have access to your real financial data and can answer specific questions about your income, expenses, tax optimization, and savings. How can I help you today?" }],
+  parts: [
+    {
+      type: "text" as const,
+      text: "Namaste! I'm FinFlow AI, your personal financial assistant. I have access to your real financial data and can answer specific questions about your income, expenses, tax optimization, and savings. How can I help you today?",
+    },
+  ],
 }
 
 interface ChatSessionSummary {
@@ -21,7 +43,6 @@ interface ChatSessionSummary {
   messageCount?: number
 }
 
-/** "Today" / "Yesterday" / "4 days ago" — matches the sidebar's compact style. */
 function relativeDay(iso: string): string {
   const then = new Date(iso)
   if (Number.isNaN(then.getTime())) return ""
@@ -31,6 +52,244 @@ function relativeDay(iso: string): string {
   if (days < 7) return `${days} days ago`
   if (days < 30) return `${Math.floor(days / 7)} week${days < 14 ? "" : "s"} ago`
   return then.toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+}
+
+function formatInlineMarkdown(text: string): React.ReactNode[] {
+  // Split on bold, italic, inline code
+  const parts: React.ReactNode[] = []
+  let cursor = 0
+  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > cursor) {
+      parts.push(text.slice(cursor, match.index))
+    }
+    const token = match[0]
+    if (token.startsWith("**") && token.endsWith("**")) {
+      parts.push(
+        <strong key={match.index} className="font-semibold text-foreground">
+          {token.slice(2, -2)}
+        </strong>
+      )
+    } else if (token.startsWith("*") && token.endsWith("*")) {
+      parts.push(
+        <em key={match.index} className="italic text-foreground/90">
+          {token.slice(1, -1)}
+        </em>
+      )
+    } else if (token.startsWith("`") && token.endsWith("`")) {
+      parts.push(
+        <code
+          key={match.index}
+          className="px-1.5 py-0.5 rounded bg-secondary/80 text-foreground font-mono text-[11px]"
+        >
+          {token.slice(1, -1)}
+        </code>
+      )
+    }
+    cursor = regex.lastIndex
+  }
+
+  if (cursor < text.length) {
+    parts.push(text.slice(cursor))
+  }
+
+  return parts.length > 0 ? parts : [text]
+}
+
+function MarkdownTable({ lines }: { lines: string[] }) {
+  if (lines.length < 2) return null
+  const headerLine = lines[0] || ""
+  const dataLines = lines.slice(1).filter((l) => !l.match(/^\|?\s*[-:]+[-| :]*$/))
+
+  const parseCells = (row: string) =>
+    row
+      .split("|")
+      .map((c) => c.trim())
+      .filter((_, i, arr) => i > 0 && i < arr.length - 1)
+
+  const headers = parseCells(headerLine)
+
+  return (
+    <div className="my-3 overflow-x-auto rounded-xl border border-border/60 bg-card/60 shadow-xs">
+      <table className="w-full text-xs text-left border-collapse">
+        {headers.length > 0 && (
+          <thead className="bg-secondary/60 text-foreground border-b border-border/60">
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="px-3.5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">
+                  {formatInlineMarkdown(h)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody className="divide-y divide-border/40">
+          {dataLines.map((row, rIdx) => {
+            const cells = parseCells(row)
+            return (
+              <tr key={rIdx} className="hover:bg-secondary/30 transition-colors">
+                {cells.map((cell, cIdx) => (
+                  <td key={cIdx} className="px-3.5 py-2 text-muted-foreground font-medium">
+                    {formatInlineMarkdown(cell)}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function FormattedContent({ text }: { text: string }) {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+
+  const copyCode = (code: string, idx: number) => {
+    navigator.clipboard.writeText(code)
+    setCopiedIndex(idx)
+    setTimeout(() => setCopiedIndex(null), 2000)
+  }
+
+  // Split code blocks first
+  const blocks = text.split(/(```[\s\S]*?```)/g)
+
+  return (
+    <div className="space-y-2 leading-relaxed text-xs">
+      {blocks.map((block, bIdx) => {
+        if (block.startsWith("```")) {
+          const match = block.match(/```(\w*)\n([\s\S]*?)```/)
+          const lang = match ? match[1] : ""
+          const code = match ? match[2] : block.slice(3, -3)
+          return (
+            <div
+              key={bIdx}
+              className="my-3 rounded-xl overflow-hidden border border-border/80 bg-slate-950 text-slate-100 font-mono text-[11px] shadow-md"
+            >
+              <div className="flex items-center justify-between px-3.5 py-1.5 bg-slate-900 border-b border-slate-800 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                <span>{lang || "code"}</span>
+                <button
+                  onClick={() => copyCode(code || "", bIdx)}
+                  className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
+                >
+                  {copiedIndex === bIdx ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-400" />
+                      <span className="text-emerald-400">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="p-3.5 overflow-x-auto">
+                <code>{code}</code>
+              </pre>
+            </div>
+          )
+        }
+
+        // Parse regular lines, headers, lists, and markdown tables
+        const rawLines = block.split("\n")
+        const elements: React.ReactNode[] = []
+        let tableBuffer: string[] = []
+
+        const flushTable = (key: string) => {
+          if (tableBuffer.length > 0) {
+            elements.push(<MarkdownTable key={key} lines={[...tableBuffer]} />)
+            tableBuffer = []
+          }
+        }
+
+        rawLines.forEach((line, lIdx) => {
+          const trimmed = line.trim()
+
+          // Table line
+          if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+            tableBuffer.push(trimmed)
+            return
+          } else {
+            flushTable(`table-${bIdx}-${lIdx}`)
+          }
+
+          if (!trimmed) {
+            elements.push(<div key={`empty-${bIdx}-${lIdx}`} className="h-1.5" />)
+            return
+          }
+
+          // Horizontal rule
+          if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+            elements.push(<hr key={`hr-${bIdx}-${lIdx}`} className="my-3 border-border/50" />)
+            return
+          }
+
+          // Headers
+          if (trimmed.startsWith("### ")) {
+            elements.push(
+              <h4 key={`h4-${bIdx}-${lIdx}`} className="text-xs font-bold text-foreground mt-3 mb-1">
+                {formatInlineMarkdown(trimmed.slice(4))}
+              </h4>
+            )
+            return
+          }
+          if (trimmed.startsWith("## ")) {
+            elements.push(
+              <h3 key={`h3-${bIdx}-${lIdx}`} className="text-sm font-bold text-foreground mt-3.5 mb-1.5">
+                {formatInlineMarkdown(trimmed.slice(3))}
+              </h3>
+            )
+            return
+          }
+          if (trimmed.startsWith("# ")) {
+            elements.push(
+              <h2 key={`h2-${bIdx}-${lIdx}`} className="text-base font-extrabold text-foreground mt-4 mb-2">
+                {formatInlineMarkdown(trimmed.slice(2))}
+              </h2>
+            )
+            return
+          }
+
+          // Bullet list
+          if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+            elements.push(
+              <div key={`li-${bIdx}-${lIdx}`} className="flex items-start gap-2 ml-2 my-0.5">
+                <span className="text-primary font-bold mt-1 text-[8px]">•</span>
+                <div className="flex-1 text-foreground/90">{formatInlineMarkdown(trimmed.slice(2))}</div>
+              </div>
+            )
+            return
+          }
+
+          // Numbered list
+          const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/)
+          if (numMatch && numMatch[1] && numMatch[2]) {
+            elements.push(
+              <div key={`num-${bIdx}-${lIdx}`} className="flex items-start gap-2 ml-2 my-0.5">
+                <span className="font-bold text-primary text-[10px] min-w-[14px]">{numMatch[1]}.</span>
+                <div className="flex-1 text-foreground/90">{formatInlineMarkdown(numMatch[2])}</div>
+              </div>
+            )
+            return
+          }
+
+          // Standard paragraph line
+          elements.push(
+            <p key={`p-${bIdx}-${lIdx}`} className="text-foreground/90 my-0.5">
+              {formatInlineMarkdown(trimmed)}
+            </p>
+          )
+        })
+
+        flushTable(`table-end-${bIdx}`)
+        return <div key={bIdx}>{elements}</div>
+      })}
+    </div>
+  )
 }
 
 export default function AICAsPage() {
@@ -53,8 +312,6 @@ export default function AICAsPage() {
   const isLoading = status === "streaming" || status === "submitted"
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // ─── Live session history ─────────────────────────────────
-
   const loadSessions = useCallback(async (): Promise<ChatSessionSummary[]> => {
     try {
       const res = await fetch("/api/ai/sessions")
@@ -72,13 +329,10 @@ export default function AICAsPage() {
 
   useEffect(() => {
     loadSessions().then((list) => {
-      // Resume the most recent consultation instead of dropping the user into
-      // an empty thread they have to re-explain themselves in.
       if (list.length > 0 && list[0]) setCurrentSessionId(list[0].id)
     })
   }, [loadSessions])
 
-  // Rehydrate the transcript whenever the selected session changes.
   useEffect(() => {
     if (!currentSessionId) return
     let cancelled = false
@@ -112,7 +366,7 @@ export default function AICAsPage() {
       const res = await fetch("/api/ai/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "New Chat", pageContext: "/ai-ca" }),
+        body: JSON.stringify({ title: "New Consultation", pageContext: "/ai-ca" }),
       })
       if (!res.ok) return
       const { session } = await res.json()
@@ -120,7 +374,7 @@ export default function AICAsPage() {
       setCurrentSessionId(session.id)
       setMessages([GREETING])
     } catch {
-      /* creating a thread is best-effort; the next message creates one server-side */
+      /* best effort fallback */
     }
   }
 
@@ -135,322 +389,291 @@ export default function AICAsPage() {
     try {
       await fetch(`/api/ai/sessions/${id}`, { method: "DELETE" })
     } catch {
-      loadSessions() // resync if the delete did not land
+      loadSessions()
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
-    // The session id rides on the request so the server appends to this exact
-    // thread rather than inferring the active one.
+    const textToSend = input.trim()
     sendMessage(
-      { parts: [{ type: "text", text: input }] },
+      { parts: [{ type: "text", text: textToSend }] },
       { body: { sessionId: currentSessionId } }
     )
     setInput("")
-    // A brand-new thread gets its title from the first question server-side;
-    // refresh shortly after so the sidebar shows it.
     if (!currentSessionId) setTimeout(() => { loadSessions() }, 1500)
   }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [chatMessages])
+  }, [chatMessages, isLoading])
 
   const suggestedQueries = [
-    "How much did I spend last month?",
-    "What's my optimal tax regime this year?",
-    "Which category am I overspending on?",
-    "How can I improve my savings rate?",
-  ]
-
-  const features = [
-    {
-      icon: Lock,
-      title: "Data Privacy",
-      desc: "Your data is encrypted & isolated",
-    },
-    {
-      icon: Brain,
-      title: "Expert Insights",
-      desc: "Based on Indian tax & finance laws",
-    },
-    {
-      icon: Eye,
-      title: "Context Aware",
-      desc: "Understands your financial profile",
-    },
+    "How can I save tax for FY 2025-26?",
+    "Compare Old vs New regime for my income",
+    "What deductions can I claim under 80C and 80D?",
+    "How are capital gains taxed in India?",
   ]
 
   const securitySteps = [
-    { num: 1, title: "Data Upload", desc: "You securely upload your financial documents." },
-    { num: 2, title: "Encryption & Hashing", desc: "Data is encrypted end-to-end with AES-256." },
-    { num: 3, title: "Aggregation", desc: "AI analyzes only aggregated insights, never raw data." },
-    { num: 4, title: "Intelligent Advice", desc: "Get personalized recommendations with privacy intact." },
+    { num: 1, title: "Data Upload", desc: "Statements are parsed in-memory without persistent storage of raw files." },
+    { num: 2, title: "Deterministic Core", desc: "Every calculation verified against statutory Income Tax Act rules." },
+    { num: 3, title: "Aggregation & Sandbox", desc: "AI consults strictly anonymized summaries, protecting personal identifiers." },
+    { num: 4, title: "Actionable Insights", desc: "Get citations, tax computation tables, and regime recommendations." },
   ]
 
-  const renderMessageContent = (text: string) => {
-    const parts = text.split(/(```[\s\S]*?```)/g)
-    return parts.map((part, index) => {
-      if (part.startsWith("```")) {
-        const match = part.match(/```(\w*)\n([\s\S]*?)```/)
-        const language = match ? match[1] : ""
-        const code = match ? match[2] : part.slice(3, -3)
-        return (
-          <div key={index} className="my-3 rounded-xl overflow-hidden border border-border bg-slate-950 font-mono text-xs text-slate-200 shadow-lg">
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-border/40 text-[10px] text-muted-foreground uppercase font-semibold">
-              <span>{language || "code"}</span>
-              <button 
-                onClick={() => navigator.clipboard.writeText(code)}
-                className="hover:text-foreground transition-colors cursor-pointer"
-              >
-                Copy
-              </button>
-            </div>
-            <pre className="p-4 overflow-x-auto"><code>{code}</code></pre>
-          </div>
-        )
-      }
-      return <span key={index}>{part}</span>
-    })
-  }
-
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
-      {/* Hero Header */}
-      <div className="relative border-b border-border/40 bg-card overflow-hidden">
-        {/* Subtle Ambient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
-        
-        <div className="relative z-10 px-6 py-8 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4 animate-in slide-in-from-bottom-2">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            FinFlow AI
+    <div className="flex flex-col h-[calc(100vh-4.5rem)] max-h-[calc(100vh-4.5rem)] overflow-hidden bg-background">
+      {/* Top Bar Header */}
+      <div className="px-4 md:px-6 py-3 border-b border-border/50 bg-card/60 backdrop-blur-md flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
+            <Bot className="w-4 h-4 text-primary" />
           </div>
-          
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 text-foreground drop-shadow-sm">
-            AI Virtual <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Chartered Accountant</span>
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            Get expert guidance on Indian tax laws, financial planning, and wealth optimization with our AI-powered assistant trained on current regulations.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-foreground">FinFlow Virtual CA</h1>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Tax Intelligence
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground hidden sm:block">
+              Statutory guidance calibrated for Indian Tax Law & FY 2025–26 rules
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={createNewSession}
+            className="flex items-center gap-1.5 h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New Consultation</span>
+            <span className="sm:hidden">New</span>
+          </Button>
         </div>
       </div>
 
-      <div className="flex-1 px-4 md:px-6 py-6 max-w-[1440px] mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[72vh] min-h-[600px]">
-          
-          {/* Column 1 - Past Chats Sidebar */}
-          <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-full">
-            <Card className="flex flex-col h-full border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl p-4 overflow-hidden shadow-xs">
-              <Button
-                onClick={createNewSession}
-                className="w-full flex items-center justify-center gap-2 mb-4 bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80 h-10 font-semibold text-sm cursor-pointer rounded-xl"
-              >
-                <Plus className="w-4 h-4" />
-                New Consultation
-              </Button>
+      {/* Main 3-Column Layout */}
+      <div className="flex-1 min-h-0 px-3 md:px-6 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        {/* Left Column - History Sidebar */}
+        <div className="hidden lg:flex lg:col-span-3 flex-col h-full min-h-0">
+          <Card className="flex flex-col h-full min-h-0 border-border/50 bg-card/40 backdrop-blur-md rounded-2xl p-3.5 overflow-hidden shadow-xs">
+            <div className="flex items-center justify-between px-1 mb-2.5 pb-2 border-b border-border/40 shrink-0">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Consultations</span>
+              <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded font-mono">
+                {sessions.length}
+              </span>
+            </div>
 
-              <div className="flex-1 overflow-y-auto space-y-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 mb-2">History</p>
+            <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+              {sessionsLoading && (
+                <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Loading consultations...
+                </div>
+              )}
 
-                {sessionsLoading && (
-                  <div className="flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Loading history...
-                  </div>
-                )}
+              {!sessionsLoading && sessions.length === 0 && (
+                <div className="text-center py-8 px-2">
+                  <MessageSquare className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+                  <p className="text-xs text-muted-foreground font-medium">No past consultations</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Ask a tax or finance question to start.</p>
+                </div>
+              )}
 
-                {!sessionsLoading && sessions.length === 0 && (
-                  <p className="px-3 py-2.5 text-[11px] text-muted-foreground leading-relaxed">
-                    No past consultations yet. Ask your first question to start one.
-                  </p>
-                )}
-
-                {sessions.map((chat) => (
-                  <div
-                    key={chat.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setCurrentSessionId(chat.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") setCurrentSessionId(chat.id)
-                    }}
+              {sessions.map((chat) => (
+                <div
+                  key={chat.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setCurrentSessionId(chat.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setCurrentSessionId(chat.id)
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer group select-none",
+                    currentSessionId === chat.id
+                      ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent"
+                  )}
+                >
+                  <MessageSquare
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer group",
-                      currentSessionId === chat.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      "w-3.5 h-3.5 shrink-0",
+                      currentSessionId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                     )}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-foreground font-medium text-xs">{chat.title || "New Consultation"}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">{relativeDay(chat.updatedAt)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Delete consultation ${chat.title || ""}`}
+                    onClick={(e) => deleteSession(chat.id, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
                   >
-                    <MessageSquare className={cn("w-4 h-4 shrink-0", currentSessionId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-foreground font-semibold">{chat.title || "New Chat"}</p>
-                      <p className="text-[9px] text-muted-foreground mt-0.5">{relativeDay(chat.updatedAt)}</p>
-                    </div>
-                    <button
-                      type="button"
-                      aria-label={`Delete consultation ${chat.title || ""}`}
-                      onClick={(e) => deleteSession(chat.id, e)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
 
-          {/* Column 2 - Main Chat Interface */}
-          <div className="lg:col-span-6 flex flex-col gap-4 h-full">
-            <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full">
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 no-scrollbar">
-                {historyLoading && (
-                  <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading this consultation...
-                  </div>
-                )}
+        {/* Center Column - Active Chat */}
+        <div className="lg:col-span-6 flex flex-col h-full min-h-0">
+          <Card className="flex flex-col h-full min-h-0 border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl overflow-hidden shadow-xs">
+            
+            {/* Messages Scroll Area */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4 custom-scrollbar">
+              {historyLoading && (
+                <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  Loading messages...
+                </div>
+              )}
 
-                {chatMessages.map((message) => (
+              {chatMessages.map((message) => {
+                const isUser = (message.role as string) === "user"
+                const contentText =
+                  Array.isArray(message.parts) && message.parts.length > 0
+                    ? message.parts.map((p) => (p.type === "text" ? (p as { text: string }).text : "")).join("")
+                    : typeof (message as any)?.content === "string"
+                    ? (message as any).content
+                    : ""
+
+                return (
                   <div
                     key={message.id}
                     className={cn(
-                      "flex w-full animate-in fade-in slide-in-from-bottom-2",
-                      (message.role as string) === "user" ? "justify-end" : "justify-start"
+                      "flex w-full animate-in fade-in slide-in-from-bottom-1 duration-200",
+                      isUser ? "justify-end" : "justify-start"
                     )}
                   >
-                    {(message.role as string) === "assistant" && (
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-2.5 shrink-0 border border-primary/20 shadow-xs">
-                        <Bot className="w-4 h-4 text-primary" />
+                    {!isUser && (
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mr-2 shrink-0 mt-0.5">
+                        <Bot className="w-3.5 h-3.5 text-primary" />
                       </div>
                     )}
-                    
+
                     <div
                       className={cn(
-                        "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-xs",
-                        (message.role as string) === "user"
-                          ? "bg-primary text-primary-foreground rounded-br-none"
-                          : "bg-secondary/40 text-foreground rounded-bl-none border border-border/40"
+                        "max-w-[88%] px-4 py-3 rounded-2xl text-xs leading-relaxed shadow-xs",
+                        isUser
+                          ? "bg-primary text-primary-foreground rounded-br-xs font-medium"
+                          : "bg-secondary/40 text-foreground rounded-bl-xs border border-border/50"
                       )}
                     >
-                      <div className="whitespace-pre-wrap break-words">
-                        {renderMessageContent(
-                          Array.isArray(message.parts) && message.parts.length > 0
-                            ? message.parts.map((p) => (p.type === "text" ? (p as { text: string }).text : "")).join("")
-                            : typeof (message as any)?.content === "string"
-                            ? (message as any).content
-                            : ""
-                        )}
-                      </div>
-                      <div className={cn("text-[9px] mt-1 font-medium", (message.role as string) === "user" ? "text-primary-foreground/75 text-right" : "text-muted-foreground")}>
-                        {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </div>
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap break-words">{contentText}</p>
+                      ) : (
+                        <FormattedContent text={contentText} />
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {isLoading && (
+                <div className="flex justify-start items-center gap-2 animate-in fade-in duration-200">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <div className="bg-secondary/40 px-3.5 py-2.5 rounded-2xl rounded-bl-xs border border-border/50 flex items-center gap-2 text-xs text-muted-foreground shadow-xs">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                    <span>Analyzing your tax position & formulating advice...</span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} className="h-1" />
+            </div>
+
+            {/* Input Bar & Suggested Prompts */}
+            <div className="p-3 bg-card border-t border-border/40 shrink-0">
+              {chatMessages.length <= 2 && (
+                <div className="mb-2.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestedQueries.map((query, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground transition-all border border-border/50 cursor-pointer"
+                        onClick={() => setInput(query)}
+                      >
+                        <Zap className="w-2.5 h-2.5 text-primary" />
+                        {query}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="relative flex items-center">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about your taxes, salary deductions, 80C/80D, investments..."
+                  className="w-full pl-3.5 pr-11 py-2.5 rounded-xl border border-border bg-secondary/30 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs"
+                />
+                <Button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  size="icon"
+                  className="absolute right-1.5 h-7 w-7 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground disabled:opacity-40 flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+                >
+                  <Send className="w-3 h-3" />
+                </Button>
+              </form>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column - Compliance & Protection */}
+        <div className="hidden lg:flex lg:col-span-3 flex-col h-full min-h-0">
+          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md rounded-2xl h-full min-h-0 flex flex-col justify-between overflow-y-auto custom-scrollbar shadow-xs">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border/40">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-bold text-foreground">Security & Accuracy</h2>
+                  <p className="text-[9px] text-muted-foreground">Bank-grade data isolation</p>
+                </div>
+              </div>
+
+              <div className="space-y-3.5">
+                {securitySteps.map((step) => (
+                  <div key={step.num} className="flex gap-2.5 items-start">
+                    <div className="w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center text-[9px] font-bold text-primary shrink-0 mt-0.5">
+                      {step.num}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-foreground leading-tight">{step.title}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{step.desc}</p>
                     </div>
                   </div>
                 ))}
-                
-                {isLoading && (
-                  <div className="flex justify-start items-center gap-2.5 animate-in fade-in">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                      <Bot className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="bg-secondary/40 px-4 py-3 rounded-2xl rounded-bl-none border border-border/40 flex items-center gap-2 shadow-xs">
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">Formulating advice...</span>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} className="h-2" />
               </div>
+            </div>
 
-              {/* Input Area */}
-              <div className="p-4 bg-card border-t border-border/40">
-                {chatMessages.length <= 1 && (
-                  <div className="mb-3">
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedQueries.map((query, i) => (
-                        <button
-                          key={i}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground transition-all border border-border/50 cursor-pointer hover:scale-102 active:scale-98"
-                          onClick={() => setInput(query)}
-                        >
-                          <Zap className="w-3 h-3 text-primary" />
-                          {query}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <form onSubmit={handleSubmit} className="relative flex items-center">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask about your finances, taxes, or investments..."
-                    className="w-full pl-4 pr-12 py-3.5 rounded-xl border border-border bg-secondary/20 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    size="icon"
-                    className="absolute right-2 h-9 w-9 rounded-lg bg-primary hover:bg-primary/95 transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </Button>
-                </form>
-              </div>
-            </Card>
-          </div>
-
-          {/* Column 3 - Security & Privacy panel */}
-          <div className="lg:col-span-3 flex flex-col h-full">
-            <Card className="p-5 border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl h-full flex flex-col justify-between overflow-y-auto no-scrollbar shadow-xs">
-              <div>
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/40">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20">
-                    <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-bold text-foreground tracking-tight">Security & Privacy</h2>
-                    <p className="text-[10px] text-muted-foreground">Consolidated protection</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-5">
-                  {securitySteps.map((step, idx) => (
-                    <div key={step.num} className="relative pl-7">
-                      {idx !== securitySteps.length - 1 && (
-                        <div className="absolute left-[11px] top-6 bottom-[-20px] w-px bg-border/60" />
-                      )}
-                      
-                      <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
-                        {step.num}
-                      </div>
-                      
-                      <div>
-                        <p className="font-semibold text-xs text-foreground mb-0.5">{step.title}</p>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">{step.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-2.5">
-                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  FinFlow AI does not store your raw statements. All analyses are performed in an isolated sandbox environment.
-                </p>
-              </div>
-            </Card>
-          </div>
-
+            <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex gap-2 shrink-0">
+              <Info className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                Advisory is computed deterministically using the official Income Tax Act 1961 formulas.
+              </p>
+            </div>
+          </Card>
         </div>
+
       </div>
     </div>
   )
