@@ -38,10 +38,27 @@ export async function saveUserProfile(
 
 export async function markOnboardingComplete(userId: string) {
   return withUserScopedDb(userId, async (db) => {
-    await db
-      .update(userProfiles)
-      .set({ onboardingComplete: true, updatedAt: new Date() })
+    const existing = await db
+      .select({ id: userProfiles.id })
+      .from(userProfiles)
       .where(eq(userProfiles.userId, userId))
+      .limit(1)
+
+    if (existing.length > 0) {
+      await db
+        .update(userProfiles)
+        .set({ onboardingComplete: true, updatedAt: new Date() })
+        .where(eq(userProfiles.userId, userId))
+    } else {
+      await db.insert(userProfiles).values({
+        userId,
+        onboardingComplete: true,
+        consentDataProcessing: true,
+        consentMLAnalytics: true,
+        consentAIAssistant: true,
+        consentMarketing: false,
+      })
+    }
   })
 }
 

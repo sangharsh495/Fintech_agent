@@ -83,6 +83,18 @@ export const authConfig: NextAuthConfig = {
       if (trigger === "update" && session?.onboardingComplete !== undefined) {
         token.onboardingComplete = session.onboardingComplete
       }
+      if (token.id && !token.onboardingComplete) {
+        try {
+          const [profile] = await db
+            .select({ onboardingComplete: userProfiles.onboardingComplete })
+            .from(userProfiles)
+            .where(eq(userProfiles.userId, token.id as string))
+            .limit(1)
+          if (profile?.onboardingComplete) {
+            token.onboardingComplete = true
+          }
+        } catch {}
+      }
       return token
     },
     async session({ session, token }) {
