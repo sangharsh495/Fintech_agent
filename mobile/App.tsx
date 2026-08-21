@@ -69,7 +69,7 @@ export default function App() {
           domStorageEnabled={true}
           javaScriptEnabled={true}
           sharedCookiesEnabled={true}
-          applicationNameForUserAgent="FinWiseMobileWebView"
+          applicationNameForUserAgent="FinFlowMobileWebView"
           originWhitelist={['*']}
         />
       </SafeAreaView>

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FinWise",
+    "name": "FinFlow",
     "slug": "finflow-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,9 +9,9 @@
     "scheme": "finflow",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.finwise.mobile",
+      "bundleIdentifier": "com.finflow.mobile",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Use Face ID to unlock FinWise securely"
+        "NSFaceIDUsageDescription": "Use Face ID to unlock FinFlow securely"
       }
     },
       "android": {
@@ -19,7 +19,7 @@
           "foregroundImage": "./assets/android-icon-foreground.png",
           "backgroundColor": "#0f172a"
         },
-        "package": "com.finwise.mobile",
+        "package": "com.finflow.mobile",
         "permissions": [
           "USE_BIOMETRIC",
           "USE_FINGERPRINT",
@@ -37,7 +37,7 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow FinWise to use Face ID for secure login"
+          "faceIDPermission": "Allow FinFlow to use Face ID for secure login"
         }
       ]
     ],

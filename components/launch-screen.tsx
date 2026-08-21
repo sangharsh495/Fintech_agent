@@ -18,14 +18,14 @@ interface LaunchScreenProps {
 }
 
 const loadingSteps = [
-  { text: "Initializing FinWise secure context...", icon: ShieldCheck },
+  { text: "Initializing FinFlow secure context...", icon: ShieldCheck },
   { text: "Connecting to Neon Serverless Database...", icon: Database },
   { text: "Fetching active Indian bank profiles...", icon: Building2 },
   { text: "Syncing statement logs and cache keys...", icon: Wallet },
   { text: "Calculating tax liabilities & deductions...", icon: TrendingUp },
   { text: "Running DBSCAN spending anomaly models...", icon: Cpu },
   { text: "Optimizing net worth dashboards...", icon: Sparkles },
-  { text: "Decryption vaults validated. Launching FinWise...", icon: ShieldCheck },
+  { text: "Decryption vaults validated. Launching FinFlow...", icon: ShieldCheck },
 ]
 
 export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
