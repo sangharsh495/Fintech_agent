@@ -106,17 +106,27 @@ export default function TaxPage() {
 
   const calculateTax = (inc: number, isNew: boolean) => {
     if (isNew) {
-      if (inc <= 300000) return 0
-      if (inc <= 600000) return (inc - 300000) * 0.05
-      if (inc <= 900000) return 15000 + (inc - 600000) * 0.1
-      if (inc <= 1200000) return 45000 + (inc - 900000) * 0.15
-      if (inc <= 1500000) return 90000 + (inc - 1200000) * 0.2
-      return 150000 + (inc - 1500000) * 0.3
+      let slabTax = 0
+      if (inc <= 300000) slabTax = 0
+      else if (inc <= 700000) slabTax = (inc - 300000) * 0.05
+      else if (inc <= 1000000) slabTax = 20000 + (inc - 700000) * 0.10
+      else if (inc <= 1200000) slabTax = 50000 + (inc - 1000000) * 0.15
+      else if (inc <= 1500000) slabTax = 80000 + (inc - 1200000) * 0.20
+      else slabTax = 140000 + (inc - 1500000) * 0.30
+
+      // Section 87A rebate under New Regime (Full rebate up to 7L taxable income)
+      if (inc <= 700000) return 0
+      return slabTax
     } else {
-      if (inc <= 250000) return 0
-      if (inc <= 500000) return (inc - 250000) * 0.05
-      if (inc <= 1000000) return 12500 + (inc - 500000) * 0.2
-      return 112500 + (inc - 1000000) * 0.3
+      let slabTax = 0
+      if (inc <= 250000) slabTax = 0
+      else if (inc <= 500000) slabTax = (inc - 250000) * 0.05
+      else if (inc <= 1000000) slabTax = 12500 + (inc - 500000) * 0.20
+      else slabTax = 112500 + (inc - 1000000) * 0.30
+
+      // Section 87A rebate under Old Regime (Full rebate up to 5L taxable income)
+      if (inc <= 500000) return 0
+      return slabTax
     }
   }
 

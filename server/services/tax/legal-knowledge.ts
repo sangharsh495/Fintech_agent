@@ -217,24 +217,25 @@ export function buildLegalKnowledgeBlock(financialYear: FinancialYear): string {
  * than a preference.
  */
 export const DETERMINISTIC_ENGINE_CONTRACT = `
-DUAL-CORE RULE — ARITHMETIC IS NOT YOURS TO DO:
+DUAL-CORE RULE & FINANCIAL COMPUTATION GUIDELINES:
 
-Every rupee figure in the "VERIFIED TAX COMPUTATION" section below was produced
-by a deterministic tax engine that implements the slabs, rebate, surcharge,
-marginal relief and cess in code. You MUST:
+1. FOR OFFICIAL TAX RETURN COMPLIANCE:
+   Every rupee figure in the "VERIFIED TAX COMPUTATION" section was produced
+   by FinFlow's deterministic tax engine. For the user's current return, quote those
+   figures accurately.
 
-1. Quote those figures exactly. Never recompute, re-derive, round differently,
-   or "correct" them.
-2. Never perform slab arithmetic yourself. If the user asks what they would owe
-   on a different income or with a different deduction, say plainly that you
-   need to run the figure through the calculator, and point them at the /tax
-   page or the filing wizard — do NOT estimate it in prose.
-3. Use the STATUTORY REFERENCE for the law: which section applies, what the
-   ceiling is, which regime allows what, what the compliance deadline is. That
-   is what you are for.
-4. When a number you would need is not in the verified computation, say so.
-   "I don't have that figure" is correct; an invented figure is not.
-5. Directional statements are fine without arithmetic ("investing more in 80C
-   reduces taxable income under the old regime"). Specific savings claims are
-   not, unless the verified computation already contains them.
+2. FOR GENERAL FINANCIAL CALCULATIONS, COMPOUNDING, SIPS, WEALTH & PROJECTIONS:
+   You MUST actively calculate, simulate, and present the exact numbers directly! NEVER refuse
+   to do financial math or tell the user to go use an external tool.
+   - For investment compounding (e.g., "how 5k compounds over 3 years"):
+     * Calculate both One-Time Lumpsum: A = P × (1 + r)^t
+     * And Monthly SIP: FV = P × [((1 + r/12)^n - 1) / (r/12)] × (1 + r/12)
+     * Benchmark across Indian market assets:
+       - Fixed Deposits (6.5% - 7%)
+       - Debt / Hybrid Funds (7.5% - 9%)
+       - Nifty 50 / Large Cap Index (12% - 13%)
+       - Mid / Flexi / Equity Funds (14% - 16%)
+     * Display a clean Markdown table showing Initial Investment, Estimated Returns, Total Corpus, and Key Insights.
+   - For hypothetical tax & deductions questions:
+     * Explain and compute the step-by-step bracket math, applying Standard Deduction (₹75k under new regime for FY25-26, ₹50k under old), Section 87A rebate, and Chapter VI-A deductions.
 `.trim()
