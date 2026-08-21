@@ -34,18 +34,27 @@ export async function POST(req: NextRequest) {
 
     const user = await getUserByEmail(email)
     if (!user) {
-      // Don't leak user existence; return generic success message
-      return NextResponse.json({
-        success: true,
-        message: "If an account exists, a reset code has been dispatched.",
-      })
+      return NextResponse.json(
+        { error: "No account found with this email address. Please check your email or create a new account." },
+        { status: 404 }
+      )
     }
 
     // Step 2: If OTP and newPassword are provided, verify and reset password
     if (otp && newPassword) {
+      if (newPassword.length < 8) {
+        return NextResponse.json(
+          { error: "Password must be at least 8 characters long." },
+          { status: 400 }
+        )
+      }
+
       const verification = await verifyOTP(email, otp)
       if (!verification.success) {
-        return NextResponse.json({ error: verification.message }, { status: 400 })
+        return NextResponse.json(
+          { error: verification.message || "Invalid or expired verification code." },
+          { status: 400 }
+        )
       }
 
       const hashedPassword = await hashPassword(newPassword)
@@ -60,17 +69,21 @@ export async function POST(req: NextRequest) {
     // Step 1: Request OTP for password reset
     const generatedOtp = generateOTP()
     await storeOTP(email, generatedOtp)
-    await sendOTPEmail(email, generatedOtp, user.name ?? undefined)
+    const emailResult = await sendOTPEmail(email, generatedOtp, user.name ?? undefined)
 
     return NextResponse.json({
       success: true,
       message: "Reset code has been sent to your email address.",
+      delivered: emailResult.sent,
     })
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0]?.message || "Invalid input fields" }, { status: 400 })
     }
     safeLogError("[FORGOT_PASSWORD]", error)
-    return NextResponse.json({ error: "Failed to process password reset. Please try again." }, { status: 500 })
+    return NextResponse.json(
+      { error: error?.message || "Failed to process password reset. Please try again." },
+      { status: 500 }
+    )
   }
 }
