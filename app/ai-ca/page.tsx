@@ -22,6 +22,8 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  History,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -297,6 +299,7 @@ export default function AICAsPage() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [sessionsLoading, setSessionsLoading] = useState(true)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [showMobileHistory, setShowMobileHistory] = useState(false)
 
   const { messages: chatMessages, sendMessage, setMessages, status } = useChat({
     transport: new DefaultChatTransport({
@@ -511,7 +514,86 @@ export default function AICAsPage() {
 
           {/* Column 2 - Main Chat Interface */}
           <div className="lg:col-span-6 flex flex-col gap-4 h-full">
-            <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full">
+            <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full relative">
+              {/* Mobile Consultation Controls Header */}
+              <div className="lg:hidden flex items-center justify-between px-4 py-2.5 bg-secondary/50 border-b border-border/50">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileHistory(!showMobileHistory)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold text-foreground active:scale-95 transition-transform cursor-pointer"
+                >
+                  <History className="w-3.5 h-3.5 text-primary" />
+                  <span>Consultations ({sessions.length})</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileHistory(false)
+                    createNewSession()
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs active:scale-95 transition-transform cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>New</span>
+                </button>
+              </div>
+
+              {/* Mobile History Drawer Overlay */}
+              {showMobileHistory && (
+                <div className="lg:hidden absolute inset-x-0 top-12 bottom-0 z-30 bg-card/95 backdrop-blur-2xl p-4 overflow-y-auto border-b border-border/60 animate-in slide-in-from-top-4 duration-200">
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wider">Past Consultations</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileHistory(false)}
+                      className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {sessions.map((chat) => (
+                      <div
+                        key={chat.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          setCurrentSessionId(chat.id)
+                          setShowMobileHistory(false)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            setCurrentSessionId(chat.id)
+                            setShowMobileHistory(false)
+                          }
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer",
+                          currentSessionId === chat.id
+                            ? "bg-primary/10 text-primary font-semibold border border-primary/20"
+                            : "bg-secondary/40 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <MessageSquare className="w-4 h-4 shrink-0 text-primary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-foreground font-semibold">{chat.title || "New Consultation"}</p>
+                          <p className="text-[9px] text-muted-foreground">{relativeDay(chat.updatedAt)}</p>
+                        </div>
+                        <button
+                          type="button"
+                          aria-label={`Delete consultation ${chat.title || ""}`}
+                          onClick={(e) => deleteSession(chat.id, e)}
+                          className="text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
                 {historyLoading && (

@@ -346,97 +346,97 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col space-y-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col space-y-6 sm:space-y-8">
       
       {/* ── 1. EXECUTIVE WEALTH HEADER & ACTIONS ── */}
-      <header className="rounded-3xl p-6 bg-gradient-to-r from-card/80 via-card to-card/90 border border-border/70 shadow-sm backdrop-blur-xl flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+      <header className="rounded-2xl sm:rounded-3xl p-4 sm:p-6 bg-gradient-to-r from-card/80 via-card to-card/90 border border-border/70 shadow-xs backdrop-blur-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Vault Sync
             </span>
-            <span className="text-xs text-muted-foreground">• FY 2025–26</span>
+            <span className="text-[11px] text-muted-foreground">• FY 2025–26</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight mt-1.5 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight mt-1.5 flex items-center gap-2">
             Welcome back, {userName}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Your consolidated wealth portfolio across {data.perBankBalances.length} bank accounts is up to date.
+            Your consolidated portfolio across {data.perBankBalances.length} bank accounts is verified.
           </p>
         </div>
 
-        {/* Action Button Strip */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Link href="/upload">
-            <button className="inline-flex items-center justify-center px-4 py-2.25 text-xs font-bold rounded-xl text-primary-foreground bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-primary/25 cursor-pointer">
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Upload Statement
+        {/* Action Button Strip - Balanced on mobile */}
+        <div className="grid grid-cols-3 sm:flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          <Link href="/upload" className="w-full sm:w-auto">
+            <button className="w-full inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2.25 text-xs font-bold rounded-xl text-primary-foreground bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-primary/25 cursor-pointer">
+              <Plus className="w-3.5 h-3.5 mr-1 sm:mr-1.5" />
+              <span>Upload</span>
             </button>
           </Link>
-          <Link href="/tax">
-            <button className="inline-flex items-center justify-center px-3.5 py-2.25 text-xs font-semibold rounded-xl bg-card border border-border hover:bg-secondary transition-all cursor-pointer">
-              <TrendingUp className="w-3.5 h-3.5 mr-1.5 text-primary" />
-              Tax Slabs
+          <Link href="/tax" className="w-full sm:w-auto">
+            <button className="w-full inline-flex items-center justify-center px-3 sm:px-3.5 py-2 sm:py-2.25 text-xs font-semibold rounded-xl bg-card border border-border hover:bg-secondary transition-all cursor-pointer">
+              <TrendingUp className="w-3.5 h-3.5 mr-1 sm:mr-1.5 text-primary" />
+              <span>Tax Slabs</span>
             </button>
           </Link>
-          <Link href="/ai-ca">
-            <button className="inline-flex items-center justify-center px-3.5 py-2.25 text-xs font-semibold rounded-xl bg-card border border-border hover:bg-secondary transition-all cursor-pointer">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5 text-accent" />
-              Virtual CA
+          <Link href="/ai-ca" className="w-full sm:w-auto">
+            <button className="w-full inline-flex items-center justify-center px-3 sm:px-3.5 py-2 sm:py-2.25 text-xs font-semibold rounded-xl bg-card border border-border hover:bg-secondary transition-all cursor-pointer">
+              <Sparkles className="w-3.5 h-3.5 mr-1 sm:mr-1.5 text-accent" />
+              <span>Virtual CA</span>
             </button>
           </Link>
         </div>
       </header>
 
       {/* ── 2. HERO NET WORTH & CASHFLOW GAUGES ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         
         {/* Net Worth Main Hero Area Card */}
-        <Card className="lg:col-span-8 p-6 md:p-8 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+        <Card className="lg:col-span-8 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[96px] pointer-events-none" />
           
           <div className="relative z-10">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                   Consolidated Net Worth
                 </span>
-                <div className="flex items-baseline gap-3 mt-1.5">
-                  <h2 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
+                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mt-1.5">
+                  <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
                     <AnimatedCounter value={data.netWorth} prefix="₹" />
                   </h2>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>Verified Continuity</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                    <ArrowUpRight className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                    <span>Verified</span>
                   </span>
                 </div>
               </div>
 
-              <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
-                <Wallet className="w-5 h-5" />
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs shrink-0">
+                <Wallet className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
               </div>
             </div>
 
             {/* Asset Breakdown Chips */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3.5 sm:mt-4">
+              <span className="text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
                 Liquid Balance: <strong className="text-foreground font-mono">₹{data.totalBalance.toLocaleString("en-IN")}</strong>
               </span>
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
+              <span className="text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
                 Accounts: <strong className="text-foreground">{data.perBankBalances.length} Synchronized</strong>
               </span>
             </div>
           </div>
 
           {/* Inline Net Worth Area Chart */}
-          <div className="mt-6 pt-4 border-t border-border/50 relative z-10">
+          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border/50 relative z-10">
             <DashboardCharts type="networth" data={analyticsData} />
           </div>
         </Card>
 
         {/* Right Cashflow Stack: Inflow, Outflow & Savings Ring */}
-        <div className="lg:col-span-4 flex flex-col gap-5">
+        <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-5">
           
           {/* Inflow vs Outflow Dual Card */}
           <Card className="p-5 md:p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm flex-1">

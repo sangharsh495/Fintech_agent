@@ -143,13 +143,13 @@ export default function CalculatorsPage() {
       </div>
 
       {/* Calculator Selector */}
-      <div className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8 space-y-6 md:space-y-12">
-        <div className="space-y-6">
+      <div className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 md:space-y-12">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Essential Tools</h2>
-            <p className="text-sm text-muted-foreground hidden sm:block">Frequently used calculators</p>
+            <h2 className="text-xl sm:text-2xl font-bold">Essential Tools</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Frequently used calculators</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 stagger-children">
             {essentialTools.map((calc) => {
               const Icon = calc.icon
               const isActive = activeCalculator === calc.id
@@ -158,7 +158,7 @@ export default function CalculatorsPage() {
                   key={calc.id}
                   onClick={() => handleCalculatorChange(calc.id)}
                   className={cn(
-                    "p-5 rounded-xl border-2 transition-all duration-300 text-left group relative overflow-hidden",
+                    "p-3.5 sm:p-5 rounded-2xl border-2 transition-all duration-300 text-left group relative overflow-hidden active:scale-98 cursor-pointer",
                     isActive
                       ? "border-primary bg-primary/5 shadow-xl shadow-primary/10"
                       : "border-border hover:border-primary/50 bg-card hover:shadow-lg",
@@ -173,17 +173,17 @@ export default function CalculatorsPage() {
                   <div className="relative z-10">
                     <div
                       className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 bg-gradient-to-br shadow-lg",
+                        "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-2.5 sm:mb-3 transition-all duration-300 bg-gradient-to-br shadow-md",
                         calc.color,
-                        isActive && "scale-110",
+                        isActive && "scale-105",
                       )}
                     >
-                      <Icon className="w-6 h-6 text-white" />
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <p className="font-bold text-base mb-1">{calc.name}</p>
-                    <p className="text-xs text-muted-foreground">{calc.desc}</p>
+                    <p className="font-bold text-xs sm:text-base mb-0.5 sm:mb-1 truncate">{calc.name}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1">{calc.desc}</p>
                     {isActive && (
-                      <div className="flex items-center gap-1 text-primary text-xs font-medium mt-2">
+                      <div className="flex items-center gap-1 text-primary text-[10px] sm:text-xs font-semibold mt-1.5 sm:mt-2">
                         <span>Active</span>
                         <ArrowRight className="w-3 h-3" />
                       </div>
