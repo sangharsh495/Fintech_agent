@@ -417,263 +417,253 @@ export default function AICAsPage() {
   ]
 
   const securitySteps = [
-    { num: 1, title: "Data Upload", desc: "Statements are parsed in-memory without persistent storage of raw files." },
-    { num: 2, title: "Deterministic Core", desc: "Every calculation verified against statutory Income Tax Act rules." },
-    { num: 3, title: "Aggregation & Sandbox", desc: "AI consults strictly anonymized summaries, protecting personal identifiers." },
-    { num: 4, title: "Actionable Insights", desc: "Get citations, tax computation tables, and regime recommendations." },
+    { num: 1, title: "Data Upload", desc: "You securely upload your financial documents." },
+    { num: 2, title: "Encryption & Hashing", desc: "Data is encrypted end-to-end with AES-256." },
+    { num: 3, title: "Aggregation", desc: "AI analyzes only aggregated insights, never raw data." },
+    { num: 4, title: "Intelligent Advice", desc: "Get personalized recommendations with privacy intact." },
   ]
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4.5rem)] max-h-[calc(100vh-4.5rem)] overflow-hidden bg-background">
-      {/* Top Bar Header */}
-      <div className="px-4 md:px-6 py-3 border-b border-border/50 bg-card/60 backdrop-blur-md flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs">
-            <Bot className="w-4 h-4 text-primary" />
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
+      {/* Hero Header */}
+      <div className="relative border-b border-border/40 bg-card overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+        
+        <div className="relative z-10 px-6 py-8 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4 animate-in slide-in-from-bottom-2">
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+            FinFlow AI
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-foreground">FinFlow Virtual CA</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Tax Intelligence
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground hidden sm:block">
-              Statutory guidance calibrated for Indian Tax Law & FY 2025–26 rules
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={createNewSession}
-            className="flex items-center gap-1.5 h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">New Consultation</span>
-            <span className="sm:hidden">New</span>
-          </Button>
+          
+          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 text-foreground drop-shadow-sm">
+            AI Virtual <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Chartered Accountant</span>
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-2xl">
+            Get expert guidance on Indian tax laws, financial planning, and wealth optimization with our AI-powered assistant trained on current regulations.
+          </p>
         </div>
       </div>
 
-      {/* Main 3-Column Layout */}
-      <div className="flex-1 min-h-0 px-3 md:px-6 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
-        {/* Left Column - History Sidebar */}
-        <div className="hidden lg:flex lg:col-span-3 flex-col h-full min-h-0">
-          <Card className="flex flex-col h-full min-h-0 border-border/50 bg-card/40 backdrop-blur-md rounded-2xl p-3.5 overflow-hidden shadow-xs">
-            <div className="flex items-center justify-between px-1 mb-2.5 pb-2 border-b border-border/40 shrink-0">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Consultations</span>
-              <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded font-mono">
-                {sessions.length}
-              </span>
-            </div>
+      <div className="flex-1 px-4 md:px-6 py-6 max-w-[1440px] mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[72vh] min-h-[600px]">
+          
+          {/* Column 1 - Past Chats Sidebar */}
+          <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-full">
+            <Card className="flex flex-col h-full border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl p-4 overflow-hidden shadow-xs">
+              <Button
+                onClick={createNewSession}
+                className="w-full flex items-center justify-center gap-2 mb-4 bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/80 h-10 font-semibold text-sm cursor-pointer rounded-xl"
+              >
+                <Plus className="w-4 h-4" />
+                New Consultation
+              </Button>
 
-            <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-              {sessionsLoading && (
-                <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Loading consultations...
-                </div>
-              )}
+              <div className="flex-1 overflow-y-auto space-y-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 mb-2">History</p>
 
-              {!sessionsLoading && sessions.length === 0 && (
-                <div className="text-center py-8 px-2">
-                  <MessageSquare className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
-                  <p className="text-xs text-muted-foreground font-medium">No past consultations</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Ask a tax or finance question to start.</p>
-                </div>
-              )}
-
-              {sessions.map((chat) => (
-                <div
-                  key={chat.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setCurrentSessionId(chat.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") setCurrentSessionId(chat.id)
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer group select-none",
-                    currentSessionId === chat.id
-                      ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
-                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent"
-                  )}
-                >
-                  <MessageSquare
-                    className={cn(
-                      "w-3.5 h-3.5 shrink-0",
-                      currentSessionId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                    )}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-foreground font-medium text-xs">{chat.title || "New Consultation"}</p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5">{relativeDay(chat.updatedAt)}</p>
+                {sessionsLoading && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Loading history...
                   </div>
-                  <button
-                    type="button"
-                    aria-label={`Delete consultation ${chat.title || ""}`}
-                    onClick={(e) => deleteSession(chat.id, e)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+                )}
 
-        {/* Center Column - Active Chat */}
-        <div className="lg:col-span-6 flex flex-col h-full min-h-0">
-          <Card className="flex flex-col h-full min-h-0 border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl overflow-hidden shadow-xs">
-            
-            {/* Messages Scroll Area */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4 custom-scrollbar">
-              {historyLoading && (
-                <div className="flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  Loading messages...
-                </div>
-              )}
+                {!sessionsLoading && sessions.length === 0 && (
+                  <p className="px-3 py-2.5 text-[11px] text-muted-foreground leading-relaxed">
+                    No past consultations yet. Ask your first question to start one.
+                  </p>
+                )}
 
-              {chatMessages.map((message) => {
-                const isUser = (message.role as string) === "user"
-                const contentText =
-                  Array.isArray(message.parts) && message.parts.length > 0
-                    ? message.parts.map((p) => (p.type === "text" ? (p as { text: string }).text : "")).join("")
-                    : typeof (message as any)?.content === "string"
-                    ? (message as any).content
-                    : ""
-
-                return (
+                {sessions.map((chat) => (
                   <div
-                    key={message.id}
+                    key={chat.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setCurrentSessionId(chat.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setCurrentSessionId(chat.id)
+                    }}
                     className={cn(
-                      "flex w-full animate-in fade-in slide-in-from-bottom-1 duration-200",
-                      isUser ? "justify-end" : "justify-start"
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-medium transition-all cursor-pointer group",
+                      currentSessionId === chat.id
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                     )}
                   >
-                    {!isUser && (
-                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mr-2 shrink-0 mt-0.5">
-                        <Bot className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                    )}
-
-                    <div
-                      className={cn(
-                        "max-w-[88%] px-4 py-3 rounded-2xl text-xs leading-relaxed shadow-xs",
-                        isUser
-                          ? "bg-primary text-primary-foreground rounded-br-xs font-medium"
-                          : "bg-secondary/40 text-foreground rounded-bl-xs border border-border/50"
-                      )}
+                    <MessageSquare className={cn("w-4 h-4 shrink-0", currentSessionId === chat.id ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-foreground font-semibold">{chat.title || "New Consultation"}</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">{relativeDay(chat.updatedAt)}</p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`Delete consultation ${chat.title || ""}`}
+                      onClick={(e) => deleteSession(chat.id, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer"
                     >
-                      {isUser ? (
-                        <p className="whitespace-pre-wrap break-words">{contentText}</p>
-                      ) : (
-                        <FormattedContent text={contentText} />
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-
-              {isLoading && (
-                <div className="flex justify-start items-center gap-2 animate-in fade-in duration-200">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <Bot className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                  <div className="bg-secondary/40 px-3.5 py-2.5 rounded-2xl rounded-bl-xs border border-border/50 flex items-center gap-2 text-xs text-muted-foreground shadow-xs">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                    <span>Analyzing your tax position & formulating advice...</span>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} className="h-1" />
-            </div>
-
-            {/* Input Bar & Suggested Prompts */}
-            <div className="p-3 bg-card border-t border-border/40 shrink-0">
-              {chatMessages.length <= 2 && (
-                <div className="mb-2.5">
-                  <div className="flex flex-wrap gap-1.5">
-                    {suggestedQueries.map((query, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground transition-all border border-border/50 cursor-pointer"
-                        onClick={() => setInput(query)}
-                      >
-                        <Zap className="w-2.5 h-2.5 text-primary" />
-                        {query}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="relative flex items-center">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about your taxes, salary deductions, 80C/80D, investments..."
-                  className="w-full pl-3.5 pr-11 py-2.5 rounded-xl border border-border bg-secondary/30 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-xs"
-                />
-                <Button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  size="icon"
-                  className="absolute right-1.5 h-7 w-7 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground disabled:opacity-40 flex items-center justify-center cursor-pointer transition-transform active:scale-95"
-                >
-                  <Send className="w-3 h-3" />
-                </Button>
-              </form>
-            </div>
-          </Card>
-        </div>
-
-        {/* Right Column - Compliance & Protection */}
-        <div className="hidden lg:flex lg:col-span-3 flex-col h-full min-h-0">
-          <Card className="p-4 border-border/50 bg-card/40 backdrop-blur-md rounded-2xl h-full min-h-0 flex flex-col justify-between overflow-y-auto custom-scrollbar shadow-xs">
-            <div>
-              <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border/40">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                  <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <h2 className="text-xs font-bold text-foreground">Security & Accuracy</h2>
-                  <p className="text-[9px] text-muted-foreground">Bank-grade data isolation</p>
-                </div>
-              </div>
-
-              <div className="space-y-3.5">
-                {securitySteps.map((step) => (
-                  <div key={step.num} className="flex gap-2.5 items-start">
-                    <div className="w-5 h-5 rounded-full bg-secondary border border-border flex items-center justify-center text-[9px] font-bold text-primary shrink-0 mt-0.5">
-                      {step.num}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-xs text-foreground leading-tight">{step.title}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{step.desc}</p>
-                    </div>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
+          </div>
 
-            <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex gap-2 shrink-0">
-              <Info className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Advisory is computed deterministically using the official Income Tax Act 1961 formulas.
-              </p>
-            </div>
-          </Card>
+          {/* Column 2 - Main Chat Interface */}
+          <div className="lg:col-span-6 flex flex-col gap-4 h-full">
+            <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full">
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+                {historyLoading && (
+                  <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Loading this consultation...
+                  </div>
+                )}
+
+                {chatMessages.map((message) => {
+                  const isUser = (message.role as string) === "user"
+                  const contentText =
+                    Array.isArray(message.parts) && message.parts.length > 0
+                      ? message.parts.map((p) => (p.type === "text" ? (p as { text: string }).text : "")).join("")
+                      : typeof (message as any)?.content === "string"
+                      ? (message as any).content
+                      : ""
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex w-full animate-in fade-in slide-in-from-bottom-2",
+                        isUser ? "justify-end" : "justify-start"
+                      )}
+                    >
+                      {!isUser && (
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-2.5 shrink-0 border border-primary/20 shadow-xs">
+                          <Bot className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      
+                      <div
+                        className={cn(
+                          "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-xs",
+                          isUser
+                            ? "bg-primary text-primary-foreground rounded-br-none font-medium"
+                            : "bg-secondary/40 text-foreground rounded-bl-none border border-border/40"
+                        )}
+                      >
+                        <div className="whitespace-pre-wrap break-words">
+                          {isUser ? (
+                            <p>{contentText}</p>
+                          ) : (
+                            <FormattedContent text={contentText} />
+                          )}
+                        </div>
+                        <div className={cn("text-[9px] mt-1 font-medium", isUser ? "text-primary-foreground/75 text-right" : "text-muted-foreground")}>
+                          {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                
+                {isLoading && (
+                  <div className="flex justify-start items-center gap-2.5 animate-in fade-in">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <Bot className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="bg-secondary/40 px-4 py-3 rounded-2xl rounded-bl-none border border-border/40 flex items-center gap-2 shadow-xs">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Formulating advice...</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} className="h-2" />
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 bg-card border-t border-border/40">
+                {chatMessages.length <= 2 && (
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedQueries.map((query, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-semibold bg-secondary hover:bg-secondary/80 text-foreground transition-all border border-border/50 cursor-pointer hover:scale-102 active:scale-98"
+                          onClick={() => setInput(query)}
+                        >
+                          <Zap className="w-3 h-3 text-primary" />
+                          {query}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask about your taxes, salary deductions, 80C/80D, investments..."
+                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-border bg-secondary/30 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    size="icon"
+                    className="absolute right-1.5 h-9 w-9 rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground disabled:opacity-40 flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
+            </Card>
+          </div>
+
+          {/* Column 3 - Features / Information Panel */}
+          <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-full">
+            <Card className="p-5 border-border/50 bg-card/45 backdrop-blur-xl rounded-2xl h-full flex flex-col justify-between overflow-y-auto">
+              <div>
+                <div className="flex items-center gap-2 mb-6 pb-3 border-b border-border/40">
+                  <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <div>
+                    <h2 className="text-sm font-bold text-foreground tracking-tight">Security & Privacy</h2>
+                    <p className="text-[10px] text-muted-foreground">Consolidated protection</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-5">
+                  {securitySteps.map((step, idx) => (
+                    <div key={step.num} className="relative pl-7">
+                      {idx !== securitySteps.length - 1 && (
+                        <div className="absolute left-[11px] top-6 bottom-[-20px] w-px bg-border/60" />
+                      )}
+                      
+                      <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary border border-border flex items-center justify-center text-[10px] font-bold text-foreground">
+                        {step.num}
+                      </div>
+                      
+                      <div>
+                        <p className="font-semibold text-xs text-foreground mb-0.5">{step.title}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-2.5">
+                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  FinFlow AI does not store your raw statements. All analyses are performed in an isolated sandbox environment.
+                </p>
+              </div>
+            </Card>
+          </div>
+
         </div>
-
       </div>
     </div>
   )
