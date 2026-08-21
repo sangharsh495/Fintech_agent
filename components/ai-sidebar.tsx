@@ -385,13 +385,18 @@ export function AIWidget({
   const quickActions = getQuickActions(currentPath)
   const pageLabel = currentPath === "/" ? "Dashboard" : currentPath.replace("/", "").toUpperCase()
 
+  // Suppress floating widget if user is already on the dedicated /ai-ca page
+  if (currentPath === "/ai-ca") {
+    return null
+  }
+
   if (!session) {
     return (
       <Button
         onClick={() => router.push("/auth/login")}
         variant="outline"
         size="sm"
-        className="fixed bottom-6 right-6 z-50 gap-2 bg-card/90 backdrop-blur-xl border-primary/30 shadow-lg hover:border-primary"
+        className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 gap-2 bg-card/90 backdrop-blur-xl border-primary/30 shadow-lg hover:border-primary"
       >
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="font-semibold text-xs">Sign in for Virtual CA</span>
@@ -405,7 +410,7 @@ export function AIWidget({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 group border border-primary/40 cursor-pointer"
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-300 group border border-primary/40 cursor-pointer"
           aria-label="Open FinFlow Copilot"
         >
           <div className="relative">
@@ -419,7 +424,7 @@ export function AIWidget({
       {/* Floating Copilot Card */}
       {isOpen && (
         <div
-          className="fixed bottom-6 right-6 z-50 w-[400px] sm:w-[440px] max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-5rem)] rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 w-[400px] sm:w-[440px] max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-8rem)] md:max-h-[calc(100vh-5rem)] rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
           role="dialog"
           aria-label="FinFlow Copilot"
         >
