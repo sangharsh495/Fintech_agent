@@ -21,17 +21,15 @@ export default auth(async function middleware(req) {
     const origin = `${proto}://${host}`
 
     // 1. Root page "/" is public for unauthenticated users (shows Landing Page)
+    // Authenticated users on "/" proceed directly to the Dashboard
     if (pathname === "/") {
-        if (session?.user && session.user.onboardingComplete === false) {
-            return NextResponse.redirect(new URL("/onboarding", origin))
-        }
         return NextResponse.next()
     }
 
     // 2. Allow public routes
     const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
     
-    // Redirect authenticated users away from auth login/signup pages
+    // Redirect authenticated users away from auth login/signup pages to Dashboard
     if (session?.user && pathname.startsWith("/auth/")) {
         return NextResponse.redirect(new URL("/", origin))
     }
@@ -50,18 +48,7 @@ export default auth(async function middleware(req) {
         return NextResponse.redirect(loginUrl)
     }
 
-    // 5. Enforce onboarding flow for authenticated users
-    const onboardingComplete = session.user.onboardingComplete === true
-    const isOnboardingRoute = pathname.startsWith("/onboarding")
-
-    if (!onboardingComplete && !isOnboardingRoute) {
-        return NextResponse.redirect(new URL("/onboarding", origin))
-    }
-
-    if (onboardingComplete && isOnboardingRoute) {
-        return NextResponse.redirect(new URL("/", origin))
-    }
-
+    // 5. Allow authenticated users free access to all dashboard routes
     return NextResponse.next()
 })
 

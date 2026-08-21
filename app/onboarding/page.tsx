@@ -196,10 +196,20 @@ export default function OnboardingPage() {
               </span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/80 border border-border text-xs font-mono font-bold text-foreground shadow-xs">
-            <Lock className="w-3.5 h-3.5 text-primary" />
-            <span>256-bit Encrypted Setup</span>
+          <div className="flex items-center gap-2.5">
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary/80 border border-border text-xs font-mono font-bold text-foreground shadow-xs">
+              <Lock className="w-3.5 h-3.5 text-primary" />
+              <span>256-bit Encrypted</span>
+            </div>
+            <button
+              onClick={() => {
+                window.location.href = "/"
+              }}
+              className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-primary px-3 py-1.5 rounded-xl hover:bg-secondary/80 border border-transparent hover:border-border transition-all cursor-pointer"
+            >
+              <span>Skip to Dashboard</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
