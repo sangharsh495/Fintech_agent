@@ -13,6 +13,9 @@ import { PasswordRequiredError, PDFParseError } from "@/server/services/parser/p
 import crypto from "crypto"
 import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
 
+export const dynamic = "force-dynamic"
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const session = await getSession(req)
   if (!session?.user?.id) {

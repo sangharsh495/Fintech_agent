@@ -33,7 +33,10 @@ export async function callGroq(prompt: string, maxAttempts = 6): Promise<string>
         },
         body: JSON.stringify({
           model: MODEL,
-          messages: [{ role: "user", content: prompt }],
+          messages: [
+            { role: "system", content: "You are a data extraction assistant that returns strictly valid JSON." },
+            { role: "user", content: prompt },
+          ],
           response_format: { type: "json_object" },
           temperature: 0,
         }),

@@ -207,17 +207,23 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
         body: formData,
       })
 
-      const data = await res.json()
+      let data: any = {}
+      try {
+        const text = await res.text()
+        data = JSON.parse(text)
+      } catch {
+        data = { error: `Server response error (${res.status}: ${res.statusText || "Unable to parse server output"})` }
+      }
 
       if (!res.ok) {
         setStatus("error")
-        if (data.error === "password_required" || res.status === 422 && data.message?.includes("password")) {
+        if (data.error === "password_required" || (res.status === 422 && (data.message?.includes("password") || data.error?.includes("password")))) {
           setPasswordRequired(true)
           setPasswordHint(data.passwordHint || "This PDF is encrypted with a password.")
           setDetectedBankName(data.detectedBankName || null)
           setResult({ error: "This PDF is password protected. Enter password below to unlock." })
         } else {
-          setResult({ error: data.error || data.message || "Failed to process bank statement" })
+          setResult({ error: data.error || data.message || `Upload failed with status code ${res.status}` })
         }
         return
       }
@@ -234,9 +240,9 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
       })
       setFile(null)
       onSuccess?.()
-    } catch {
+    } catch (err: any) {
       setStatus("error")
-      setResult({ error: "Network error during upload. Please check connection and try again." })
+      setResult({ error: err?.message ? `Upload failed: ${err.message}` : "Network connection interrupted. Please try again." })
     }
   }
 
