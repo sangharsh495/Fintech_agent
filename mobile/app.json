@@ -20,12 +20,14 @@
           "backgroundColor": "#0f172a"
         },
         "package": "com.finflow.mobile",
+        "usesCleartextTraffic": true,
         "permissions": [
           "USE_BIOMETRIC",
           "USE_FINGERPRINT",
           "android.permission.USE_BIOMETRIC",
           "android.permission.USE_FINGERPRINT",
-          "android.permission.INTERNET"
+          "android.permission.INTERNET",
+          "android.permission.ACCESS_NETWORK_STATE"
         ]
       },
     "web": {
