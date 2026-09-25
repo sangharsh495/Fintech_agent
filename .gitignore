@@ -29,3 +29,10 @@ next-env.d.ts
 # OS files
 .DS_Store
 */.DS_Store
+
+# Python
+venv/
+**/venv/
+__pycache__/
+**/*.pyc
+.pytest_cache/

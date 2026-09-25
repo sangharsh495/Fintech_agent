@@ -9,6 +9,7 @@ import { parseExcelStatement } from "@/server/services/parser/excel.parser"
 import { parsePDFStatement } from "@/server/services/parser/pdf.parser"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
 import type { ParsedTransaction } from "@/server/services/parser/deduplicator"
+import { validateBalanceContinuity } from "@/lib/parser/validateContinuity"
 import { PasswordRequiredError, PDFParseError } from "@/server/services/parser/pdf.types"
 import crypto from "crypto"
 import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
@@ -113,6 +114,7 @@ export async function POST(req: NextRequest) {
           const result = await parsePDFStatement(buffer, {
             password: password || undefined,
             bankId: bankId || undefined,
+            fileName: file.name,
           })
           parsed = result.transactions
           statementMetadata = {
@@ -163,6 +165,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No transactions found in the uploaded file" }, { status: 422 })
       }
 
+      // ── Invariant 1: Ingestion Balance Continuity Invariant ──────
+      // Enforce continuity: |B_i - (B_{i-1} + C_i - D_i)| <= 0.01
+      const continuityRows = parsed.map((t) => ({
+        date: t.date instanceof Date ? t.date.toISOString().split("T")[0] : String(t.date),
+        description: t.description,
+        credit: t.type === "credit" ? t.amount : null,
+        debit: t.type === "debit" ? t.amount : null,
+        balance: t.balance ?? null,
+      }))
+      const continuity = validateBalanceContinuity(continuityRows)
+
+      if (!continuity.valid) {
+        safeLogError(`[UPLOAD CONTINUITY] Invariant violated on ${continuity.errors.length} transitions for upload ${upload!.id}`)
+      }
+
       // Deduplicate
       const { newTransactions, duplicates, gapWarning } = await deduplicateTransactions(db, userId, bankAccountId, parsed)
 
@@ -193,13 +210,22 @@ export async function POST(req: NextRequest) {
         processedAt: new Date(),
       }).where(eq(statementUploads.id, upload!.id))
 
+      const balancePointsCount = continuityRows.filter((r) => r.balance != null).length
       return NextResponse.json({
         success: true, uploadId: upload!.id,
         transactionsAdded: newTransactions.length,
         transactionsSkipped: duplicates.length,
         gapWarning,
         metadata: statementMetadata,
-        message: `✓ ${newTransactions.length} transactions added${duplicates.length > 0 ? `, ${duplicates.length} duplicates skipped` : ""}`,
+        continuity: {
+          valid: continuity.valid,
+          violationsCount: continuity.errors.length,
+          verifiedTransitions: Math.max(0, balancePointsCount - 1),
+          message: continuity.valid
+            ? "Balance continuity invariant verified (|B_i - (B_{i-1} + C_i - D_i)| ≤ 0.01)"
+            : `Warning: ${continuity.errors.length} balance transitions deviated from expected ledger continuity.`,
+        },
+        message: `✓ ${newTransactions.length} transactions added${duplicates.length > 0 ? `, ${duplicates.length} duplicates skipped` : ""}${!continuity.valid ? " (⚠️ Balance continuity anomalies detected)" : ""}`,
       })
     } catch (error) {
       // Use safeLog instead of console.error to prevent leaking sensitive data

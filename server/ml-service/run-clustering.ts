@@ -36,15 +36,48 @@ export async function runPythonClustering(
   tempFilePath: string,
   numTransactions: number
 ): Promise<ClusteringResults> {
+  const mlServiceUrl = process.env.ML_SERVICE_URL || "http://127.0.0.1:8000"
+
+  // Strategy 1: Attempt direct HTTP call to FastAPI ML microservice
+  try {
+    const raw = fs.readFileSync(tempFilePath, "utf-8")
+    const parsedData = JSON.parse(raw)
+    const txns = parsedData.transactions || []
+
+    if (txns.length >= 5) {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3500)
+
+      const response = await fetch(`${mlServiceUrl}/cluster`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, transactions: txns, eps: 0.5, min_samples: 3 }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result && !result.error) {
+          console.log(`[ML Service] Successfully clustered via FastAPI microservice (${mlServiceUrl})`)
+          return result as ClusteringResults
+        }
+      }
+    }
+  } catch (httpErr) {
+    // Microservice offline or unreachable, fall through to Strategy 2 (CLI)
+  }
+
+  // Strategy 2: Spawning Python CLI subprocess
   const processCwd = process.cwd()
   const pythonPath = path.join(processCwd, "ml-service", "venv", "bin", "python")
   const scriptPath = path.join(processCwd, "ml-service", "app", "main.py")
 
-  console.log(`[ML Service] Spawning Python clustering: ${pythonPath} ${scriptPath} --file ${tempFilePath}`)
+  console.log(`[ML Service] Running Python CLI clustering: ${pythonPath} ${scriptPath} --file ${tempFilePath}`)
 
   try {
     const { stdout, stderr } = await execAsync(
-      `"${pythonPath}" "${scriptPath}" --file "${tempFilePath}" --userId "${userId}"`
+      `"${pythonPath}" "${scriptPath}" --file "${tempFilePath}" --userId "${userId}" --eps 0.5 --min_samples 3`
     )
 
     if (stderr && stderr.trim()) {
@@ -56,8 +89,10 @@ export async function runPythonClustering(
       throw new Error(result.error)
     }
 
+    console.log(`[ML Service] Successfully clustered via Python CLI subprocess`)
     return result as ClusteringResults
   } catch (error) {
+    // Strategy 3: Built-in resilient JavaScript fallback
     safeLogError(`[ML Service] Python clustering failed, running JS fallback:`, error)
     return getJSClusteringFallback(tempFilePath)
   }

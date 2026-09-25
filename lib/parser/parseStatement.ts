@@ -1,8 +1,12 @@
+import { decryptPDF } from "@/server/services/parser/pdf.decrypt";
 import { extractPdfText } from "../pdf/extractText";
 import { buildExtractionPrompt } from "./promptBuilder";
 import { callGroq } from "../groq/client";
 import { TransactionListSchema, TransactionSchema, type Transaction } from "./schema";
 import { validateBalanceContinuity } from "./validateContinuity";
+import { detectBank, getBankProfile, GENERIC_PROFILE } from "@/server/services/parser/bank-profiles";
+import { parseLinesAsTransactions } from "@/server/services/parser/pdf.table";
+import { safeLogError, safeLogInfo } from "@/server/lib/safe-log";
 
 const MAX_CHARS_PER_CHUNK = 6000; // conservative, leaves room for prompt + model context
 
@@ -12,8 +16,16 @@ export type ParseResult = {
   pagesProcessed: number;
 };
 
-export async function parseStatement(buffer: Buffer, password?: string): Promise<ParseResult> {
-  const { text, numPages } = await extractPdfText(buffer, password);
+export async function parseStatement(
+  buffer: Buffer,
+  password?: string,
+  options?: { fileName?: string; bankId?: string }
+): Promise<ParseResult> {
+  // 1. Decrypt PDF first if encrypted (with bank hint resolution)
+  const { buffer: cleanBuffer } = await decryptPDF(buffer, password, options);
+
+  // 2. Extract plain text and page count
+  const { text, numPages } = await extractPdfText(cleanBuffer, password);
 
   if (!text || text.trim().length === 0) {
     throw new Error("No readable text could be extracted from this PDF. Please ensure it is an authentic electronic statement and not a scanned image.");
@@ -35,7 +47,7 @@ export async function parseStatement(buffer: Buffer, password?: string): Promise
       if (list.success) {
         allTransactions.push(...list.data);
       } else {
-        console.warn("[PARSER] Chunk schema parse warning, attempting item-by-item recovery:", list.error.message);
+        safeLogInfo("[PARSER] Chunk schema parse warning, attempting item-by-item recovery:", list.error.message);
         const rawTxns = Array.isArray(parsedJson?.transactions) ? parsedJson.transactions : [];
         for (const t of rawTxns) {
           const item = TransactionSchema.safeParse(t);
@@ -43,7 +55,24 @@ export async function parseStatement(buffer: Buffer, password?: string): Promise
         }
       }
     } catch (chunkErr) {
-      console.warn("[PARSER] Error extracting chunk, skipping chunk:", chunkErr);
+      safeLogError("[PARSER] Error extracting chunk with LLM, skipping chunk:", chunkErr);
+    }
+  }
+
+  // 3. Fallback to deterministic bank-profile regex parser if LLM produced 0 transactions
+  if (allTransactions.length === 0 && text.trim().length > 0) {
+    safeLogInfo("[PARSER] LLM produced 0 transactions, engaging deterministic bank profile parser");
+    const detected = (options?.bankId ? getBankProfile(options.bankId) : null) || detectBank(text) || (options?.fileName ? detectBank(options.fileName) : null) || GENERIC_PROFILE;
+    const lines = text.split(/\r?\n/);
+    const fallbackTxns = parseLinesAsTransactions(lines, detected);
+    for (const t of fallbackTxns) {
+      allTransactions.push({
+        date: t.date instanceof Date ? t.date.toISOString().split("T")[0] : String(t.date),
+        description: t.description,
+        debit: t.type === "debit" ? t.amount : null,
+        credit: t.type === "credit" ? t.amount : null,
+        balance: t.balance ?? null,
+      });
     }
   }
 

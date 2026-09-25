@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "timestamp": "2026-09-25T12:51:17Z",
+    "framework": "FinFlow Neuro-Symbolic Evaluation Benchmark",
+    "venue": "IEEE Submission Benchmark",
+    "random_seed": 42
+  },
+  "test_1_statutory_engine": {
+    "total_profiles": 50,
+    "mean_latency_us": 2.17,
+    "statutory_accuracy_pct": 100.0,
+    "regime_distribution": {
+      "new_regime_count": 26,
+      "old_regime_count": 24
+    }
+  },
+  "test_2_ingestion_invariants": {
+    "clean_transactions": 1000,
+    "clean_false_positive_rate": 0.0,
+    "injected_anomalies": 50,
+    "violations_detected": 96,
+    "anomaly_recall_pct": 100.0,
+    "sha256_duplicates_tested": 200,
+    "sha256_duplicates_rejected": 200,
+    "deduplication_accuracy_pct": 100.0
+  },
+  "test_3_llm_ablation": {
+    "total_profiles_evaluated": 50,
+    "finflow_grounded": {
+      "regime_selection_accuracy": 1.0,
+      "regime_selection_error_rate": 0.0,
+      "mean_absolute_tax_error_inr": 0.0,
+      "statutory_hallucination_rate": 0.0
+    },
+    "baseline_ungrounded_llm": {
+      "regime_selection_accuracy": 0.96,
+      "regime_selection_error_rate": 0.04,
+      "mean_absolute_tax_error_inr": 1905.2,
+      "statutory_hallucination_rate": 0.0
+    },
+    "delta_hallucination_reduction_pct": 100.0,
+    "regime_accuracy_gain_pct": 4.0
+  }
+}

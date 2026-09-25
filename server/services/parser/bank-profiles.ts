@@ -66,8 +66,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "hdfc",
     displayName: "HDFC Bank",
-    identifiers: ["HDFC BANK", "HDFC Bank Ltd", "hdfcbank.com", "HDFC BANK LIMITED"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    identifiers: ["HDFC BANK", "HDFC Bank Ltd", "hdfcbank.com", "HDFC BANK LIMITED", "HDFCBANK"],
+    passwordHint: "Customer ID (8 digits) OR Date of Birth (DDMMYYYY) OR First 4 letters of name + DDMM",
     columns: {
       date: ["Date", "Txn Date"],
       description: ["Narration", "Description"],
@@ -99,8 +99,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "icici",
     displayName: "ICICI Bank",
-    identifiers: ["ICICI Bank", "ICICI BANK LIMITED", "icicibank.com", "ICICI BANK LTD"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    identifiers: ["ICICI Bank", "ICICI BANK LIMITED", "icicibank.com", "ICICI BANK LTD", "ICICIBANK"],
+    passwordHint: "First 4 letters of name (lowercase) + DDMM of birth (e.g. rahul2508) OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Txn Date", "Date"],
       description: ["Transaction Remarks", "Particulars", "Description"],
@@ -132,8 +132,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "sbi",
     displayName: "State Bank of India",
-    identifiers: ["State Bank of India", "STATE BANK OF INDIA", "SBI", "onlinesbi.com", "sbi.co.in"],
-    passwordHint: "Date of Birth (DDMMYYYY) or Account Number",
+    identifiers: ["State Bank of India", "STATE BANK OF INDIA", "SBI", "onlinesbi.com", "sbi.co.in", "onlinesbi.sbi"],
+    passwordHint: "Last 5 digits of registered mobile + DDMM of birth (9 digits) OR 11-digit Account Number OR DOB (DDMMYYYY)",
     columns: {
       date: ["Txn Date", "Transaction Date", "Date"],
       description: ["Description", "Narration", "Particulars"],
@@ -165,8 +165,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "axis",
     displayName: "Axis Bank",
-    identifiers: ["Axis Bank", "AXIS BANK LIMITED", "axisbank.com", "AXIS BANK LTD"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    identifiers: ["Axis Bank", "AXIS BANK LIMITED", "axisbank.com", "AXIS BANK LTD", "AXISBANK"],
+    passwordHint: "First 4 letters of name (CAPITALS) + DDMM of birth (e.g. RAHU1504) OR First 4 letters + Last 4 digits of Account Number",
     columns: {
       date: ["Tran Date", "Transaction Date", "Date"],
       description: ["Particulars", "Description", "Narration"],
@@ -197,8 +197,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "kotak",
     displayName: "Kotak Mahindra Bank",
-    identifiers: ["Kotak Mahindra", "KOTAK MAHINDRA BANK", "kotak.com", "Kotak Mahindra Bank Limited"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    identifiers: ["Kotak Mahindra", "KOTAK MAHINDRA BANK", "kotak.com", "Kotak Mahindra Bank Limited", "KOTAK"],
+    passwordHint: "Customer Relationship Number (CRN - 9 digits) OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Date", "Txn Date", "Transaction Date"],
       description: ["Description", "Narration", "Particulars"],
@@ -230,7 +230,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "pnb",
     displayName: "Punjab National Bank",
     identifiers: ["Punjab National Bank", "PUNJAB NATIONAL BANK", "PNB", "pnbindia.in"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    passwordHint: "Customer ID (9 characters) OR 16-digit Account Number OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Txn Date", "Date"],
       description: ["Particulars", "Description", "Narration"],
@@ -262,7 +262,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "bob",
     displayName: "Bank of Baroda",
     identifiers: ["Bank of Baroda", "BANK OF BARODA", "BOB", "bankofbaroda.in", "bankofbaroda.co.in"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + Last 4 digits of registered mobile OR Account Number",
     columns: {
       date: ["Transaction Date", "Tran Date", "Date"],
       description: ["Description", "Narration", "Particulars"],
@@ -294,7 +294,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "indusind",
     displayName: "IndusInd Bank",
     identifiers: ["IndusInd Bank", "INDUSIND BANK", "indusind.com", "IndusInd Bank Ltd"],
-    passwordHint: "Phone Number or PAN",
+    passwordHint: "Date of Birth (DDMMYYYY) OR First 4 letters of name (CAPITALS) + DDMM of birth",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Transaction Particulars", "Description", "Narration", "Particulars"],
@@ -326,7 +326,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "yesbank",
     displayName: "Yes Bank",
     identifiers: ["Yes Bank", "YES BANK", "YESBANK", "yesbank.in", "Yes Bank Ltd"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + DDMM of birth OR Customer ID",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date", "Value Date"],
       description: ["Transaction Description", "Narration", "Particulars", "Description", "Remarks"],
@@ -358,7 +358,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "unionbank",
     displayName: "Union Bank of India",
     identifiers: ["Union Bank of India", "UNION BANK OF INDIA", "UnionBank", "unionbankofindia.co.in", "corporation bank", "andhra bank"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + DDMM of birth OR PAN (in uppercase)",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Narration", "Description", "Particulars", "Transaction Particulars"],
@@ -390,7 +390,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "canara",
     displayName: "Canara Bank",
     identifiers: ["Canara Bank", "CANARA BANK", "canarabank.in", "CanBank"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + Last 4 digits of registered mobile OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Date", "Tran Date", "Posting Date"],
       description: ["Description", "Narration", "Particulars", "Transaction Remarks"],
@@ -422,7 +422,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "boi",
     displayName: "Bank of India",
     identifiers: ["Bank of India", "BANK OF INDIA", "BOI", "bankofindia.co.in", "bankofindia.com"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + Last 4 digits of registered mobile OR Account Number",
     columns: {
       date: ["Transaction Date", "Date", "Tran Date"],
       description: ["Description", "Narration", "Particulars"],
@@ -454,7 +454,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "indianbank",
     displayName: "Indian Bank",
     identifiers: ["Indian Bank", "INDIAN BANK", "indianbank.in", "indianbank.net.in"],
-    passwordHint: "Date of Birth (DDMMYYYY)",
+    passwordHint: "11-digit Account Number OR Customer CIF Number",
     columns: {
       date: ["Transaction Date", "Date", "Tran Date"],
       description: ["Particulars", "Description", "Narration", "Transaction Description"],
@@ -486,7 +486,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "idbi",
     displayName: "IDBI Bank",
     identifiers: ["IDBI Bank", "IDBI BANK", "IDBI Bank Ltd", "idbibank.co.in", "idbi.co.in"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "Customer ID (Cust ID) OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Description", "Narration", "Particulars", "Transaction Remarks"],
@@ -518,7 +518,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "federal",
     displayName: "Federal Bank",
     identifiers: ["Federal Bank", "FEDERAL BANK", "federalbank.co.in", "federalbank.in", "Federal Bank Ltd"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "Date of Birth in DDMMYYYY format",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Particulars", "Description", "Narration", "Transaction Description"],
@@ -550,7 +550,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "southindian",
     displayName: "South Indian Bank",
     identifiers: ["South Indian Bank", "SOUTH INDIAN BANK", "southindianbank.co.in", "southindianbank.in"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "Date of Birth (DDMMYYYY) OR 16-digit Account Number",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Particulars", "Description", "Narration", "Transaction Description"],
@@ -582,7 +582,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "bandhan",
     displayName: "Bandhan Bank",
     identifiers: ["Bandhan Bank", "BANDHAN BANK", "bandhanbank.com", "Bandhan Bank Ltd"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "First 4 letters of name (CAPITALS) + DDMM of birth OR Customer CIF",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Description", "Narration", "Particulars", "Transaction Particulars"],
@@ -614,7 +614,7 @@ export const BANK_PROFILES: BankProfile[] = [
     id: "rbl",
     displayName: "RBL Bank",
     identifiers: ["RBL Bank", "RBL BANK", "Ratnakar Bank", "rblbank.com", "RBL Bank Ltd"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    passwordHint: "Customer ID (CIF) OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Description", "Narration", "Particulars", "Transaction Remarks"],
@@ -645,8 +645,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "idfcfirst",
     displayName: "IDFC First Bank",
-    identifiers: ["IDFC First Bank", "IDFC FIRST BANK", "IDFC", "idfcfirstbank.com", "IDFC FIRST Bank Ltd"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    identifiers: ["IDFC First Bank", "IDFC FIRST BANK", "IDFC", "idfcfirstbank.com", "IDFC FIRST Bank Ltd", "IDFCFIRST"],
+    passwordHint: "Date of Birth (DDMMYYYY) OR Registered Mobile Number (10 digits)",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Description", "Narration", "Particulars", "Transaction Remarks"],
@@ -677,8 +677,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "dbs",
     displayName: "DBS Bank",
-    identifiers: ["DBS Bank", "DBS BANK", "dbs.com", "DBS Bank India", "DBS Treasures"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    identifiers: ["DBS Bank", "DBS BANK", "dbs.com", "DBS Bank India", "DBS Treasures", "DBS"],
+    passwordHint: "Date of Birth (DDMMYYYY) OR First 4 letters of name (CAPITALS) + DDMM of birth",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date", "Posting Date", "Value Date"],
       description: ["Description", "Narration", "Details", "Transaction Details"],
@@ -709,8 +709,8 @@ export const BANK_PROFILES: BankProfile[] = [
   {
     id: "stanchart",
     displayName: "Standard Chartered Bank",
-    identifiers: ["Standard Chartered", "STANDARD CHARTERED", "sc.com", "Standard Chartered Bank", "SCBPL"],
-    passwordHint: "Date of Birth (DDMMYYYY) or PAN",
+    identifiers: ["Standard Chartered", "STANDARD CHARTERED", "sc.com", "Standard Chartered Bank", "SCBPL", "StanChart"],
+    passwordHint: "First 4 letters of name (CAPITALS) + Year of birth (YYYY) OR Date of Birth (DDMMYYYY)",
     columns: {
       date: ["Transaction Date", "Date", "Txn Date"],
       description: ["Description", "Narration", "Particulars", "Details"],
@@ -745,7 +745,7 @@ export const GENERIC_PROFILE: BankProfile = {
   id: "generic",
   displayName: "Unknown Bank",
   identifiers: [],
-  passwordHint: "Enter the PDF password",
+  passwordHint: "Enter the statement PDF password (typically DOB DDMMYYYY, Customer ID, or PAN)",
   columns: {
     date: [
       "Date", "Txn Date", "Transaction Date", "Tran Date", "Value Date",

@@ -73,6 +73,12 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
     gapWarning?: string
     message?: string
     error?: string
+    continuity?: {
+      valid: boolean
+      violationsCount: number
+      verifiedTransitions: number
+      message: string
+    }
   }>({})
   
   const [showAddBank, setShowAddBank] = useState(false)
@@ -237,6 +243,7 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
         transactionsSkipped: data.transactionsSkipped,
         gapWarning: data.gapWarning,
         message: data.message,
+        continuity: data.continuity,
       })
       setFile(null)
       onSuccess?.()
@@ -481,6 +488,25 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
               <div className="p-2.5 rounded-xl bg-card border border-border text-center">
                 <p className="font-bold text-lg text-foreground font-mono">{result.transactionsSkipped || 0}</p>
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase">Duplicates Skipped</p>
+              </div>
+            </div>
+          )}
+
+          {result.continuity && (
+            <div className={cn(
+              "p-2.5 rounded-xl text-xs flex items-center gap-2.5",
+              result.continuity.valid
+                ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                : "bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300"
+            )}>
+              <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex-1">
+                <p className="font-bold text-[11px]">
+                  {result.continuity.valid
+                    ? `Balance Invariant Verified (|B_i - (B_{i-1} + C_i - D_i)| ≤ 0.01)`
+                    : `Balance Invariant Flagged (${result.continuity.violationsCount} anomalies)`}
+                </p>
+                <p className="text-[10px] opacity-80 leading-normal">{result.continuity.message}</p>
               </div>
             </div>
           )}

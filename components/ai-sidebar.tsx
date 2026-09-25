@@ -512,8 +512,8 @@ export function AIWidget({
             </div>
           </div>
 
-          {/* ── Messages & Interactive Feed ── */}
-          <ScrollArea className="flex-1 p-4">
+          {/* ── Messages & Interactive Feed (Smooth Scrollable) ── */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 overscroll-contain">
             {messages.length === 0 ? (
               <div className="space-y-4 py-2">
                 {/* Hero Greeting Card */}
@@ -625,7 +625,7 @@ export function AIWidget({
               </div>
             )}
             <div ref={messagesEndRef} />
-          </ScrollArea>
+          </div>
 
           {/* ── Error Banner ── */}
           {error && (

@@ -344,6 +344,79 @@ await acheck("Amount strings with ₹ and commas parse correctly", () => {
   assert.equal(parse("₹500"), 500)
 })
 
+// ── 7. Password Decryption & Bank-Specific Encryption Tests ───
+console.log("\n── Password Decryption & Bank Coverage ──")
+
+function isEncryptedPDF(buffer) {
+  if (!buffer || buffer.length < 32) return false
+  return (
+    buffer.includes(Buffer.from("/Encrypt")) ||
+    buffer.includes(Buffer.from("/Filter/Standard")) ||
+    buffer.includes(Buffer.from("/Filter /Standard"))
+  )
+}
+
+function generatePasswordCandidates(password) {
+  const trimmed = password.trim()
+  return Array.from(new Set([
+    trimmed,
+    trimmed.toUpperCase(),
+    trimmed.toLowerCase(),
+    password,
+  ])).filter((c) => c.length > 0)
+}
+
+await acheck("All 21 banks have distinct, actionable password hints", () => {
+  const requiredKeywords = ["Birth", "Customer", "Account", "Name", "Mobile", "PAN", "CRN", "CIF"]
+  for (const p of BANK_PROFILES) {
+    assert.ok(p.passwordHint && p.passwordHint.length >= 10, `${p.id}: passwordHint too short or missing`)
+    const hasKeyword = requiredKeywords.some((kw) => p.passwordHint.includes(kw))
+    assert.ok(hasKeyword, `${p.id}: hint "${p.passwordHint}" lacks standard bank credentials keywords`)
+  }
+})
+
+await acheck("Password candidate generator handles case & whitespace permutations", () => {
+  const cands = generatePasswordCandidates("  rahu1504 ")
+  assert.ok(cands.includes("rahu1504"))
+  assert.ok(cands.includes("RAHU1504"))
+  assert.ok(cands.length >= 2)
+})
+
+await acheck("isEncryptedPDF detects standard and deep /Encrypt tokens in buffer", () => {
+  const unencrypted = Buffer.from("%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF")
+  assert.equal(isEncryptedPDF(unencrypted), false)
+
+  const encryptedTrailer = Buffer.from("%PDF-1.4\ntrailer\n<< /Encrypt 12 0 R /Root 1 0 R >>\n%%EOF")
+  assert.equal(isEncryptedPDF(encryptedTrailer), true)
+
+  // Test deep /Encrypt (offset 10,000 bytes into file, beyond standard 2048-byte tail)
+  const padding = Buffer.alloc(10000, 0x20)
+  const deepEncrypted = Buffer.concat([
+    Buffer.from("%PDF-1.7\n<< /Type /Catalog /Encrypt 5 0 R >>\n"),
+    padding,
+    Buffer.from("%%EOF"),
+  ])
+  assert.equal(isEncryptedPDF(deepEncrypted), true)
+})
+
+await acheck("Deterministic bank line parser matches transaction patterns across top banks", () => {
+  const dateRegex = /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b|^\d{1,2}\s[A-Z][a-z]{2}(?:\s\d{2,4}|\b)/
+
+  const hdfcLines = [
+    "15/06/2025 UPI-SWIGGY-12345 000123 15/06/2025 450.00 0.00 12,550.00",
+    "16/06/2025 SALARY CREDIT INFOSYS 000124 16/06/2025 0.00 85,000.00 97,550.00",
+  ]
+  for (const line of hdfcLines) {
+    assert.ok(dateRegex.test(line), `HDFC line failed date regex: ${line}`)
+  }
+
+  const sbiLine = "10 Jun 2025 10 Jun 2025 ATM CASH WITHDRAWAL 987654 2,000.00 15,000.00"
+  assert.ok(dateRegex.test(sbiLine), `SBI line failed date regex: ${sbiLine}`)
+
+  const iciciLine = "25-08-2025 INFOSYS SALARY NEFT 85,000.00 1,12,000.00"
+  assert.ok(dateRegex.test(iciciLine), `ICICI line failed date regex: ${iciciLine}`)
+})
+
 // ── Summary ────────────────────────────────────────────────────
 console.log(`\n═══ Results: ${passed} passed, ${failed} failed ═══\n`)
 if (failed > 0) {

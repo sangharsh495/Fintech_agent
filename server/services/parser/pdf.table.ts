@@ -841,7 +841,7 @@ function groupItemsIntoLines(items: PositionedTextItem[]): string[] {
  * Strategy: find lines starting with a date, treat subsequent non-date lines
  * as description continuations.
  */
-function parseLinesAsTransactions(
+export function parseLinesAsTransactions(
   lines: string[],
   profile: BankProfile
 ): ParsedTransaction[] {
