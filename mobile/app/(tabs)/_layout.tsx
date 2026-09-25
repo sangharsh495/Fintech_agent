@@ -3,8 +3,8 @@ import { Ionicons } from "@expo/vector-icons"
 import { StyleSheet } from "react-native"
 import { Colors, Spacing, Typography, BorderRadius, Shadows, ComponentSizes } from "../../lib/design-system"
 
-const TAB_ICON_SIZE = 24
-const TAB_LABEL_SIZE = 10
+const TAB_ICON_SIZE = 21
+const TAB_LABEL_SIZE = 9
 
 export default function TabLayout() {
   return (
@@ -16,26 +16,27 @@ export default function TabLayout() {
           backgroundColor: Colors.surface,
           borderTopColor: Colors.border,
           borderTopWidth: StyleSheet.hairlineWidth,
-          paddingBottom: Spacing.sm,
+          paddingBottom: Spacing.xs,
           paddingTop: Spacing.xs,
           height: ComponentSizes.tabBar.height,
           position: "absolute",
           bottom: 0,
-          left: Spacing.screenPaddingHorizontal,
-          right: Spacing.screenPaddingHorizontal,
+          left: 6,
+          right: 6,
           borderRadius: BorderRadius.xl,
-          marginBottom: Spacing.md,
-          marginHorizontal: Spacing.screenPaddingHorizontal,
+          marginBottom: Spacing.sm,
+          marginHorizontal: 4,
           ...Shadows.xl,
         },
         tabBarLabelStyle: {
           fontSize: TAB_LABEL_SIZE,
           fontWeight: "600",
           fontFamily: Typography.fontFamilies.semibold,
-          marginTop: Spacing.xs,
+          marginTop: 2,
         },
         tabBarItemStyle: {
-          paddingVertical: Spacing.xs,
+          paddingVertical: 2,
+          paddingHorizontal: 0,
         },
         headerStyle: { backgroundColor: Colors.background },
         headerTintColor: Colors.textPrimary,
@@ -69,12 +70,25 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="upload"
+        name="calculators"
         options={{
-          title: "Upload",
+          title: "Calculators",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "cloud-upload" : "cloud-upload-outline"}
+              name={focused ? "calculator" : "calculator-outline"}
+              size={TAB_ICON_SIZE}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="tax"
+        options={{
+          title: "Tax",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "receipt" : "receipt-outline"}
               size={TAB_ICON_SIZE}
               color={color}
             />
@@ -95,12 +109,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tax"
+        name="upload"
         options={{
-          title: "Tax",
+          title: "Upload",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "receipt" : "receipt-outline"}
+              name={focused ? "cloud-upload" : "cloud-upload-outline"}
               size={TAB_ICON_SIZE}
               color={color}
             />
