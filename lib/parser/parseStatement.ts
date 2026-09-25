@@ -14,6 +14,9 @@ export type ParseResult = {
   transactions: Transaction[];
   continuity: ReturnType<typeof validateBalanceContinuity>;
   pagesProcessed: number;
+  engineUsed: "groq-llm" | "deterministic-regex" | "dual-hybrid";
+  bankDetected?: string;
+  duplicatesRemoved?: number;
 };
 
 export async function parseStatement(
@@ -31,8 +34,10 @@ export async function parseStatement(
     throw new Error("No readable text could be extracted from this PDF. Please ensure it is an authentic electronic statement and not a scanned image.");
   }
 
+  const detectedBank = (options?.bankId ? getBankProfile(options.bankId) : null) || detectBank(text) || (options?.fileName ? detectBank(options.fileName) : null);
   const chunks = chunkText(text, MAX_CHARS_PER_CHUNK);
-  const allTransactions: Transaction[] = [];
+  const rawExtractedTxns: Transaction[] = [];
+  let llmSuccess = false;
 
   for (const chunk of chunks) {
     if (!chunk.trim()) continue;
@@ -44,14 +49,18 @@ export async function parseStatement(
       const parsedJson = safeJsonParse(rawResponse);
       const list = TransactionListSchema.safeParse(parsedJson?.transactions ?? []);
 
-      if (list.success) {
-        allTransactions.push(...list.data);
+      if (list.success && list.data.length > 0) {
+        rawExtractedTxns.push(...list.data);
+        llmSuccess = true;
       } else {
-        safeLogInfo("[PARSER] Chunk schema parse warning, attempting item-by-item recovery:", list.error.message);
+        safeLogInfo("[PARSER] Chunk schema parse warning, attempting item-by-item recovery:", list.error?.message);
         const rawTxns = Array.isArray(parsedJson?.transactions) ? parsedJson.transactions : [];
         for (const t of rawTxns) {
           const item = TransactionSchema.safeParse(t);
-          if (item.success) allTransactions.push(item.data);
+          if (item.success) {
+            rawExtractedTxns.push(item.data);
+            llmSuccess = true;
+          }
         }
       }
     } catch (chunkErr) {
@@ -59,14 +68,16 @@ export async function parseStatement(
     }
   }
 
+  let engineUsed: ParseResult["engineUsed"] = llmSuccess ? "groq-llm" : "deterministic-regex";
+
   // 3. Fallback to deterministic bank-profile regex parser if LLM produced 0 transactions
-  if (allTransactions.length === 0 && text.trim().length > 0) {
+  if (rawExtractedTxns.length === 0 && text.trim().length > 0) {
     safeLogInfo("[PARSER] LLM produced 0 transactions, engaging deterministic bank profile parser");
-    const detected = (options?.bankId ? getBankProfile(options.bankId) : null) || detectBank(text) || (options?.fileName ? detectBank(options.fileName) : null) || GENERIC_PROFILE;
+    const activeProfile = detectedBank || GENERIC_PROFILE;
     const lines = text.split(/\r?\n/);
-    const fallbackTxns = parseLinesAsTransactions(lines, detected);
+    const fallbackTxns = parseLinesAsTransactions(lines, activeProfile);
     for (const t of fallbackTxns) {
-      allTransactions.push({
+      rawExtractedTxns.push({
         date: t.date instanceof Date ? t.date.toISOString().split("T")[0] : String(t.date),
         description: t.description,
         debit: t.type === "debit" ? t.amount : null,
@@ -74,11 +85,34 @@ export async function parseStatement(
         balance: t.balance ?? null,
       });
     }
+    engineUsed = "deterministic-regex";
   }
 
-  const continuity = validateBalanceContinuity(allTransactions);
+  // 4. In-flight SHA-256 Deduplication across page boundaries
+  const seenFingerprints = new Set<string>();
+  const dedupedTransactions: Transaction[] = [];
+  let duplicatesRemoved = 0;
 
-  return { transactions: allTransactions, continuity, pagesProcessed: numPages };
+  for (const t of rawExtractedTxns) {
+    const key = `${t.date}|${t.debit ?? 0}|${t.credit ?? 0}|${(t.description || "").toLowerCase().trim()}`;
+    if (seenFingerprints.has(key)) {
+      duplicatesRemoved++;
+      continue;
+    }
+    seenFingerprints.add(key);
+    dedupedTransactions.push(t);
+  }
+
+  const continuity = validateBalanceContinuity(dedupedTransactions);
+
+  return {
+    transactions: dedupedTransactions,
+    continuity,
+    pagesProcessed: numPages,
+    engineUsed,
+    bankDetected: detectedBank?.bankName || "Scheduled Commercial Bank",
+    duplicatesRemoved,
+  };
 }
 
 function chunkText(text: string, maxChars: number): string[] {

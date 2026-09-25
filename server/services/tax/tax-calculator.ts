@@ -23,13 +23,14 @@
 
 import {
   assessmentYearFor,
+  type BreakevenDeductionMetrics,
   type DeductionInput,
   type FinancialYear,
   type RegimeComputation,
   type Regime,
   type TaxComputationInput,
   type TaxComputationResult,
-} from "./types"
+} from "./types.ts"
 
 export const RATE_SPLIT_CAVEAT =
   "For FY 2024-25, transfers made before 23 July 2024 are taxed at the pre-Budget rates (STCG 15%, LTCG 10% over Rs. 1,00,000). This computation applies the post-Budget rates to the full year, so gains realised earlier in that year may be overstated."
@@ -308,9 +309,9 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
   // ── Head 1: Salary (Sec 15–17) ──
   // HRA (Sec 10(13A)), LTA (Sec 10(5)) and professional tax (Sec 16(iii)) are
   // withdrawn under the new regime; the standard deduction survives in both.
-  const grossSalary = Math.max(0, input.salaryIncome)
+  const grossSalary = Math.max(0, input.salaryIncome || 0)
   const salaryExemptions = isOld
-    ? input.hraExemption + input.ltaExemption + input.professionalTax
+    ? (input.hraExemption || 0) + (input.ltaExemption || 0) + (input.professionalTax || 0)
     : 0
   const netSalary = Math.max(0, grossSalary - salaryExemptions - (grossSalary > 0 ? standardDeduction : 0))
 
@@ -325,24 +326,25 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
   // ── Head 2: House property (Sec 22–27) ──
   // A self-occupied-property loss (typically Sec 24(b) interest) cannot be set
   // off against other heads under the new regime.
-  const houseProperty = isOld ? input.housePropertyIncome : Math.max(0, input.housePropertyIncome)
-  if (input.housePropertyIncome !== 0) {
+  const hpIncome = input.housePropertyIncome || 0
+  const houseProperty = isOld ? hpIncome : Math.max(0, hpIncome)
+  if (hpIncome !== 0) {
     workings.push(
       isOld
-        ? `House property: ${fmt(input.housePropertyIncome)}`
+        ? `House property: ${fmt(hpIncome)}`
         : `House property: ${fmt(houseProperty)} (a self-occupied loss cannot be set off under the new regime)`
     )
   }
 
   // ── Head 3: PGBP (Sec 28–44) ──
-  const pgbp = input.presumptiveIncome44ADA + input.presumptiveIncome44AD + input.businessIncome
+  const pgbp = (input.presumptiveIncome44ADA || 0) + (input.presumptiveIncome44AD || 0) + (input.businessIncome || 0)
   if (pgbp > 0) workings.push(`Business and professional income: ${fmt(pgbp)}`)
 
   // ── Head 4: Capital gains (Sec 45–55A) ──
-  const stcg111A = Math.max(0, input.shortTermCapitalGains111A)
-  const ltcg112AGross = Math.max(0, input.longTermCapitalGains112A)
+  const stcg111A = Math.max(0, input.shortTermCapitalGains111A || 0)
+  const ltcg112AGross = Math.max(0, input.longTermCapitalGains112A || 0)
   const ltcg112ATaxable = Math.max(0, ltcg112AGross - rates.ltcg112AExemption)
-  const otherCapitalGains = Math.max(0, input.otherCapitalGains)
+  const otherCapitalGains = Math.max(0, input.otherCapitalGains || 0)
 
   if (ltcg112AGross > 0) {
     workings.push(
@@ -354,7 +356,7 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
   }
 
   // ── Head 5: Other sources (Sec 56–59) ──
-  const otherSources = Math.max(0, input.otherSourcesIncome) + Math.max(0, input.savingsInterest)
+  const otherSources = Math.max(0, input.otherSourcesIncome || 0) + Math.max(0, input.savingsInterest || 0)
   if (otherSources > 0) workings.push(`Other sources (interest, dividends): ${fmt(otherSources)}`)
 
   // ── Gross total income ──
@@ -487,6 +489,88 @@ function deductionsAgainstSlabIncome(deductions: DeductionInput): DeductionInput
   return deductions
 }
 
+/**
+ * Calculates the exact statutory breakeven deduction threshold D*(Y)
+ * Formalized and proven in Theorem 2 of the FinFlow paper:
+ * D*(Y) = inf { D >= 0 : T_Old(Y, D) <= T_New(Y) }
+ */
+export function calculateDeductionBreakeven(
+  input: TaxComputationInput,
+  oldComp: RegimeComputation,
+  newComp: RegimeComputation
+): BreakevenDeductionMetrics {
+  const fy = input.financialYear
+  const age = input.age ?? 35
+  const gross = Math.max(oldComp.grossTotalIncome, newComp.grossTotalIncome)
+  const currentDeductions = oldComp.totalDeductions
+  const newTax = newComp.totalTaxPayable
+
+  const stdDedOld = STANDARD_DEDUCTION[fy]?.old ?? 50000
+  const maxAllowableStandard = 450000 // 1.5L (80C) + 50k (80CCD) + 50k (80D) + 2L (24b)
+
+  let requiredDeductions = 0
+
+  if (oldComp.totalTaxPayable <= newTax) {
+    requiredDeductions = currentDeductions
+  } else if (newTax === 0) {
+    requiredDeductions = Math.max(0, oldComp.grossTotalIncome - 500000)
+  } else {
+    // Binary search over [currentDeductions, 1500000] to find exact breakeven deduction D*
+    let low = Math.round(currentDeductions)
+    let high = 1500000
+    let bestD = high
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2)
+      const testInput: TaxComputationInput = {
+        ...input,
+        deductions: {
+          ...input.deductions,
+          section80C: Math.min(mid, 150000),
+          section80D: Math.min(Math.max(0, mid - 150000), age >= 60 ? 50000 : 25000),
+          section80CCD1B: Math.min(Math.max(0, mid - 175000), 50000),
+          otherDeductions: Math.max(0, mid - 225000),
+        },
+      }
+      const testOld = computeRegime(testInput, "OLD")
+      if (testOld.totalTaxPayable <= newTax) {
+        bestD = mid
+        high = mid - 1
+      } else {
+        low = mid + 1
+      }
+    }
+    requiredDeductions = Math.max(0, bestD)
+  }
+
+  const gap = Math.max(0, requiredDeductions - currentDeductions)
+  const isAchievable = requiredDeductions <= maxAllowableStandard
+
+  const oldSlabs = oldRegimeSlabs(age)
+  const newSlabs = NEW_REGIME_SLABS[fy] || NEW_REGIME_SLABS["2024-2025"]
+  const marginalRateOld = oldSlabs.slice().reverse().find((s) => oldComp.taxableIncome > s.from)?.rate ?? 0.05
+  const marginalRateNew = newSlabs.slice().reverse().find((s) => newComp.taxableIncome > s.from)?.rate ?? 0.05
+
+  let explanation = ""
+  if (oldComp.totalTaxPayable <= newTax) {
+    explanation = `The Old Regime is already optimal. Your deductions (${fmt(currentDeductions)}) meet the breakeven threshold (${fmt(requiredDeductions)}), saving you ${fmt(newTax - oldComp.totalTaxPayable)}.`
+  } else if (!isAchievable) {
+    explanation = `The New Regime is definitively superior. At a gross income of ${fmt(gross)}, you would require ${fmt(requiredDeductions)} in itemized deductions to match the New Regime, exceeding the statutory cap of ${fmt(maxAllowableStandard)}.`
+  } else {
+    explanation = `To make the Old Regime advantageous, you need an additional ${fmt(gap)} in Chapter VI-A / Sec 24(b) deductions (target: ${fmt(requiredDeductions)}, currently: ${fmt(currentDeductions)}).`
+  }
+
+  return {
+    requiredDeductionsForOldRegime: requiredDeductions,
+    currentEligibleDeductions: currentDeductions,
+    gapToOldRegimeAdvantage: gap,
+    isOldRegimeAchievable: isAchievable,
+    marginalRateOld,
+    marginalRateNew,
+    explanation,
+  }
+}
+
 // ─── Public entry point ─────────────────────────────────────
 
 export function computeIndianTax(input: TaxComputationInput): TaxComputationResult {
@@ -495,6 +579,7 @@ export function computeIndianTax(input: TaxComputationInput): TaxComputationResu
 
   const recommendedRegime: Regime = old.totalTaxPayable <= neu.totalTaxPayable ? "OLD" : "NEW"
   const savings = Math.abs(old.totalTaxPayable - neu.totalTaxPayable)
+  const breakevenDeductions = calculateDeductionBreakeven(input, old, neu)
 
   const breakdown = [
     `Gross total income (old regime basis): ${fmt(old.grossTotalIncome)}`,
@@ -505,13 +590,12 @@ export function computeIndianTax(input: TaxComputationInput): TaxComputationResu
     savings > 0
       ? `The ${recommendedRegime === "OLD" ? "old" : "new"} regime is cheaper by ${fmt(savings)}.`
       : "Both regimes produce the same liability.",
+    `Deduction Breakeven: ${breakevenDeductions.explanation}`,
   ]
 
   return {
     financialYear: input.financialYear,
     assessmentYear: assessmentYearFor(input.financialYear),
-    // Reported on the more comprehensive (old-regime) basis, which counts the
-    // self-occupied house property loss the new regime disallows.
     grossTotalIncome: Math.max(old.grossTotalIncome, neu.grossTotalIncome),
 
     old,
@@ -528,6 +612,7 @@ export function computeIndianTax(input: TaxComputationInput): TaxComputationResu
     totalTaxPayableNew: neu.totalTaxPayable,
 
     breakdown,
+    breakevenDeductions,
   }
 }
 

@@ -417,6 +417,192 @@ await acheck("Deterministic bank line parser matches transaction patterns across
   assert.ok(dateRegex.test(iciciLine), `ICICI line failed date regex: ${iciciLine}`)
 })
 
+// ── 9. Account Aggregator (ReBIT FI-Fetch) ─────────────────────
+console.log("\n── Account Aggregator (ReBIT FI-Fetch) ──")
+const { parseReBitPayload } = await import("../server/services/aa/rebit-parser.ts")
+
+await acheck("parseReBitPayload verifies clean continuous transaction ledger", () => {
+  const mockPayload = {
+    consentId: "CONSENT-TEST-001",
+    account: {
+      profile: { bank: "HDFC Bank", accountNumberMasked: "XXXX-1234", accountType: "SAVINGS", currency: "INR" },
+      summary: { currentBalance: 52400.00, currency: "INR", asOfDate: "2025-06-15" },
+      transactions: {
+        transaction: [
+          { txnId: "T1", type: "CREDIT", mode: "NEFT", amount: 50000, currentBalance: 50000.00, transactionTimestamp: "2025-06-01T10:00:00Z", narration: "SALARY ACME CORP" },
+          { txnId: "T2", type: "DEBIT", mode: "UPI", amount: 600, currentBalance: 49400.00, transactionTimestamp: "2025-06-02T14:30:00Z", narration: "SWIGGY BANGALORE" },
+          { txnId: "T3", type: "CREDIT", mode: "UPI", amount: 3000, currentBalance: 52400.00, transactionTimestamp: "2025-06-05T09:15:00Z", narration: "TRANSFER FROM FRIEND" },
+        ]
+      }
+    }
+  }
+
+  const result = parseReBitPayload(mockPayload)
+  assert.equal(result.source, "REBIT_ACCOUNT_AGGREGATOR")
+  assert.equal(result.continuity.valid, true)
+  assert.equal(result.continuity.violationsCount, 0)
+  assert.equal(result.uniqueTransactionsCount, 3)
+  assert.equal(result.transactions[0].category, "salary")
+  assert.equal(result.transactions[1].category, "food_dining")
+})
+
+await acheck("parseReBitPayload detects and flags balance continuity violation", () => {
+  const corruptPayload = {
+    consentId: "CONSENT-CORRUPT-001",
+    account: {
+      profile: { bank: "ICICI Bank", accountNumberMasked: "XXXX-5678", accountType: "SAVINGS" },
+      transactions: {
+        transaction: [
+          { txnId: "T1", type: "CREDIT", amount: 10000, currentBalance: 10000.00, transactionTimestamp: "2025-06-01T10:00:00Z", narration: "OPENING" },
+          { txnId: "T2", type: "DEBIT", amount: 500, currentBalance: 8000.00, transactionTimestamp: "2025-06-02T10:00:00Z", narration: "AMAZON" },
+        ]
+      }
+    }
+  }
+
+  const result = parseReBitPayload(corruptPayload)
+  assert.equal(result.continuity.valid, false)
+  assert.equal(result.continuity.violationsCount, 1)
+  assert.equal(result.continuity.errors[0].expectedBalance, 9500)
+  assert.equal(result.continuity.errors[0].actualBalance, 8000)
+  assert.equal(result.continuity.errors[0].discrepancy, 1500)
+})
+
+await acheck("parseReBitPayload cryptographically deduplicates repeated transactions", () => {
+  const duplicatePayload = {
+    consentId: "CONSENT-DEDUP-001",
+    account: {
+      profile: { bank: "SBI", accountNumberMasked: "XXXX-9999" },
+      transactions: {
+        transaction: [
+          { txnId: "T1", type: "CREDIT", amount: 20000, currentBalance: 20000.00, transactionTimestamp: "2025-06-01T10:00:00Z", narration: "SALARY CREDIT" },
+          { txnId: "T1", type: "CREDIT", amount: 20000, currentBalance: 20000.00, transactionTimestamp: "2025-06-01T10:00:00Z", narration: "SALARY CREDIT" },
+        ]
+      }
+    }
+  }
+
+  const result = parseReBitPayload(duplicatePayload)
+  assert.equal(result.rawTransactionsCount, 2)
+  assert.equal(result.uniqueTransactionsCount, 1)
+  assert.equal(result.duplicateCount, 1)
+})
+
+// ── 10. Deduction Breakeven Calculator (Theorem 2) ─────────────
+console.log("\n── Deduction Breakeven Calculator (Theorem 2) ──")
+const { computeIndianTax } = await import("../server/services/tax/tax-calculator.ts")
+
+await acheck("calculateDeductionBreakeven for low income (<= 5L) requires 0 deductions", () => {
+  const input = {
+    financialYear: "2024-2025",
+    age: 30,
+    salaryIncome: 500000,
+    hraExemption: 0,
+    ltaExemption: 0,
+    professionalTax: 0,
+    housePropertyIncome: 0,
+    presumptiveIncome44ADA: 0,
+    presumptiveIncome44AD: 0,
+    businessIncome: 0,
+    shortTermCapitalGains111A: 0,
+    longTermCapitalGains112A: 0,
+    otherCapitalGains: 0,
+    otherSourcesIncome: 0,
+    savingsInterest: 0,
+    deductions: { section80C: 0, section80CCD1B: 0, section80CCD2: 0, section80D: 0, section80DD: 0, section80DDB: 0, section80E: 0, section80EEA: 0, section80EEB: 0, section80G: 0, section80GG: 0, section80TTA: 0, section80TTB: 0, section80U: 0, section24b: 0, otherDeductions: 0 },
+  }
+  const result = computeIndianTax(input)
+  assert.ok(result.breakevenDeductions)
+  assert.equal(result.breakevenDeductions.requiredDeductionsForOldRegime, 0)
+  assert.equal(result.breakevenDeductions.isOldRegimeAchievable, true)
+})
+
+await acheck("calculateDeductionBreakeven for 6.5L income correctly computes 87A gap", () => {
+  const input = {
+    financialYear: "2024-2025",
+    age: 30,
+    salaryIncome: 650000,
+    hraExemption: 0,
+    ltaExemption: 0,
+    professionalTax: 0,
+    housePropertyIncome: 0,
+    presumptiveIncome44ADA: 0,
+    presumptiveIncome44AD: 0,
+    businessIncome: 0,
+    shortTermCapitalGains111A: 0,
+    longTermCapitalGains112A: 0,
+    otherCapitalGains: 0,
+    otherSourcesIncome: 0,
+    savingsInterest: 0,
+    deductions: { section80C: 0, section80CCD1B: 0, section80CCD2: 0, section80D: 0, section80DD: 0, section80DDB: 0, section80E: 0, section80EEA: 0, section80EEB: 0, section80G: 0, section80GG: 0, section80TTA: 0, section80TTB: 0, section80U: 0, section24b: 0, otherDeductions: 0 },
+  }
+  const result = computeIndianTax(input)
+  assert.equal(result.recommendedRegime, "NEW")
+  assert.ok(result.breakevenDeductions)
+  assert.equal(result.breakevenDeductions.requiredDeductionsForOldRegime, 100000)
+  assert.equal(result.breakevenDeductions.isOldRegimeAchievable, true)
+})
+
+await acheck("calculateDeductionBreakeven for 12L income correctly finds crossover point", () => {
+  const input = {
+    financialYear: "2024-2025",
+    age: 32,
+    salaryIncome: 1200000,
+    hraExemption: 0,
+    ltaExemption: 0,
+    professionalTax: 0,
+    housePropertyIncome: 0,
+    presumptiveIncome44ADA: 0,
+    presumptiveIncome44AD: 0,
+    businessIncome: 0,
+    shortTermCapitalGains111A: 0,
+    longTermCapitalGains112A: 0,
+    otherCapitalGains: 0,
+    otherSourcesIncome: 0,
+    savingsInterest: 0,
+    deductions: { section80C: 150000, section80CCD1B: 0, section80CCD2: 0, section80D: 0, section80DD: 0, section80DDB: 0, section80E: 0, section80EEA: 0, section80EEB: 0, section80G: 0, section80GG: 0, section80TTA: 0, section80TTB: 0, section80U: 0, section24b: 0, otherDeductions: 0 },
+  }
+  const result = computeIndianTax(input)
+  assert.ok(result.breakevenDeductions)
+  // At 12L gross income in FY 24-25, required deductions under Old Regime to beat New Regime are ~2.95L
+  assert.ok(result.breakevenDeductions.requiredDeductionsForOldRegime > 250000)
+  assert.ok(result.breakevenDeductions.requiredDeductionsForOldRegime < 400000)
+  assert.equal(result.breakevenDeductions.isOldRegimeAchievable, true)
+  assert.ok(result.breakevenDeductions.gapToOldRegimeAdvantage > 0)
+})
+
+await acheck("calculateDeductionBreakeven verifies Theorem 2 Monotonicity (D*(Y2) >= D*(Y1))", () => {
+  const makeInput = (salary) => ({
+    financialYear: "2024-2025",
+    age: 30,
+    salaryIncome: salary,
+    hraExemption: 0,
+    ltaExemption: 0,
+    professionalTax: 0,
+    housePropertyIncome: 0,
+    presumptiveIncome44ADA: 0,
+    presumptiveIncome44AD: 0,
+    businessIncome: 0,
+    shortTermCapitalGains111A: 0,
+    longTermCapitalGains112A: 0,
+    otherCapitalGains: 0,
+    otherSourcesIncome: 0,
+    savingsInterest: 0,
+    deductions: { section80C: 0, section80CCD1B: 0, section80CCD2: 0, section80D: 0, section80DD: 0, section80DDB: 0, section80E: 0, section80EEA: 0, section80EEB: 0, section80G: 0, section80GG: 0, section80TTA: 0, section80TTB: 0, section80U: 0, section24b: 0, otherDeductions: 0 },
+  })
+
+  const res10L = computeIndianTax(makeInput(1000000))
+  const res15L = computeIndianTax(makeInput(1500000))
+  const res25L = computeIndianTax(makeInput(2500000))
+
+  const d10 = res10L.breakevenDeductions.requiredDeductionsForOldRegime
+  const d15 = res15L.breakevenDeductions.requiredDeductionsForOldRegime
+  const d25 = res25L.breakevenDeductions.requiredDeductionsForOldRegime
+
+  assert.ok(d15 >= d10, `Monotonicity violated: D*(15L)=${d15} < D*(10L)=${d10}`)
+  assert.ok(d25 >= d15, `Monotonicity violated: D*(25L)=${d25} < D*(15L)=${d15}`)
+})
+
 // ── Summary ────────────────────────────────────────────────────
 console.log(`\n═══ Results: ${passed} passed, ${failed} failed ═══\n`)
 if (failed > 0) {

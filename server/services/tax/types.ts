@@ -166,6 +166,23 @@ export interface RegimeComputation {
   workings: string[]
 }
 
+export interface BreakevenDeductionMetrics {
+  /** Minimum Chapter VI-A & Sec 24(b) deductions required for Old Regime to equal or beat New Regime */
+  requiredDeductionsForOldRegime: number
+  /** User's current verified deductions */
+  currentEligibleDeductions: number
+  /** Remaining deductions needed to justify Old Regime (0 if Old Regime is already better) */
+  gapToOldRegimeAdvantage: number
+  /** Whether the required deduction is within standard statutory limits (<= 4,50,000 INR) */
+  isOldRegimeAchievable: boolean
+  /** Marginal tax rate under Old Regime */
+  marginalRateOld: number
+  /** Marginal tax rate under New Regime */
+  marginalRateNew: number
+  /** Statutory explanation grounding the recommendation */
+  explanation: string
+}
+
 export interface TaxComputationResult {
   financialYear: FinancialYear
   assessmentYear: string
@@ -185,6 +202,7 @@ export interface TaxComputationResult {
   totalTaxPayableNew: number
 
   breakdown: string[]
+  breakevenDeductions?: BreakevenDeductionMetrics
 }
 
 // ─── Parsed source documents ────────────────────────────────
