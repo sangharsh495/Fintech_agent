@@ -97,51 +97,92 @@ export function computeAATransactionHash(
   bank: string,
   txnId?: string
 ): string {
-  const normalized = narration.toLowerCase().replace(/[^a-z0-9]/g, "")
-  const canonical = `${dateStr}|${amount.toFixed(2)}|${normalized}|${bank.toLowerCase()}|${txnId || ""}`
+  const safeAmount = Number.isFinite(amount) ? Math.abs(amount) : 0
+  const normalized = narration.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 100)
+  const canonical = `${dateStr}|${safeAmount.toFixed(2)}|${normalized}|${bank.toLowerCase()}|${txnId || ""}`
   return crypto.createHash("sha256").update(canonical).digest("hex")
 }
+
+const MAX_PAYLOAD_CHARS = 10 * 1024 * 1024 // 10MB max input
+const MAX_AA_TRANSACTIONS = 10000 // 10,000 transaction batch cap
 
 /**
  * Ingest and verify a ReBIT Account Aggregator payload (JSON object or string)
  */
 export function parseReBitPayload(input: string | Record<string, any>): AAParseResult {
+  if (typeof input === "string" && input.length > MAX_PAYLOAD_CHARS) {
+    throw new Error("ReBIT payload exceeds maximum allowable size of 10MB")
+  }
+
   let data: any
   if (typeof input === "string") {
     try {
       data = JSON.parse(input)
     } catch {
-      // If XML format was provided, parse basic XML nodes
+      // If XML format was provided, parse basic XML nodes safely
       data = parseReBitXmlFallback(input)
     }
   } else {
-    data = input
+    data = input || {}
   }
 
-  const consentId = data.consentId || data.account?.consentId || `CONSENT-MOCK-${Date.now()}`
-  const profile = data.account?.profile || {}
-  const bank = profile.bank || "Scheduled Commercial Bank"
-  const accountNumberMasked = profile.accountNumberMasked || "XXXX-XXXX"
-  const accountType = profile.accountType || "SAVINGS"
-  const currency = profile.currency || data.account?.summary?.currency || "INR"
-  const currentBalance = data.account?.summary?.currentBalance ?? 0
+  // Prototype pollution defense
+  if (data && typeof data === "object") {
+    delete data.__proto__
+    delete data.constructor
+    delete data.prototype
+  }
 
-  const rawTxns: ReBitTransaction[] = Array.isArray(data.account?.transactions?.transaction)
+  const consentId = String(data.consentId || data.account?.consentId || `CONSENT-MOCK-${Date.now()}`).slice(0, 128)
+  const profile = data.account?.profile || {}
+  const bank = String(profile.bank || "Scheduled Commercial Bank").slice(0, 100)
+  const accountNumberMasked = String(profile.accountNumberMasked || "XXXX-XXXX").slice(0, 32)
+  const accountType = String(profile.accountType || "SAVINGS").slice(0, 32)
+  const currency = String(profile.currency || data.account?.summary?.currency || "INR").slice(0, 10)
+  const currentBalance = Number.isFinite(Number(data.account?.summary?.currentBalance)) ? Number(data.account?.summary?.currentBalance) : 0
+
+  const rawTxnsInput: any[] = Array.isArray(data.account?.transactions?.transaction)
     ? data.account.transactions.transaction
     : Array.isArray(data.transactions)
     ? data.transactions
     : []
 
+  // Cap transactions and sanitize individual fields against XSS, NaN, and negative injections
+  const safeTxns: ReBitTransaction[] = rawTxnsInput.slice(0, MAX_AA_TRANSACTIONS).map((t, idx) => {
+    const rawNarr = String(t.narration || "AA Transaction")
+    const sanitizedNarr = rawNarr
+      .replace(/<[^>]*>?/gm, "") // Strip HTML/XSS
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // Strip control characters
+      .slice(0, 500)
+
+    const dateParsed = new Date(t.transactionTimestamp)
+    const validTimestamp = !isNaN(dateParsed.getTime()) ? dateParsed.toISOString() : new Date().toISOString()
+    const validAmount = Number.isFinite(Number(t.amount)) ? Math.abs(Number(t.amount)) : 0
+    const validBalance = Number.isFinite(Number(t.currentBalance)) ? Number(t.currentBalance) : 0
+    const type = String(t.type || "").toUpperCase() === "CREDIT" ? ("CREDIT" as const) : ("DEBIT" as const)
+
+    return {
+      txnId: String(t.txnId || `TXN-${idx}-${Date.now()}`).slice(0, 128),
+      type,
+      mode: t.mode,
+      amount: validAmount,
+      currentBalance: validBalance,
+      transactionTimestamp: validTimestamp,
+      narration: sanitizedNarr,
+      valueDate: t.valueDate,
+    }
+  })
+
   // 1. Chronological sort (ReBIT timestamps are ISO 8601)
-  const sortedTxns = [...rawTxns].sort(
+  const sortedTxns = [...safeTxns].sort(
     (a, b) => new Date(a.transactionTimestamp).getTime() - new Date(b.transactionTimestamp).getTime()
   )
 
   // 2. Validate Formal Balance Continuity Invariant: |B_i - (B_{i-1} + C_i - D_i)| <= 0.01
   const continuityErrors: AAContinuityError[] = []
   for (let i = 1; i < sortedTxns.length; i++) {
-    const prev = sortedTxns[i - 1]
-    const curr = sortedTxns[i]
+    const prev = sortedTxns[i - 1]!
+    const curr = sortedTxns[i]!
 
     if (prev.currentBalance != null && curr.currentBalance != null) {
       const credit = curr.type === "CREDIT" ? curr.amount : 0
@@ -170,10 +211,10 @@ export function parseReBitPayload(input: string | Record<string, any>): AAParseR
 
   for (const t of sortedTxns) {
     const isCredit = t.type === "CREDIT"
-    const amount = Number(t.amount) || 0
+    const amount = t.amount
     const dateObj = new Date(t.transactionTimestamp)
-    const dateIso = !isNaN(dateObj.getTime()) ? dateObj.toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
-    const hash = computeAATransactionHash(dateIso, amount, t.narration || "", bank, t.txnId)
+    const dateIso = dateObj.toISOString().split("T")[0]!
+    const hash = computeAATransactionHash(dateIso, amount, t.narration, bank, t.txnId)
 
     if (seenHashes.has(hash)) {
       duplicateCount++
@@ -181,12 +222,12 @@ export function parseReBitPayload(input: string | Record<string, any>): AAParseR
     }
     seenHashes.add(hash)
 
-    const catResult = categorizeTransaction(t.narration || "", amount, isCredit ? "credit" : "debit")
+    const catResult = categorizeTransaction(t.narration, amount, isCredit ? "credit" : "debit")
 
     uniqueParsedTxns.push({
       date: dateObj,
       description: t.narration || "Account Aggregator Transfer",
-      rawDescription: t.narration || "",
+      rawDescription: t.narration,
       amount,
       type: isCredit ? "credit" : "debit",
       balance: t.currentBalance,
@@ -194,7 +235,7 @@ export function parseReBitPayload(input: string | Record<string, any>): AAParseR
       subcategory: catResult.subcategory,
       merchant: catResult.merchant,
       isRecurring: catResult.isRecurring,
-      paymentMethod: t.mode ? t.mode.toLowerCase() : "upi",
+      paymentMethod: t.mode ? String(t.mode).toLowerCase() : "upi",
       hash,
     })
   }
@@ -226,14 +267,21 @@ export function parseReBitPayload(input: string | Record<string, any>): AAParseR
 }
 
 /**
- * Basic XML parser fallback for ReBIT XML payloads
+ * ReDoS-safe XML parser fallback for ReBIT XML payloads
  */
 function parseReBitXmlFallback(xmlStr: string): any {
+  if (xmlStr.length > MAX_PAYLOAD_CHARS) {
+    throw new Error("XML payload exceeds 10MB limit")
+  }
+
   const transactions: ReBitTransaction[] = []
   const txnRegex = /<Transaction[\s\S]*?<\/Transaction>/gi
-  const matches = xmlStr.match(txnRegex) || []
+  let match: RegExpExecArray | null
+  let count = 0
 
-  for (const m of matches) {
+  while ((match = txnRegex.exec(xmlStr)) !== null && count < MAX_AA_TRANSACTIONS) {
+    count++
+    const m = match[0]
     const txnId = m.match(/txnId=["']([^"']+)["']/i)?.[1] || `TXN-${Math.random().toString(36).substring(2, 9)}`
     const type = (m.match(/type=["']([^"']+)["']/i)?.[1] || "DEBIT").toUpperCase() as "DEBIT" | "CREDIT"
     const mode = (m.match(/mode=["']([^"']+)["']/i)?.[1] || "UPI").toUpperCase() as any
@@ -242,19 +290,22 @@ function parseReBitXmlFallback(xmlStr: string): any {
     const timestampMatch = m.match(/transactionTimestamp=["']([^"']+)["']/i) || m.match(/<transactionTimestamp>([^<]+)<\/transactionTimestamp>/i)
     const narrationMatch = m.match(/narration=["']([^"']+)["']/i) || m.match(/<narration>([^<]+)<\/narration>/i)
 
+    const rawAmount = parseFloat(amountMatch?.[1] || "0")
+    const rawBalance = parseFloat(balanceMatch?.[1] || "0")
+
     transactions.push({
       txnId,
       type,
       mode,
-      amount: parseFloat(amountMatch?.[1] || "0"),
-      currentBalance: parseFloat(balanceMatch?.[1] || "0"),
+      amount: Number.isFinite(rawAmount) ? Math.abs(rawAmount) : 0,
+      currentBalance: Number.isFinite(rawBalance) ? rawBalance : 0,
       transactionTimestamp: timestampMatch?.[1] || new Date().toISOString(),
-      narration: narrationMatch?.[1] || "AA Transaction",
+      narration: (narrationMatch?.[1] || "AA Transaction").replace(/<[^>]*>?/gm, "").slice(0, 500),
     })
   }
 
-  const bank = xmlStr.match(/bank=["']([^"']+)["']/i)?.[1] || "Scheduled Commercial Bank"
-  const accountNumberMasked = xmlStr.match(/accountNumberMasked=["']([^"']+)["']/i)?.[1] || "XXXX-XXXX"
+  const bank = (xmlStr.match(/bank=["']([^"']+)["']/i)?.[1] || "Scheduled Commercial Bank").replace(/<[^>]*>?/gm, "").slice(0, 100)
+  const accountNumberMasked = (xmlStr.match(/accountNumberMasked=["']([^"']+)["']/i)?.[1] || "XXXX-XXXX").slice(0, 32)
 
   return {
     consentId: `CONSENT-XML-${Date.now()}`,

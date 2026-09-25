@@ -19,8 +19,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
+    // 1. File size limit defense against memory exhaustion / DoS
+    const MAX_PDF_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+    if (file.size > MAX_PDF_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: "Payload too large. Bank statements must not exceed 15 MB." },
+        { status: 413 }
+      );
+    }
+
+    // 2. Password length constraint
+    const sanitizedPassword = password ? password.slice(0, 128) : undefined;
+    const sanitizedBankId = bankId ? bankId.slice(0, 64) : undefined;
+
     const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await parseStatement(buffer, password, { fileName: file.name, bankId });
+
+    // 3. Strict PDF Magic Bytes Verification (%PDF- = 0x25 0x50 0x44 0x46 0x2D)
+    if (buffer.length < 5 || buffer.subarray(0, 5).toString("utf8") !== "%PDF-") {
+      return NextResponse.json(
+        { error: "Invalid file signature. Only authentic PDF documents are supported." },
+        { status: 400 }
+      );
+    }
+
+    const result = await parseStatement(buffer, sanitizedPassword, { fileName: file.name, bankId: sanitizedBankId });
 
     if (!result.continuity.valid) {
       return NextResponse.json({

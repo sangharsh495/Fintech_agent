@@ -571,15 +571,59 @@ export function calculateDeductionBreakeven(
   }
 }
 
+function sanitizeDeductions(d?: Partial<DeductionInput>): DeductionInput {
+  const clean = (val: any) => (Number.isFinite(Number(val)) ? Math.max(0, Number(val)) : 0)
+  return {
+    section80C: clean(d?.section80C),
+    section80CCD1B: clean(d?.section80CCD1B),
+    section80CCD2: clean(d?.section80CCD2),
+    section80D: clean(d?.section80D),
+    section80DD: clean(d?.section80DD),
+    section80DDB: clean(d?.section80DDB),
+    section80E: clean(d?.section80E),
+    section80EEA: clean(d?.section80EEA),
+    section80EEB: clean(d?.section80EEB),
+    section80G: clean(d?.section80G),
+    section80GG: clean(d?.section80GG),
+    section80TTA: clean(d?.section80TTA),
+    section80TTB: clean(d?.section80TTB),
+    section80U: clean(d?.section80U),
+    section24b: clean(d?.section24b),
+    otherDeductions: clean(d?.otherDeductions),
+  }
+}
+
 // ─── Public entry point ─────────────────────────────────────
 
 export function computeIndianTax(input: TaxComputationInput): TaxComputationResult {
-  const old = computeRegime(input, "OLD")
-  const neu = computeRegime(input, "NEW")
+  // Defensive input sanitization: neutralize NaN, Infinity, and Article 276(2) violations
+  const safeInput: TaxComputationInput = {
+    financialYear: input.financialYear || "2024-2025",
+    age: Number.isFinite(input.age) ? Math.max(0, Math.min(120, Number(input.age))) : 35,
+    salaryIncome: Number.isFinite(input.salaryIncome) ? Math.max(0, Number(input.salaryIncome)) : 0,
+    hraExemption: Number.isFinite(input.hraExemption) ? Math.max(0, Number(input.hraExemption)) : 0,
+    ltaExemption: Number.isFinite(input.ltaExemption) ? Math.max(0, Number(input.ltaExemption)) : 0,
+    // Article 276(2) of Constitution of India caps statutory professional tax at Rs 2,500/year
+    professionalTax: Number.isFinite(input.professionalTax) ? Math.max(0, Math.min(2500, Number(input.professionalTax))) : 0,
+    housePropertyIncome: Number.isFinite(input.housePropertyIncome) ? Number(input.housePropertyIncome) : 0,
+    presumptiveIncome44ADA: Number.isFinite(input.presumptiveIncome44ADA) ? Math.max(0, Number(input.presumptiveIncome44ADA)) : 0,
+    presumptiveIncome44AD: Number.isFinite(input.presumptiveIncome44AD) ? Math.max(0, Number(input.presumptiveIncome44AD)) : 0,
+    businessIncome: Number.isFinite(input.businessIncome) ? Math.max(0, Number(input.businessIncome)) : 0,
+    shortTermCapitalGains111A: Number.isFinite(input.shortTermCapitalGains111A) ? Math.max(0, Number(input.shortTermCapitalGains111A)) : 0,
+    longTermCapitalGains112A: Number.isFinite(input.longTermCapitalGains112A) ? Math.max(0, Number(input.longTermCapitalGains112A)) : 0,
+    otherCapitalGains: Number.isFinite(input.otherCapitalGains) ? Math.max(0, Number(input.otherCapitalGains)) : 0,
+    otherSourcesIncome: Number.isFinite(input.otherSourcesIncome) ? Math.max(0, Number(input.otherSourcesIncome)) : 0,
+    savingsInterest: Number.isFinite(input.savingsInterest) ? Math.max(0, Number(input.savingsInterest)) : 0,
+    deductions: sanitizeDeductions(input.deductions),
+    taxesPaid: Number.isFinite(input.taxesPaid) ? Math.max(0, Number(input.taxesPaid)) : 0,
+  }
+
+  const old = computeRegime(safeInput, "OLD")
+  const neu = computeRegime(safeInput, "NEW")
 
   const recommendedRegime: Regime = old.totalTaxPayable <= neu.totalTaxPayable ? "OLD" : "NEW"
   const savings = Math.abs(old.totalTaxPayable - neu.totalTaxPayable)
-  const breakevenDeductions = calculateDeductionBreakeven(input, old, neu)
+  const breakevenDeductions = calculateDeductionBreakeven(safeInput, old, neu)
 
   const breakdown = [
     `Gross total income (old regime basis): ${fmt(old.grossTotalIncome)}`,

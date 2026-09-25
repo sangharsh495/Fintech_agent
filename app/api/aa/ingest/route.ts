@@ -14,6 +14,16 @@ export const runtime = "nodejs"
 
 export async function POST(req: Request) {
   try {
+    const contentLength = Number(req.headers.get("content-length")) || 0
+    const MAX_AA_PAYLOAD_BYTES = 10 * 1024 * 1024 // 10 MB
+
+    if (contentLength > MAX_AA_PAYLOAD_BYTES) {
+      return NextResponse.json(
+        { error: "Payload too large. Account Aggregator payload must not exceed 10 MB." },
+        { status: 413 }
+      )
+    }
+
     const contentType = req.headers.get("content-type") || ""
     let payload: any
 
@@ -24,6 +34,9 @@ export async function POST(req: Request) {
       const file = formData.get("file") as File | null
       if (!file) {
         return NextResponse.json({ error: "No file provided in form data" }, { status: 400 })
+      }
+      if (file.size > MAX_AA_PAYLOAD_BYTES) {
+        return NextResponse.json({ error: "Uploaded file exceeds 10 MB limit" }, { status: 413 })
       }
       const text = await file.text()
       try {

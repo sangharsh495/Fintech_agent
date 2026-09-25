@@ -14,9 +14,9 @@ export const runtime = "nodejs"
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}))
-    const bankName = body.bankName || "HDFC Bank"
-    const accountLast4 = body.accountLast4 || "4921"
-    const periodMonths = body.months || 3
+    const bankName = String(body.bankName || "HDFC Bank").replace(/<[^>]*>?/gm, "").slice(0, 50)
+    const accountLast4 = String(body.accountLast4 || "4921").replace(/[^0-9]/g, "").slice(0, 4)
+    const periodMonths = Math.min(Math.max(1, parseInt(body.months, 10) || 3), 12)
 
     // Generate an authentic ReBIT transaction sequence with exact fund conservation
     const transactions: any[] = []

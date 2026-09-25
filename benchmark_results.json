@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "timestamp": "2026-09-25T13:31:15Z",
+    "timestamp": "2026-09-25T14:00:39Z",
     "framework": "FinFlow Neuro-Symbolic Evaluation Benchmark",
     "venue": "IEEE Submission Benchmark",
     "random_seed": 42
   },
   "test_1_statutory_engine": {
     "total_profiles": 50,
-    "mean_latency_us": 15.65,
+    "mean_latency_us": 2.99,
     "statutory_accuracy_pct": 100.0,
     "regime_distribution": {
       "new_regime_count": 26,

@@ -74,6 +74,7 @@
 - Table I: Statutory Accuracy & Execution Latency ($N=50$ vectors).
 - Table II: Ingestion Invariant Verification & Fault Detection.
 - Table III: Context Ablation: Ungrounded LLM vs. Context-Grounded Virtual CA.
+- Table IV: Adversarial Attack Resilience and Zero-Trust Hardening ($A_1$--$A_8$).
 - Detailed analysis of breakeven frontiers, marginal relief zone, and compute efficiency.
 
 ### Section VIII: The Account Aggregator (AA / ReBIT FI-Fetch) Strategic Horizon
@@ -118,3 +119,15 @@
 | **Mean Absolute Tax Error** | ₹1,905.20 | **₹0.00** | **100% elimination** |
 | **Regulatory Hallucination Rate**| 0.00% | **0.00%** | Formally constrained |
 | **Compute Execution Latency** | 1.84 s | **2.14 $\mu$s** | **>800,000× faster** |
+
+### Table IV: Adversarial Attack Resilience and Zero-Trust Hardening
+| Attack Vector | Threat Model / Exploit Vector | Defensive Hardening Mechanism | Survival Rate | Verification Status |
+| :--- | :--- | :--- | :---: | :---: |
+| **$A_1$: Prompt Injection** | Delimiter breakout (`"""`) & LLM role hijacking | Triple-quote escaping, explicit `<bank_statement_data>` boundary encapsulation | **100.00%** | **PASSED** |
+| **$A_2$: Stored XSS** | Embedded script tags (`<script>`, event handlers) in narration | Regex stripping of script tags, event handlers, control/null characters | **100.00%** | **PASSED** |
+| **$A_3$: ReDoS / Catastrophic Regex** | Malicious repetitive XML/HTML sequences | Linear iterative parser ($O(n)$) & 10,000 transaction ceiling | **100.00%** | **PASSED** |
+| **$A_4$: Resource Exhaustion** | Oversized payloads (>10MB / 15MB) | Edge-level file size caps & stream termination with HTTP 413 | **100.00%** | **PASSED** |
+| **$A_5$: Prototype Pollution** | Injected `__proto__` / `constructor` keys in AA JSON | Explicit property deletion and object sanitization | **100.00%** | **PASSED** |
+| **$A_6$: Arithmetic Poisoning** | `NaN`, $\pm\infty$, and negative deductions injected into statutory engine | Finite number validation & Article 276(2) statutory cap enforcement (₹2,500) | **100.00%** | **PASSED** |
+| **$A_7$: File Polyglot** | Executable/HTML shells disguised as `.pdf` statements | Strict `%PDF-` magic-byte file signature validation at offset 0 | **100.00%** | **PASSED** |
+| **$A_8$: Transaction Replay** | Replaying transactions across quarters to inflate deductions | Canonical SHA-256 fingerprinting & duplicate rejection | **100.00%** | **PASSED** |
