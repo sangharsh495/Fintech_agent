@@ -756,8 +756,113 @@ await acheck("Security: Validates authentic PDF magic bytes (%PDF-) and rejects 
 await acheck("Security: Cryptographic SHA-256 rejects replay attacks with formatting perturbations", () => {
   const hash1 = computeAATransactionHash("2025-01-10", 1250.50, "Swiggy Bangalore Order #1234", "HDFC Bank", "TXN-999")
   const hash2 = computeAATransactionHash("2025-01-10", 1250.50, "   SWIGGY bangalore ORDER #1234  ", "hdfc bank", "TXN-999")
-
   assert.equal(hash1, hash2, "Normalized hashes must match, guaranteeing duplicate rejection")
+})
+
+// ── 12. Statutory Tax Optimizer & Virtual CA Rules ─────────────
+console.log("── Statutory Tax Optimizer & Virtual CA Rules ──")
+const { STATUTORY_RULES, optimizeTaxSavings } =
+  await import("../server/services/tax/tax-optimizer.ts")
+
+await acheck("Statutory Rules: All 14 statutory deduction rules are properly defined with valid ceilings", () => {
+  const expectedSections = [
+    "section80C", "section80CCD1B", "section80CCD2", "section80D_Self",
+    "section80D_Parents", "section24b", "section80E", "section80EEA",
+    "section80EEB", "section80G", "section80GG", "section80TTA",
+    "section80TTB", "section44ADA",
+  ]
+  for (const s of expectedSections) {
+    const rule = STATUTORY_RULES[s]
+    assert.ok(rule, `Rule ${s} missing from STATUTORY_RULES`)
+    assert.ok(rule.section, `${s}: missing section name`)
+    assert.ok(rule.title, `${s}: missing title`)
+    assert.ok(rule.citation, `${s}: missing statutory citation`)
+    assert.ok(rule.statutoryCeiling > 0, `${s}: invalid statutory ceiling`)
+    assert.ok(rule.regimes.length > 0, `${s}: missing regime applicability`)
+  }
+})
+
+await acheck("Tax Optimizer: Accurately identifies deduction gaps and ranks by capital efficiency", () => {
+  const profile = {
+    grossIncome: 1500000,
+    age: 32,
+    isSeniorCitizen: false,
+    isSalaried: true,
+    isProfessional: false,
+    currentRegime: "OLD",
+    financialYear: "2024-2025",
+    declaredDeductions: {
+      section80C: 100000, // ₹50k remaining
+      section80CCD1B: 0,   // ₹50k remaining
+      section80D: 10000,   // gap exists
+    },
+  }
+
+  const report = optimizeTaxSavings(profile)
+  assert.equal(report.grossIncome, 1500000)
+  assert.equal(report.marginalTaxRatePercent, 31) // 30% slab + 4% cess = 31.2% -> 31%
+  assert.ok(report.strategies.length >= 3, "Must generate at least 3 active strategies")
+
+  // Check 80C gap strategy
+  const strat80C = report.strategies.find(s => s.section === "Section 80C")
+  assert.ok(strat80C, "Section 80C strategy must be proposed")
+  assert.equal(strat80C.outlayRequired, 50000)
+  assert.ok(strat80C.immediateTaxSaved > 15000)
+
+  // Check 80CCD(1B) gap strategy
+  const strat80CCD1B = report.strategies.find(s => s.section === "Section 80CCD(1B)")
+  assert.ok(strat80CCD1B, "Section 80CCD(1B) strategy must be proposed")
+  assert.equal(strat80CCD1B.outlayRequired, 50000)
+
+  // Check Section 80CCD(2) employer NPS (0-outlay restructuring)
+  const strat80CCD2 = report.strategies.find(s => s.section === "Section 80CCD(2)")
+  assert.ok(strat80CCD2, "Section 80CCD(2) employer NPS must be identified for salaried taxpayer")
+  assert.equal(strat80CCD2.outlayRequired, 0, "Employer NPS must require 0 out-of-pocket outlay")
+
+  // Capital efficiency ranking: zero-outlay strategies should be ranked first
+  assert.equal(report.strategies[0].outlayRequired, 0, "Highest ranked strategy must be zero-outlay restructuring")
+})
+
+await acheck("Tax Optimizer: Detects Section 87A Marginal Relief Zone for income near ₹7,00,000", () => {
+  const profile = {
+    grossIncome: 720000,
+    age: 28,
+    isSeniorCitizen: false,
+    isSalaried: true,
+    isProfessional: false,
+    currentRegime: "NEW",
+    financialYear: "2024-2025",
+    declaredDeductions: {},
+  }
+
+  const report = optimizeTaxSavings(profile)
+  assert.ok(report.thresholdOpportunities.length > 0, "Must flag marginal relief zone")
+  assert.ok(report.thresholdOpportunities[0].includes("CRITICAL MARGINAL RELIEF ZONE"))
+  assert.ok(report.thresholdOpportunities[0].includes("₹20,000"), "Must compute exact excess of ₹20,000 above ₹7L")
+})
+
+await acheck("Tax Optimizer: Computes Section 44ADA Presumptive Taxation Arbitrage for Consultants", () => {
+  const profile = {
+    grossIncome: 2400000,
+    age: 35,
+    isSeniorCitizen: false,
+    isSalaried: false,
+    isProfessional: true,
+    currentRegime: "NEW",
+    financialYear: "2024-2025",
+    declaredDeductions: {},
+  }
+
+  const report = optimizeTaxSavings(profile)
+  assert.ok(report.presumptiveArbitrage, "Presumptive arbitrage must be calculated for professional")
+  assert.equal(report.presumptiveArbitrage.eligible, true)
+  assert.equal(report.presumptiveArbitrage.grossReceipts, 2400000)
+  assert.equal(report.presumptiveArbitrage.presumptiveTaxableIncome, 1200000, "50% deemed profit must equal ₹12,00,000")
+  assert.ok(report.presumptiveArbitrage.potentialTaxSavings > 150000, "Tax savings under 44ADA must exceed ₹1.5L")
+
+  const strat44ADA = report.strategies.find(s => s.section === "Section 44ADA")
+  assert.ok(strat44ADA, "Section 44ADA strategy must be generated")
+  assert.equal(strat44ADA.outlayRequired, 0)
 })
 
 // ── Summary ────────────────────────────────────────────────────
