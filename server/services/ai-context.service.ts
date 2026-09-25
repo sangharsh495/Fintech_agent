@@ -33,6 +33,7 @@ import { safeLogError } from "@/server/lib/safe-log"
 import crypto from "crypto"
 import { computeIndianTax } from "@/server/services/tax/tax-calculator"
 import { emptyDeductions, normaliseFinancialYear, type FinancialYear } from "@/server/services/tax/types"
+import { optimizeTaxSavings } from "@/server/services/tax/tax-optimizer"
 import {
   buildLegalKnowledgeBlock,
   DETERMINISTIC_ENGINE_CONTRACT,
@@ -342,14 +343,21 @@ export async function buildCASystemPrompt(
     const effectiveRate = grossIncome > 0 ? (taxPayable / grossIncome) * 100 : 0
     const betterRegime = taxResult.recommendedRegime.toLowerCase()
 
-    const taxOpportunities: string[] = []
-    const remaining80C = Math.max(0, 150000 - deduction80C)
-    if (remaining80C > 0) {
-      taxOpportunities.push(`Invest ₹${remaining80C.toLocaleString("en-IN")} more in 80C (ELSS/PPF/LIC) to save up to ₹${Math.round(remaining80C * 0.3).toLocaleString("en-IN")} in tax.`)
-    }
-    if (grossIncome > 1000000) {
-      taxOpportunities.push("Consider NPS (₹50,000 under 80CCD(1B)) for extra deduction.")
-    }
+    const occLower = (profile?.occupation || "").toLowerCase()
+    const isProfessional = occLower.includes("consultant") || occLower.includes("freelance") || occLower.includes("doctor") || occLower.includes("lawyer") || occLower.includes("architect") || occLower.includes("engineer") || occLower.includes("software")
+    const isSalaried = !occLower.includes("business") && !occLower.includes("freelance") && !occLower.includes("independent")
+
+    // Run the deterministic statutory tax optimizer to derive personalized, ranked strategies
+    const optimizerReport = optimizeTaxSavings({
+      grossIncome,
+      age: 30,
+      isSeniorCitizen: false,
+      isSalaried,
+      isProfessional,
+      currentRegime: taxRegime === "old" ? "OLD" : "NEW",
+      financialYear: engineFy,
+      declaredDeductions: deductions,
+    })
 
     // KYC status
     const hasPan = !!profile?.panNumber
@@ -393,6 +401,14 @@ USER PROFILE & ACCOUNT DETAILS:
     }
 
     if (allowedContextTypes.includes("tax")) {
+      const formattedStrategies = optimizerReport.strategies.length > 0
+        ? optimizerReport.strategies.map((s) => `[Rank ${s.rank}] ${s.section}: ${s.title}
+  • Actionable Step: ${s.actionableStep}
+  • Capital Outlay: ₹${s.outlayRequired.toLocaleString("en-IN")} | Tax Saved: ₹${s.immediateTaxSaved.toLocaleString("en-IN")} (ROI: ${s.effectiveROI}%)
+  • Suitable For: ${s.regimeSuitability} | Lock-in: ${s.lockInPeriod} | Statutory Citation: ${s.statutoryCitation}
+  • CA Rationale: ${s.rationale}`).join("\n\n")
+        : "- All standard statutory deductions are fully claimed!"
+
       contextSections.tax = `
 VERIFIED TAX COMPUTATION (FY ${currentFy}) - produced by the deterministic
 engine. Quote these figures exactly; do not recompute them.
@@ -404,17 +420,24 @@ engine. Quote these figures exactly; do not recompute them.
 - Taxable income (old / new): ₹${Math.round(taxResult.taxableIncomeOld).toLocaleString("en-IN")} / ₹${Math.round(taxResult.taxableIncomeNew).toLocaleString("en-IN")}
 - Total tax payable (old / new): ₹${Math.round(oldTax).toLocaleString("en-IN")} / ₹${Math.round(newTax).toLocaleString("en-IN")}
 - Tax payable on the regime in use: ₹${Math.round(taxPayable).toLocaleString("en-IN")}
-- Effective rate: ${effectiveRate.toFixed(1)}% of gross income
+- Effective tax rate: ${effectiveRate.toFixed(1)}% | Marginal tax rate: ${optimizerReport.marginalTaxRatePercent}%
+- Total unutilized statutory deductions: ₹${optimizerReport.totalUnutilizedDeductions.toLocaleString("en-IN")}
+- Total potential additional tax savings: ₹${optimizerReport.totalPotentialAdditionalTaxSavings.toLocaleString("en-IN")}
 
 STEP-BY-STEP WORKINGS FOR THE REGIME IN USE:
 ${selected.workings.map((line) => `- ${line}`).join("\n")}
 
+EXECUTIVE CA AUDIT ADVISORY:
+${optimizerReport.executiveSummary}
+
+PRIORITIZED TAX-SAVING STRATEGIES (Ranked by Capital Efficiency & ROI):
+${formattedStrategies}
+${optimizerReport.thresholdOpportunities.length > 0 ? `\n\nTHRESHOLD & MARGINAL RELIEF OPPORTUNITIES:\n${optimizerReport.thresholdOpportunities.map((o) => `• ${o}`).join("\n")}` : ""}
+${optimizerReport.presumptiveArbitrage && optimizerReport.presumptiveArbitrage.potentialTaxSavings > 0 ? `\n\nPRESUMPTIVE TAXATION ARBITRAGE (SECTION 44ADA):\n• Eligible gross receipts: ₹${optimizerReport.presumptiveArbitrage.grossReceipts.toLocaleString("en-IN")}\n• Presumptive 50% profit: ₹${optimizerReport.presumptiveArbitrage.presumptiveTaxableIncome.toLocaleString("en-IN")}\n• Potential additional tax savings: ₹${optimizerReport.presumptiveArbitrage.potentialTaxSavings.toLocaleString("en-IN")} under Sec 44ADA.` : ""}
+
 SCOPE OF THIS COMPUTATION: salary and detected 80C only. Capital gains, house
 property, business income and other Chapter VI-A claims are NOT included unless
 the user completed the filing wizard. Say so before quoting a total as final.
-
-TAX SAVING OPPORTUNITIES:
-${taxOpportunities.length > 0 ? taxOpportunities.map((o) => `- ${o}`).join("\n") : "- Fully optimized!"}
 `.trim()
     }
 
