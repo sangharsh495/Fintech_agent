@@ -138,49 +138,69 @@ def plot_continuity_invariant():
     print("✓ Generated paper/figures/fig3_continuity_invariant.png")
 
 # ==============================================================================
-# FIGURE 3: CONTEXT ABLATION & HALLUCINATION REDUCTION
+# FIGURE 4: MULTI-BANK EXTRACTION ACCURACY & INVARIANT SENSITIVITY
 # ==============================================================================
-def plot_ablation_comparison():
-    categories = ['Regime Choice\nAccuracy (%)', 'Zero-Hallucination\nRate (%)', 'Statutory Agreement\nRate (%)']
-    ungrounded = [96.0, 74.0, 68.0]
-    grounded = [100.0, 100.0, 100.0]
+def plot_bank_extraction_accuracy():
+    import json
+    results_path = 'finflow_e1_corpus/results_evaluation.json'
+    
+    with open(results_path, 'r') as f:
+        data = json.load(f)
+        
+    bank_data = data['e2_deterministic_parser']['per_bank']
+    # Sort by layout family and name
+    bank_names = [b['bank'] for b in bank_data]
+    f1_scores = [b['f1'] * 100 for b in bank_data]
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.2, 3.6), gridspec_kw={'width_ratios': [1.8, 1]})
+    
+    # Left: Per-Bank F1 Score
+    colors = ['#10b981' if f1 > 99.0 else '#3b82f6' for f1 in f1_scores]
+    bars = ax1.bar(bank_names, f1_scores, color=colors, edgecolor='#1e293b', width=0.55)
+    
+    ax1.axhline(y=93.8, color='#ef4444', linestyle='--', linewidth=1.2, label='Micro F1 (93.8%)')
+    ax1.set_ylabel('Extraction F1-Score (%)', fontsize=9, fontweight='bold')
+    ax1.set_title('(a) Extraction F1 by Bank Layout', fontsize=10, fontweight='bold')
+    ax1.set_ylim(80, 105)
+    ax1.grid(axis='y', linestyle=':', alpha=0.7)
+    ax1.legend(loc='lower left', fontsize=8)
+    
+    for bar in bars:
+        h = bar.get_height()
+        ax1.annotate(f'{h:.1f}%',
+                     xy=(bar.get_x() + bar.get_width() / 2, h),
+                     xytext=(0, 3), textcoords="offset points",
+                     ha='center', va='bottom', fontsize=7.5, fontweight='bold')
 
-    x = np.arange(len(categories))
-    width = 0.35
-
-    fig, ax = plt.subplots(figsize=(6.5, 3.8))
-    rects1 = ax.bar(x - width/2, ungrounded, width, label='Ungrounded LLM Baseline', color='#94a3b8', edgecolor='#475569')
-    rects2 = ax.bar(x + width/2, grounded, width, label='FinFlow Context-Grounded CA', color='#10b981', edgecolor='#047857')
-
-    ax.set_ylabel('Performance Score (%)')
-    ax.set_title('Fig. 4. Empirical Performance Gain: Ungrounded Baseline vs. Context-Grounded CA')
-    ax.set_xticks(x)
-    ax.set_xticklabels(categories)
-    ax.set_ylim(50, 108)
-    ax.grid(axis='y', linestyle=':')
-    ax.legend(loc='lower right', frameon=True)
-
-    # Add direct percentage labels on bars
-    for rect in rects1:
-        height = rect.get_height()
-        ax.annotate(f'{height:.1f}%',
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, 3), textcoords="offset points",
-                    ha='center', va='bottom', fontsize=8, fontweight='bold', color='#475569')
-
-    for rect in rects2:
-        height = rect.get_height()
-        ax.annotate(f'{height:.1f}%',
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, 3), textcoords="offset points",
-                    ha='center', va='bottom', fontsize=8, fontweight='bold', color='#047857')
+    # Right: Invariant Sensitivity across Error Modes
+    perturb_data = data['e4_perturbation_analysis']
+    modes = ['Omission', 'Insertion', 'Tampering']
+    sensitivities = [
+        perturb_data['omission']['detection_sensitivity'] * 100,
+        perturb_data['insertion']['detection_sensitivity'] * 100,
+        perturb_data['amount_tamper']['detection_sensitivity'] * 100
+    ]
+    
+    bars2 = ax2.bar(modes, sensitivities, color='#8b5cf6', edgecolor='#4c1d95', width=0.5)
+    ax2.set_ylabel('Detection Sensitivity (%)', fontsize=9, fontweight='bold')
+    ax2.set_title('(b) Invariant Sensitivity', fontsize=10, fontweight='bold')
+    ax2.set_ylim(95, 101.5)
+    ax2.grid(axis='y', linestyle=':', alpha=0.7)
+    
+    for bar in bars2:
+        h = bar.get_height()
+        ax2.annotate(f'{h:.2f}%',
+                     xy=(bar.get_x() + bar.get_width() / 2, h),
+                     xytext=(0, 3), textcoords="offset points",
+                     ha='center', va='bottom', fontsize=7.5, fontweight='bold')
 
     plt.tight_layout()
     plt.savefig('paper/figures/fig4_ablation_comparison.png', dpi=300)
     plt.close()
-    print("✓ Generated paper/figures/fig4_ablation_comparison.png")
+    print("✓ Generated paper/figures/fig4_ablation_comparison.png from empirical evaluation")
 
 if __name__ == '__main__':
     plot_tax_breakeven()
     plot_continuity_invariant()
-    plot_ablation_comparison()
+    plot_bank_extraction_accuracy()
+
