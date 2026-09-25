@@ -1,0 +1,490 @@
+{
+  "statement_id": "PNB_003",
+  "bank": "PNB",
+  "bank_display_name": "Punjab National Bank",
+  "account_holder": "Sangharsh G.",
+  "account_number": "427164336421",
+  "ifsc": "PNB0542842",
+  "opening_balance": 18743.13,
+  "closing_balance": -35368.84,
+  "transaction_count": 53,
+  "transactions": [
+    {
+      "date": "2026-05-01",
+      "narration": "IMPS/518522275227/tenant.rent",
+      "ref": "518522275227",
+      "debit": 1233.76,
+      "credit": 0.0,
+      "balance": 17509.37,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-03",
+      "narration": "UPI/559851803035/vendor.shop/Received",
+      "ref": "559851803035",
+      "debit": 0.0,
+      "credit": 5332.94,
+      "balance": 22842.31,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-03",
+      "narration": "UPI/947812091290/airtel.prepaid/Recharge",
+      "ref": "947812091290",
+      "debit": 349,
+      "credit": 0.0,
+      "balance": 22493.31,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-03",
+      "narration": "UPI/564345737744/vendor.shop/Payment",
+      "ref": "564345737744",
+      "debit": 365.2,
+      "credit": 0.0,
+      "balance": 22128.11,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-03",
+      "narration": "UPI/371119040981/vendor.shop/Payment",
+      "ref": "371119040981",
+      "debit": 1020.47,
+      "credit": 0.0,
+      "balance": 21107.64,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-06",
+      "narration": "INT.PD:543562188728",
+      "ref": "543562188728",
+      "debit": 0.0,
+      "credit": 107.55,
+      "balance": 21215.19,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-07",
+      "narration": "NEFT/937054534625/TCS LTD/SALARY",
+      "ref": "937054534625",
+      "debit": 0.0,
+      "credit": 92621.56,
+      "balance": 113836.75,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-08",
+      "narration": "UPI/974472031223/rahul.k/Payment",
+      "ref": "974472031223",
+      "debit": 2003.68,
+      "credit": 0.0,
+      "balance": 111833.07,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-08",
+      "narration": "UPI/818730198077/vendor.shop/Payment",
+      "ref": "818730198077",
+      "debit": 3230.13,
+      "credit": 0.0,
+      "balance": 108602.94,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-09",
+      "narration": "POS/212694157383/Zomato",
+      "ref": "212694157383",
+      "debit": 4608.74,
+      "credit": 0.0,
+      "balance": 103994.2,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-09",
+      "narration": "ATM WDL/642650031064/NAGPUR",
+      "ref": "642650031064",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 98994.2,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-10",
+      "narration": "ACH DR/652653158566/EMI LOAN 9953",
+      "ref": "652653158566",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 92194.2,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-13",
+      "narration": "UPI/114381880039/tenant.rent/Payment",
+      "ref": "114381880039",
+      "debit": 603.18,
+      "credit": 0.0,
+      "balance": 91591.02,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-16",
+      "narration": "UPI/874906700022/airtel.prepaid/Recharge",
+      "ref": "874906700022",
+      "debit": 199,
+      "credit": 0.0,
+      "balance": 91392.02,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-18",
+      "narration": "IMPS/658507817104/tenant.rent",
+      "ref": "658507817104",
+      "debit": 4452.44,
+      "credit": 0.0,
+      "balance": 86939.58,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-19",
+      "narration": "UPI/348987377913/freelance.client/Payment",
+      "ref": "348987377913",
+      "debit": 125.84,
+      "credit": 0.0,
+      "balance": 86813.74,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-20",
+      "narration": "IMPS/364572952104/tenant.rent",
+      "ref": "364572952104",
+      "debit": 1093.68,
+      "credit": 0.0,
+      "balance": 85720.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-20",
+      "narration": "INT.PD:223978109043",
+      "ref": "223978109043",
+      "debit": 0.0,
+      "credit": 138.77,
+      "balance": 85858.83,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-21",
+      "narration": "ACH DR/518833329800/EMI LOAN 1967",
+      "ref": "518833329800",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 79058.83,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-24",
+      "narration": "INT.PD:577748016440",
+      "ref": "577748016440",
+      "debit": 0.0,
+      "credit": 18.37,
+      "balance": 79077.2,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-24",
+      "narration": "UPI/526410402789/priya.s/Payment",
+      "ref": "526410402789",
+      "debit": 693.68,
+      "credit": 0.0,
+      "balance": 78383.52,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-26",
+      "narration": "ATM WDL/981602800240/NAGPUR",
+      "ref": "981602800240",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 68383.52,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-27",
+      "narration": "POS/483646308568/Zomato",
+      "ref": "483646308568",
+      "debit": 3761.62,
+      "credit": 0.0,
+      "balance": 64621.9,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-27",
+      "narration": "POS/330248122663/Netflix",
+      "ref": "330248122663",
+      "debit": 4618.57,
+      "credit": 0.0,
+      "balance": 60003.33,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-29",
+      "narration": "INT.PD:151063197708",
+      "ref": "151063197708",
+      "debit": 0.0,
+      "credit": 136.87,
+      "balance": 60140.2,
+      "type": "credit"
+    },
+    {
+      "date": "2026-05-30",
+      "narration": "POS/285005070052/Reliance Digital",
+      "ref": "285005070052",
+      "debit": 2990.69,
+      "credit": 0.0,
+      "balance": 57149.51,
+      "type": "debit"
+    },
+    {
+      "date": "2026-05-31",
+      "narration": "UPI/438779755724/freelance.client/Payment",
+      "ref": "438779755724",
+      "debit": 2345.36,
+      "credit": 0.0,
+      "balance": 54804.15,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-02",
+      "narration": "IMPS/194499348061/freelance.client",
+      "ref": "194499348061",
+      "debit": 10554.09,
+      "credit": 0.0,
+      "balance": 44250.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-04",
+      "narration": "POS/769094269656/DMart",
+      "ref": "769094269656",
+      "debit": 3938.79,
+      "credit": 0.0,
+      "balance": 40311.27,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-05",
+      "narration": "UPI/517156798165/priya.s/Received",
+      "ref": "517156798165",
+      "debit": 0.0,
+      "credit": 7822.66,
+      "balance": 48133.93,
+      "type": "credit"
+    },
+    {
+      "date": "2026-06-05",
+      "narration": "UPI/138681271301/freelance.client/Payment",
+      "ref": "138681271301",
+      "debit": 659.47,
+      "credit": 0.0,
+      "balance": 47474.46,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-06",
+      "narration": "ACH DR/128903379725/EMI LOAN 8212",
+      "ref": "128903379725",
+      "debit": 12500,
+      "credit": 0.0,
+      "balance": 34974.46,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-08",
+      "narration": "UPI/472898808063/rahul.k/Payment",
+      "ref": "472898808063",
+      "debit": 785.92,
+      "credit": 0.0,
+      "balance": 34188.54,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-11",
+      "narration": "UPI/969278071428/vendor.shop/Payment",
+      "ref": "969278071428",
+      "debit": 2690.01,
+      "credit": 0.0,
+      "balance": 31498.53,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-12",
+      "narration": "UPI/624014644999/airtel.prepaid/Recharge",
+      "ref": "624014644999",
+      "debit": 499,
+      "credit": 0.0,
+      "balance": 30999.53,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-12",
+      "narration": "INT.PD:801532241133",
+      "ref": "801532241133",
+      "debit": 0.0,
+      "credit": 5.82,
+      "balance": 31005.35,
+      "type": "credit"
+    },
+    {
+      "date": "2026-06-14",
+      "narration": "ATM WDL/463941046225/NAGPUR",
+      "ref": "463941046225",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 21005.35,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-15",
+      "narration": "IMPS/964259211677/vendor.shop",
+      "ref": "964259211677",
+      "debit": 5807.95,
+      "credit": 0.0,
+      "balance": 15197.4,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-16",
+      "narration": "UPI/637439031868/rahul.k/Payment",
+      "ref": "637439031868",
+      "debit": 2320.79,
+      "credit": 0.0,
+      "balance": 12876.61,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-18",
+      "narration": "IMPS/204815154690/tenant.rent",
+      "ref": "204815154690",
+      "debit": 10472.57,
+      "credit": 0.0,
+      "balance": 2404.04,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-19",
+      "narration": "UPI/548970770313/priya.s/Payment",
+      "ref": "548970770313",
+      "debit": 1050.62,
+      "credit": 0.0,
+      "balance": 1353.42,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-20",
+      "narration": "UPI/108161215839/rahul.k/Payment",
+      "ref": "108161215839",
+      "debit": 1029.47,
+      "credit": 0.0,
+      "balance": 323.95,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-20",
+      "narration": "IMPS/156911945397/vendor.shop",
+      "ref": "156911945397",
+      "debit": 8123.16,
+      "credit": 0.0,
+      "balance": -7799.21,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-23",
+      "narration": "UPI/740188023070/priya.s/Received",
+      "ref": "740188023070",
+      "debit": 0.0,
+      "credit": 546.61,
+      "balance": -7252.6,
+      "type": "credit"
+    },
+    {
+      "date": "2026-06-26",
+      "narration": "UPI/212472047550/priya.s/Received",
+      "ref": "212472047550",
+      "debit": 0.0,
+      "credit": 979.35,
+      "balance": -6273.25,
+      "type": "credit"
+    },
+    {
+      "date": "2026-06-27",
+      "narration": "UPI/408527808426/freelance.client/Received",
+      "ref": "408527808426",
+      "debit": 0.0,
+      "credit": 1385.51,
+      "balance": -4887.74,
+      "type": "credit"
+    },
+    {
+      "date": "2026-06-28",
+      "narration": "IMPS/319387737155/freelance.client",
+      "ref": "319387737155",
+      "debit": 6485.16,
+      "credit": 0.0,
+      "balance": -11372.9,
+      "type": "debit"
+    },
+    {
+      "date": "2026-06-29",
+      "narration": "POS/223389961757/Ola",
+      "ref": "223389961757",
+      "debit": 372.49,
+      "credit": 0.0,
+      "balance": -11745.39,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-02",
+      "narration": "POS/423357817352/Amazon Retail",
+      "ref": "423357817352",
+      "debit": 5010.55,
+      "credit": 0.0,
+      "balance": -16755.94,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-05",
+      "narration": "UPI/983374993821/rahul.k/Payment",
+      "ref": "983374993821",
+      "debit": 2889.56,
+      "credit": 0.0,
+      "balance": -19645.5,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-08",
+      "narration": "POS/728010088332/DMart",
+      "ref": "728010088332",
+      "debit": 4166.75,
+      "credit": 0.0,
+      "balance": -23812.25,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-09",
+      "narration": "POS/682609843594/DMart",
+      "ref": "682609843594",
+      "debit": 2356.59,
+      "credit": 0.0,
+      "balance": -26168.84,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-12",
+      "narration": "ACH DR/541056610083/EMI LOAN 6613",
+      "ref": "541056610083",
+      "debit": 9200,
+      "credit": 0.0,
+      "balance": -35368.84,
+      "type": "debit"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "timestamp": "2026-09-25T14:38:44.866410",
+    "corpus": "finflow_e1_corpus",
+    "total_statements": 120,
+    "banks_evaluated": 8
+  },
+  "e2_deterministic_parser": {
+    "micro_precision": 0.938,
+    "micro_recall": 0.938,
+    "micro_f1": 0.938,
+    "bank_detection_accuracy": 1.0,
+    "per_bank": [
+      {
+        "bank": "AXIS",
+        "statements": 15,
+        "precision": 0.9072,
+        "recall": 0.9072,
+        "f1": 0.9072,
+        "continuity_pass_rate": 0.0,
+        "tp": 567,
+        "fp": 58,
+        "fn": 58
+      },
+      {
+        "bank": "BOB",
+        "statements": 15,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "continuity_pass_rate": 0.6667,
+        "tp": 641,
+        "fp": 0,
+        "fn": 0
+      },
+      {
+        "bank": "HDFC",
+        "statements": 15,
+        "precision": 0.8992,
+        "recall": 0.8992,
+        "f1": 0.8992,
+        "continuity_pass_rate": 0.0,
+        "tp": 580,
+        "fp": 65,
+        "fn": 65
+      },
+      {
+        "bank": "ICICI",
+        "statements": 15,
+        "precision": 0.8996,
+        "recall": 0.8996,
+        "f1": 0.8996,
+        "continuity_pass_rate": 0.0,
+        "tp": 636,
+        "fp": 71,
+        "fn": 71
+      },
+      {
+        "bank": "KOTAK",
+        "statements": 15,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "continuity_pass_rate": 0.4667,
+        "tp": 641,
+        "fp": 0,
+        "fn": 0
+      },
+      {
+        "bank": "PNB",
+        "statements": 15,
+        "precision": 0.9065,
+        "recall": 0.9065,
+        "f1": 0.9065,
+        "continuity_pass_rate": 0.0667,
+        "tp": 669,
+        "fp": 69,
+        "fn": 69
+      },
+      {
+        "bank": "SBI",
+        "statements": 15,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "continuity_pass_rate": 0.5333,
+        "tp": 666,
+        "fp": 0,
+        "fn": 0
+      },
+      {
+        "bank": "YES",
+        "statements": 15,
+        "precision": 0.8963,
+        "recall": 0.8963,
+        "f1": 0.8963,
+        "continuity_pass_rate": 0.0667,
+        "tp": 562,
+        "fp": 65,
+        "fn": 65
+      }
+    ]
+  },
+  "e3_continuity_verification": {
+    "clean_continuity_pass_rate": 0.225,
+    "clean_fpr": 0.775,
+    "clean_specificity": 0.225
+  },
+  "e4_perturbation_analysis": {
+    "omission": {
+      "trials": 120,
+      "detected": 119,
+      "detection_sensitivity": 0.9917,
+      "exact_localized": 119,
+      "localization_accuracy": 0.9917
+    },
+    "insertion": {
+      "trials": 120,
+      "detected": 120,
+      "detection_sensitivity": 1.0,
+      "exact_localized": 120,
+      "localization_accuracy": 1.0
+    },
+    "amount_tamper": {
+      "trials": 120,
+      "detected": 119,
+      "detection_sensitivity": 0.9917,
+      "exact_localized": 119,
+      "localization_accuracy": 0.9917
+    }
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "statement_id": "PNB_012",
+  "bank": "PNB",
+  "bank_display_name": "Punjab National Bank",
+  "account_holder": "Rohan Mehta",
+  "account_number": "513094377232",
+  "ifsc": "PNB0843444",
+  "opening_balance": 33973.3,
+  "closing_balance": 34281.58,
+  "transaction_count": 26,
+  "transactions": [
+    {
+      "date": "2026-07-04",
+      "narration": "POS/124847924317/Flipkart",
+      "ref": "124847924317",
+      "debit": 2362.61,
+      "credit": 0.0,
+      "balance": 31610.69,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-07",
+      "narration": "UPI/455685061459/vendor.shop/Payment",
+      "ref": "455685061459",
+      "debit": 3044.21,
+      "credit": 0.0,
+      "balance": 28566.48,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-07",
+      "narration": "UPI/643071826582/tenant.rent/Payment",
+      "ref": "643071826582",
+      "debit": 630.97,
+      "credit": 0.0,
+      "balance": 27935.51,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-08",
+      "narration": "POS/262710821721/Flipkart",
+      "ref": "262710821721",
+      "debit": 4353.89,
+      "credit": 0.0,
+      "balance": 23581.62,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-08",
+      "narration": "IMPS/976202338869/tenant.rent",
+      "ref": "976202338869",
+      "debit": 10022.71,
+      "credit": 0.0,
+      "balance": 13558.91,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-09",
+      "narration": "IMPS/800026909214/vendor.shop",
+      "ref": "800026909214",
+      "debit": 6431.58,
+      "credit": 0.0,
+      "balance": 7127.33,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-10",
+      "narration": "NEFT/756119956368/TCS LTD/SALARY",
+      "ref": "756119956368",
+      "debit": 0.0,
+      "credit": 74004.6,
+      "balance": 81131.93,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-11",
+      "narration": "INT.PD:802866719627",
+      "ref": "802866719627",
+      "debit": 0.0,
+      "credit": 140.83,
+      "balance": 81272.76,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-11",
+      "narration": "ATM WDL/667992671864/NAGPUR",
+      "ref": "667992671864",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 76272.76,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-11",
+      "narration": "UPI/789089275324/freelance.client/Payment",
+      "ref": "789089275324",
+      "debit": 739.04,
+      "credit": 0.0,
+      "balance": 75533.72,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-11",
+      "narration": "UPI/601455307443/vendor.shop/Payment",
+      "ref": "601455307443",
+      "debit": 990.29,
+      "credit": 0.0,
+      "balance": 74543.43,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-14",
+      "narration": "POS/371722264872/Spotify",
+      "ref": "371722264872",
+      "debit": 2324.91,
+      "credit": 0.0,
+      "balance": 72218.52,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-17",
+      "narration": "ATM WDL/330111302590/NAGPUR",
+      "ref": "330111302590",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 62218.52,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-18",
+      "narration": "POS/572326909501/Flipkart",
+      "ref": "572326909501",
+      "debit": 2104.19,
+      "credit": 0.0,
+      "balance": 60114.33,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-19",
+      "narration": "INT.PD:202989754519",
+      "ref": "202989754519",
+      "debit": 0.0,
+      "credit": 7.56,
+      "balance": 60121.89,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-21",
+      "narration": "UPI/857958455239/tenant.rent/Received",
+      "ref": "857958455239",
+      "debit": 0.0,
+      "credit": 6621.8,
+      "balance": 66743.69,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-22",
+      "narration": "IMPS/676169684538/freelance.client",
+      "ref": "676169684538",
+      "debit": 7051.29,
+      "credit": 0.0,
+      "balance": 59692.4,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-23",
+      "narration": "UPI/468564125443/vendor.shop/Payment",
+      "ref": "468564125443",
+      "debit": 2782.21,
+      "credit": 0.0,
+      "balance": 56910.19,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-24",
+      "narration": "UPI/584340616928/rahul.k/Payment",
+      "ref": "584340616928",
+      "debit": 508.2,
+      "credit": 0.0,
+      "balance": 56401.99,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-25",
+      "narration": "UPI/285476679554/priya.s/Payment",
+      "ref": "285476679554",
+      "debit": 2101.39,
+      "credit": 0.0,
+      "balance": 54300.6,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-26",
+      "narration": "INT.PD:271988286210",
+      "ref": "271988286210",
+      "debit": 0.0,
+      "credit": 140.15,
+      "balance": 54440.75,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-26",
+      "narration": "POS/821241608127/Amazon Retail",
+      "ref": "821241608127",
+      "debit": 4783.62,
+      "credit": 0.0,
+      "balance": 49657.13,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-27",
+      "narration": "ATM WDL/738487665932/NAGPUR",
+      "ref": "738487665932",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 44657.13,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-28",
+      "narration": "UPI/470270845857/rahul.k/Payment",
+      "ref": "470270845857",
+      "debit": 137.43,
+      "credit": 0.0,
+      "balance": 44519.7,
+      "type": "debit"
+    },
+    {
+      "date": "2026-07-30",
+      "narration": "INT.PD:312904059076",
+      "ref": "312904059076",
+      "debit": 0.0,
+      "credit": 80.31,
+      "balance": 44600.01,
+      "type": "credit"
+    },
+    {
+      "date": "2026-07-31",
+      "narration": "IMPS/259214132975/priya.s",
+      "ref": "259214132975",
+      "debit": 10318.43,
+      "credit": 0.0,
+      "balance": 34281.58,
+      "type": "debit"
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "statement_id": "BOB_001",
+  "bank": "BOB",
+  "bank_display_name": "Bank of Baroda",
+  "account_holder": "Vikram Nair",
+  "account_number": "949939358884",
+  "ifsc": "BOB0228391",
+  "opening_balance": 57132.92,
+  "closing_balance": 20583.01,
+  "transaction_count": 27,
+  "transactions": [
+    {
+      "date": "2026-01-04",
+      "narration": "UPI/847476207456/rahul.k/Payment",
+      "ref": "847476207456",
+      "debit": 2905.28,
+      "credit": 0.0,
+      "balance": 54227.64,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "UPI/768558592859/freelance.client/Received",
+      "ref": "768558592859",
+      "debit": 0.0,
+      "credit": 7893.42,
+      "balance": 62121.06,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "ATM WDL/689851037061/NAGPUR",
+      "ref": "689851037061",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 52121.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-06",
+      "narration": "ACH DR/603037064139/EMI LOAN 3279",
+      "ref": "603037064139",
+      "debit": 9200,
+      "credit": 0.0,
+      "balance": 42921.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-06",
+      "narration": "UPI/724272509953/airtel.prepaid/Recharge",
+      "ref": "724272509953",
+      "debit": 719,
+      "credit": 0.0,
+      "balance": 42202.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-07",
+      "narration": "ACH DR/451514522711/EMI LOAN 5218",
+      "ref": "451514522711",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 35402.06,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-10",
+      "narration": "UPI/273937774777/rahul.k/Payment",
+      "ref": "273937774777",
+      "debit": 2563.77,
+      "credit": 0.0,
+      "balance": 32838.29,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-10",
+      "narration": "ATM WDL/989576874279/NAGPUR",
+      "ref": "989576874279",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 30838.29,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-11",
+      "narration": "POS/401271387723/Swiggy",
+      "ref": "401271387723",
+      "debit": 2985.98,
+      "credit": 0.0,
+      "balance": 27852.31,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-13",
+      "narration": "ATM WDL/405157494091/NAGPUR",
+      "ref": "405157494091",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 22852.31,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-15",
+      "narration": "ATM WDL/837420698255/NAGPUR",
+      "ref": "837420698255",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 17852.31,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-15",
+      "narration": "NEFT/165139396696/ACCENTURE SOL/SALARY",
+      "ref": "165139396696",
+      "debit": 0.0,
+      "credit": 39966.24,
+      "balance": 57818.55,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-15",
+      "narration": "POS/556075239022/Zomato",
+      "ref": "556075239022",
+      "debit": 3633.71,
+      "credit": 0.0,
+      "balance": 54184.84,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-16",
+      "narration": "POS/229324637625/Zomato",
+      "ref": "229324637625",
+      "debit": 2396.27,
+      "credit": 0.0,
+      "balance": 51788.57,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-17",
+      "narration": "POS/665240178685/Netflix",
+      "ref": "665240178685",
+      "debit": 860.36,
+      "credit": 0.0,
+      "balance": 50928.21,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-17",
+      "narration": "UPI/479863046647/rahul.k/Received",
+      "ref": "479863046647",
+      "debit": 0.0,
+      "credit": 3515.51,
+      "balance": 54443.72,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-17",
+      "narration": "POS/409930899477/Airtel Postpaid",
+      "ref": "409930899477",
+      "debit": 4204.17,
+      "credit": 0.0,
+      "balance": 50239.55,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-18",
+      "narration": "UPI/335102082792/tenant.rent/Payment",
+      "ref": "335102082792",
+      "debit": 1692.15,
+      "credit": 0.0,
+      "balance": 48547.4,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-20",
+      "narration": "POS/675905752262/Netflix",
+      "ref": "675905752262",
+      "debit": 5668.08,
+      "credit": 0.0,
+      "balance": 42879.32,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-21",
+      "narration": "POS/512749246710/BigBasket",
+      "ref": "512749246710",
+      "debit": 5912.55,
+      "credit": 0.0,
+      "balance": 36966.77,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-22",
+      "narration": "UPI/234254342493/tenant.rent/Payment",
+      "ref": "234254342493",
+      "debit": 268.77,
+      "credit": 0.0,
+      "balance": 36698.0,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-22",
+      "narration": "UPI/600134096718/priya.s/Payment",
+      "ref": "600134096718",
+      "debit": 2673.9,
+      "credit": 0.0,
+      "balance": 34024.1,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-23",
+      "narration": "POS/403705646380/Flipkart",
+      "ref": "403705646380",
+      "debit": 4026.88,
+      "credit": 0.0,
+      "balance": 29997.22,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-24",
+      "narration": "UPI/427109376994/airtel.prepaid/Recharge",
+      "ref": "427109376994",
+      "debit": 199,
+      "credit": 0.0,
+      "balance": 29798.22,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-26",
+      "narration": "POS/392100837830/Spotify",
+      "ref": "392100837830",
+      "debit": 1438.5,
+      "credit": 0.0,
+      "balance": 28359.72,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-26",
+      "narration": "POS/799675895106/BigBasket",
+      "ref": "799675895106",
+      "debit": 3876.71,
+      "credit": 0.0,
+      "balance": 24483.01,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-27",
+      "narration": "POS/232076574799/Netflix",
+      "ref": "232076574799",
+      "debit": 3900.0,
+      "credit": 0.0,
+      "balance": 20583.01,
+      "type": "debit"
+    }
+  ]
+}
