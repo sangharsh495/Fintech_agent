@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react"
 import { View, Text, ScrollView, StyleSheet, RefreshControl, ActivityIndicator, Animated, TouchableOpacity, Easing } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { Ionicons } from "@expo/vector-icons"
+import { useRouter } from "expo-router"
 import { useAuth } from "../_layout"
 import { dashboardApi } from "../../lib/api"
 import { Spacing, Typography, Colors, BorderRadius, Shadows, ComponentSizes, Layout, Animation, Interaction, PremiumEffects, DesignSystem } from "../../lib/design-system"
@@ -27,6 +28,7 @@ const bankCardColors: readonly [string, string][] = [
 ]
 export default function DashboardScreen() {
   const { token, user } = useAuth()
+  const router = useRouter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -239,7 +241,13 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity style={styles.viewAllButton} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}>
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                router.push("/analytics")
+              }}
+            >
               <Text style={styles.viewAllText}>View All</Text>
               <Ionicons name="chevron-forward-outline" size={16} color={Colors.primary} />
             </TouchableOpacity>
@@ -349,6 +357,7 @@ export default function DashboardScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                 setShowQuickActions(false)
+                router.push("/upload")
               }}
               activeOpacity={0.8}
             >
@@ -362,6 +371,7 @@ export default function DashboardScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                 setShowQuickActions(false)
+                router.push("/analytics")
               }}
               activeOpacity={0.8}
             >
@@ -375,6 +385,7 @@ export default function DashboardScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                 setShowQuickActions(false)
+                router.push("/calculators")
               }}
               activeOpacity={0.8}
             >
@@ -388,6 +399,7 @@ export default function DashboardScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                 setShowQuickActions(false)
+                router.push("/settings")
               }}
               activeOpacity={0.8}
             >
