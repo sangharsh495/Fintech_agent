@@ -1,0 +1,15 @@
+# Dependencies (EAS installs fresh on cloud)
+node_modules/
+
+# Native folders (EAS prebuilds fresh)
+android/
+ios/
+
+# Build caches & temp
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
+.gradle/
+build/
