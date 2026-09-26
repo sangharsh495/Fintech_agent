@@ -36,3 +36,7 @@ venv/
 __pycache__/
 **/*.pyc
 .pytest_cache/
+
+# Android binaries
+*.apk
+*.aab
