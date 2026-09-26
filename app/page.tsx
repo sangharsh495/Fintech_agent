@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import DashboardCharts from "@/components/dashboard-charts"
 import {
@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Clock,
   Zap,
+  RefreshCw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -130,35 +131,68 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<any[]>([])
   const [hasData, setHasData] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [activeAlert, setActiveAlert] = useState<number | null>(null)
   const [txFilter, setTxFilter] = useState("")
 
+  const fetchDashboardData = useCallback(async (showLoading = false) => {
+    if (showLoading) setIsLoading(true)
+    else setIsRefreshing(true)
+
+    try {
+      const [dashRes, analyticsRes] = await Promise.all([
+        fetch("/api/dashboard"),
+        fetch("/api/analytics"),
+      ])
+      if (!dashRes.ok) return
+      const dashJson = await dashRes.json()
+      const analyticsJson = analyticsRes.ok ? await analyticsRes.json() : null
+
+      setHasData(dashJson.hasData)
+      if (dashJson.hasData) {
+        setData({
+          totalBalance: dashJson.totalBalance,
+          monthlyIncome: dashJson.monthlyIncome,
+          monthlyExpense: dashJson.monthlyExpense,
+          netWorth: dashJson.netWorth,
+          savingsRate: dashJson.savingsRate,
+          recentTransactions: dashJson.recentTransactions || [],
+          perBankBalances: dashJson.perBankBalances || [],
+        })
+        setAlerts(dashJson.alerts || [])
+        if (analyticsJson) setAnalyticsData(analyticsJson)
+      }
+    } catch (err) {
+      console.error("Dashboard sync error:", err)
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }, [])
+
   useEffect(() => {
     setMounted(true)
-    Promise.all([
-      fetch("/api/dashboard").then((res) => res.json()),
-      fetch("/api/analytics").then((res) => res.json())
-    ])
-      .then(([dashJson, analyticsJson]) => {
-        setHasData(dashJson.hasData)
-        if (dashJson.hasData) {
-          setData({
-            totalBalance: dashJson.totalBalance,
-            monthlyIncome: dashJson.monthlyIncome,
-            monthlyExpense: dashJson.monthlyExpense,
-            netWorth: dashJson.netWorth,
-            savingsRate: dashJson.savingsRate,
-            recentTransactions: dashJson.recentTransactions || [],
-            perBankBalances: dashJson.perBankBalances || [],
-          })
-          setAlerts(dashJson.alerts || [])
-          setAnalyticsData(analyticsJson)
-        }
-      })
-      .catch((err) => console.error("Failed to load dashboard data:", err))
-      .finally(() => setIsLoading(false))
-  }, [])
+    fetchDashboardData(true)
+
+    // Window focus refetch: Automatically syncs whenever you switch back from Mobile APK
+    const handleFocus = () => {
+      fetchDashboardData(false)
+    }
+    window.addEventListener("focus", handleFocus)
+
+    // Periodic live sync every 20 seconds while tab is active
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchDashboardData(false)
+      }
+    }, 20000)
+
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+      clearInterval(interval)
+    }
+  }, [fetchDashboardData])
 
   const filteredTransactions = useMemo(() => {
     if (!data?.recentTransactions) return []
@@ -366,8 +400,17 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Action Button Strip - Balanced on mobile */}
-        <div className="grid grid-cols-3 sm:flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+        {/* Action Button Strip - Balanced on mobile & desktop */}
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          <button
+            onClick={() => fetchDashboardData(false)}
+            disabled={isRefreshing}
+            title="Instant Live Sync with Mobile APK & Database"
+            className="w-full inline-flex items-center justify-center px-3 sm:px-3.5 py-2 sm:py-2.25 text-xs font-semibold rounded-xl bg-card border border-border hover:bg-secondary transition-all cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={cn("w-3.5 h-3.5 mr-1 sm:mr-1.5 text-primary", isRefreshing && "animate-spin")} />
+            <span>{isRefreshing ? "Syncing..." : "Sync"}</span>
+          </button>
           <Link href="/upload" className="w-full sm:w-auto">
             <button className="w-full inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2.25 text-xs font-bold rounded-xl text-primary-foreground bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-primary/25 cursor-pointer">
               <Plus className="w-3.5 h-3.5 mr-1 sm:mr-1.5" />
