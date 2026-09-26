@@ -20,7 +20,6 @@
           "backgroundColor": "#0f172a"
         },
         "package": "com.finflow.mobile",
-        "usesCleartextTraffic": true,
         "permissions": [
           "USE_BIOMETRIC",
           "USE_FINGERPRINT",
