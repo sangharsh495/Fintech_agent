@@ -135,6 +135,7 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const [activeAlert, setActiveAlert] = useState<number | null>(null)
   const [txFilter, setTxFilter] = useState("")
+  const [chartView, setChartView] = useState<"networth" | "performance" | "expenses">("networth")
 
   const fetchDashboardData = useCallback(async (showLoading = false) => {
     if (showLoading) setIsLoading(true)
@@ -432,276 +433,297 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* ── 2. HERO NET WORTH & CASHFLOW GAUGES ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-        
-        {/* Net Worth Main Hero Area Card */}
-        <Card className="lg:col-span-8 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[96px] pointer-events-none" />
-          
-          <div className="relative z-10">
-            <div className="flex items-start justify-between">
-              <div>
-                <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Consolidated Net Worth
-                </span>
-                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mt-1.5">
-                  <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
-                    <AnimatedCounter value={data.netWorth} prefix="₹" />
-                  </h2>
-                  <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-                    <ArrowUpRight className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-                    <span>Verified</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs shrink-0">
-                <Wallet className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-              </div>
-            </div>
-
-            {/* Asset Breakdown Chips */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3.5 sm:mt-4">
-              <span className="text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
-                Liquid Balance: <strong className="text-foreground font-mono">₹{data.totalBalance.toLocaleString("en-IN")}</strong>
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-secondary/80 text-muted-foreground border border-border/40">
-                Accounts: <strong className="text-foreground">{data.perBankBalances.length} Synchronized</strong>
-              </span>
+      {/* ── 2. EXECUTIVE 4-METRIC TOP BAR (Balanced & Compact) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Metric 1: Net Worth */}
+        <Card className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-card/85 backdrop-blur-xl shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Net Worth
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Wallet className="w-4 h-4" />
             </div>
           </div>
-
-          {/* Inline Net Worth Area Chart */}
-          <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border/50 relative z-10">
-            <DashboardCharts type="networth" data={analyticsData} />
+          <div className="mt-2.5">
+            <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+              <AnimatedCounter value={data.netWorth} prefix="₹" />
+            </p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500">
+                <ArrowUpRight className="w-3 h-3" />
+                Verified
+              </span>
+              <span className="text-[10px] text-muted-foreground truncate">
+                across {data.perBankBalances.length} accounts
+              </span>
+            </div>
           </div>
         </Card>
 
-        {/* Right Cashflow Stack: Inflow, Outflow & Savings Ring */}
-        <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-5">
-          
-          {/* Inflow vs Outflow Dual Card */}
-          <Card className="p-5 md:p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm flex-1">
-            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
-              Cashflow Pulse (Monthly)
+        {/* Metric 2: Monthly Inflow */}
+        <Card className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-card/85 backdrop-blur-xl shadow-xs hover:border-emerald-500/40 transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Monthly Inflow
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <ArrowDownLeft className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2.5">
+            <p className="text-xl sm:text-2xl font-black text-emerald-500 tracking-tight font-mono">
+              ₹{data.monthlyIncome.toLocaleString("en-IN")}
             </p>
-            <div className="space-y-3.5">
-              
-              {/* Inflow */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-500/5 border border-emerald-500/15">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <ArrowDownLeft className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground font-medium">Monthly Inflow</p>
-                    <p className="text-base font-extrabold text-foreground font-mono">
-                      ₹{data.monthlyIncome.toLocaleString("en-IN")}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">
-                  Credited
-                </span>
-              </div>
-
-              {/* Outflow */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/15">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-rose-500/15 flex items-center justify-center text-rose-600 dark:text-rose-400">
-                    <ArrowUpRight className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground font-medium">Monthly Outflow</p>
-                    <p className="text-base font-extrabold text-foreground font-mono">
-                      ₹{data.monthlyExpense.toLocaleString("en-IN")}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-500">
-                  Debited
-                </span>
-              </div>
-
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                Credited this cycle
+              </span>
             </div>
-          </Card>
+          </div>
+        </Card>
 
-          {/* Savings Rate Radial Card */}
-          <Card className="p-5 md:p-6 rounded-[2rem] border border-border/70 bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Savings Quotient
-                </p>
-                <p className="text-3xl font-black text-foreground font-mono mt-1">
-                  {data.savingsRate}%
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {data.savingsRate >= 30 ? "🔥 Excellent Wealth Accumulation" : "⚡ Target 30%+ with 50/30/20 rule"}
-                </p>
-              </div>
-
-              <div className="relative w-18 h-18 shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="10" className="text-secondary" />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    fill="none"
-                    stroke="var(--primary)"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    style={{ strokeDasharray: `${Math.min(100, Math.max(0, data.savingsRate)) * 2.51} 251` }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-extrabold text-primary font-mono">{data.savingsRate}%</span>
-                </div>
-              </div>
+        {/* Metric 3: Monthly Outflow */}
+        <Card className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-card/85 backdrop-blur-xl shadow-xs hover:border-rose-500/40 transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Monthly Outflow
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+              <ArrowUpRight className="w-4 h-4" />
             </div>
-          </Card>
+          </div>
+          <div className="mt-2.5">
+            <p className="text-xl sm:text-2xl font-black text-rose-500 tracking-tight font-mono">
+              ₹{data.monthlyExpense.toLocaleString("en-IN")}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                Debited this cycle
+              </span>
+            </div>
+          </div>
+        </Card>
 
-        </div>
+        {/* Metric 4: Savings Quotient */}
+        <Card className="p-4 sm:p-5 rounded-2xl border border-border/70 bg-card/85 backdrop-blur-xl shadow-xs hover:border-indigo-500/40 transition-all flex flex-col justify-between group">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Savings Rate
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2.5 flex items-end justify-between">
+            <div>
+              <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight font-mono">
+                {data.savingsRate}%
+              </p>
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                {data.savingsRate >= 30 ? "🔥 Strong accumulation" : "⚡ Target 30%+"}
+              </span>
+            </div>
+            <div className="relative w-9 h-9 shrink-0">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-secondary" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="14"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  style={{ strokeDasharray: `${Math.min(100, Math.max(0, data.savingsRate)) * 0.88} 88` }}
+                />
+              </svg>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      {/* ── 3. LUXURY BANK ASSETS CAROUSEL / GRID ── */}
-      <section aria-label="Linked Bank Accounts" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
-              Synchronized Bank Accounts
-            </h3>
-            <p className="text-xs text-muted-foreground">Deterministic SHA-256 deduplicated ledgers</p>
-          </div>
-          <Link href="/upload" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-            + Add Bank Account
-          </Link>
-        </div>
+      {/* ── 3. INTERACTIVE ANALYTICS CANVAS + BANK VAULTS ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+        
+        {/* Left: Tabbed Financial Intelligence Chart (8 Cols) */}
+        <Card className="lg:col-span-8 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
+                Financial Intelligence Canvas
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {chartView === "networth" && "Historical net worth progression over time"}
+                {chartView === "performance" && "Cashflow velocity: monthly income vs debits"}
+                {chartView === "expenses" && "DBSCAN category-wise expense breakdown"}
+              </p>
+            </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.perBankBalances.map((bank) => {
-            const theme = getBankTheme(bank.bankName)
-            return (
-              <div
-                key={bank.bankId}
+            {/* Segmented Tab Switcher */}
+            <div className="flex items-center gap-1 bg-secondary/60 p-1 rounded-xl border border-border/50 self-start sm:self-auto">
+              <button
+                onClick={() => setChartView("networth")}
                 className={cn(
-                  "p-5 rounded-[1.75rem] text-white shadow-md relative overflow-hidden bg-gradient-to-br transition-all duration-300 hover:scale-[1.02] active:scale-[0.99]",
-                  theme.bg
+                  "px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all cursor-pointer",
+                  chartView === "networth"
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {/* Background Card Ambient Texture */}
-                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                
-                <div className="relative z-10 flex flex-col justify-between h-full space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                        {bank.accountType} Account
-                      </span>
-                      <h4 className="font-extrabold text-base tracking-tight text-white mt-0.5 truncate max-w-[170px]">
-                        {bank.bankName}
-                      </h4>
-                    </div>
-                    <div className="w-9 h-6 rounded-md bg-amber-400/80 border border-amber-300 flex items-center justify-center shadow-xs">
-                      <div className="w-6 h-3 rounded-xs border border-amber-600/40" />
-                    </div>
-                  </div>
+                Net Worth
+              </button>
+              <button
+                onClick={() => setChartView("performance")}
+                className={cn(
+                  "px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all cursor-pointer",
+                  chartView === "performance"
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Cashflow
+              </button>
+              <button
+                onClick={() => setChartView("expenses")}
+                className={cn(
+                  "px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg transition-all cursor-pointer",
+                  chartView === "expenses"
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Categories
+              </button>
+            </div>
+          </div>
 
-                  <div className="pt-2 flex items-end justify-between">
-                    <div>
-                      <p className="text-xs text-white/70 font-mono">
-                        {bank.accountLast4 ? `•••• •••• ${bank.accountLast4}` : "•••• •••• ACTIVE"}
-                      </p>
-                      <p className="text-xl font-black text-white font-mono mt-0.5">
-                        ₹{bank.balance.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                    <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-md", theme.accent)}>
-                      Active Vault
-                    </span>
-                  </div>
-                </div>
+          {/* Active Chart Display */}
+          <div className="pt-2">
+            <DashboardCharts type={chartView} data={analyticsData} />
+          </div>
+        </Card>
+
+        {/* Right: Synchronized Bank Accounts Vault (4 Cols) */}
+        <Card className="lg:col-span-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <div>
+                <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-primary" />
+                  Bank Vaults
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  {data.perBankBalances.length} Synchronized Accounts
+                </p>
               </div>
-            )
-          })}
-        </div>
-      </section>
+              <Link href="/upload">
+                <span className="text-[11px] font-bold text-primary hover:underline cursor-pointer">
+                  + Add
+                </span>
+              </Link>
+            </div>
+
+            {/* Bank Accounts Stack */}
+            <div className="space-y-2.5 max-h-[360px] overflow-y-auto no-scrollbar pr-0.5">
+              {data.perBankBalances.map((bank) => {
+                const theme = getBankTheme(bank.bankName)
+                return (
+                  <div
+                    key={bank.bankId}
+                    className={cn(
+                      "p-3.5 rounded-2xl text-white shadow-xs relative overflow-hidden bg-gradient-to-br transition-all hover:scale-[1.01]",
+                      theme.bg
+                    )}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-white/70">
+                          {bank.accountType}
+                        </span>
+                        <h4 className="font-extrabold text-xs tracking-tight text-white mt-0.5 truncate max-w-[150px]">
+                          {bank.bankName}
+                        </h4>
+                      </div>
+                      <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full border backdrop-blur-md", theme.accent)}>
+                        Active
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-baseline justify-between">
+                      <span className="text-[11px] text-white/70 font-mono">
+                        {bank.accountLast4 ? `•••• ${bank.accountLast4}` : "•••• ACTIVE"}
+                      </span>
+                      <span className="text-sm font-black text-white font-mono">
+                        ₹{bank.balance.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="pt-3 mt-3 border-t border-border/40">
+            <Link href="/upload" className="w-full block">
+              <button className="w-full py-2.5 px-3 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                <Plus className="w-3.5 h-3.5 text-primary" />
+                Upload Statement
+              </button>
+            </Link>
+          </div>
+        </Card>
+
+      </div>
 
       {/* ── 4. TAX OPPORTUNITY AI COPILOT BANNER ── */}
-      <div className="p-6 rounded-[2rem] bg-gradient-to-r from-primary/15 via-accent/10 to-transparent border border-primary/25 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shrink-0 shadow-xs">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+      <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-primary/10 via-card to-accent/5 border border-primary/20 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary shrink-0">
+            <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/20 text-primary">
-                AI Virtual CA Recommendation
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.2 rounded-full bg-primary/20 text-primary">
+                Tax Optimization Alert
               </span>
+              <span className="text-[10px] text-muted-foreground">• FY 2025–26</span>
             </div>
-            <h4 className="font-extrabold text-base text-foreground mt-1">
-              Maximize Section 80CCD(1B) & HRA Exemption for FY 2025–26
+            <h4 className="font-bold text-xs sm:text-sm text-foreground mt-0.5">
+              Maximize Section 80CCD(1B) NPS &amp; Section 80D Health Deductions
             </h4>
-            <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl leading-relaxed">
-              Based on your detected income slabs, investing ₹50,000 in Tier-1 NPS can yield up to ₹15,600 additional tax rebate under Old Regime.
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Save up to ₹15,600 additional tax by allocating ₹50,000 to Tier-1 NPS under Old Regime.
             </p>
           </div>
         </div>
-        <Link href="/tax">
-          <button className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-all shadow-md shadow-primary/20 shrink-0 cursor-pointer">
-            Review Tax Deductions →
-          </button>
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href="/tax">
+            <button className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-all shadow-sm cursor-pointer">
+              Compare Regimes →
+            </button>
+          </Link>
+          <Link href="/ai-ca">
+            <button className="px-3 py-2 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground font-semibold text-xs transition-colors cursor-pointer">
+              Ask AI CA
+            </button>
+          </Link>
+        </div>
       </div>
 
-      {/* ── 5. PERFORMANCE TIMELINE & EXPENSE DONUT ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* ── 5. RECENT ACTIVITY STREAM & ANOMALY RADAR ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         
-        {/* Performance Report */}
-        <Card className="lg:col-span-7 p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" />
-                Performance Timeline
-              </h3>
-              <p className="text-xs text-muted-foreground">Historical income vs expense progression</p>
-            </div>
-          </div>
-          <DashboardCharts type="performance" data={analyticsData} />
-        </Card>
-
-        {/* Expense Category Breakdown */}
-        <Card className="lg:col-span-5 p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
-                <PieChart className="w-4 h-4 text-primary" />
-                Spending Distribution
-              </h3>
-              <p className="text-xs text-muted-foreground">Automated ML category clustering</p>
-            </div>
-          </div>
-          <DashboardCharts type="expenses" data={analyticsData} />
-        </Card>
-
-      </div>
-
-      {/* ── 6. RECENT TRANSACTIONS STREAM & ALERTS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Recent Transactions List with Search/Filter */}
-        <Card className="lg:col-span-7 p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        {/* Recent Transactions List with Search/Filter (7 Cols) */}
+        <Card className="lg:col-span-7 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
                 Recent Ledger Activity
               </h3>
-              <p className="text-xs text-muted-foreground">Parsed line items from your statements</p>
+              <p className="text-xs text-muted-foreground">Statements parsed &amp; verified</p>
             </div>
             
             {/* Fast Filter Input */}
@@ -712,7 +734,7 @@ export default function Dashboard() {
                 placeholder="Filter transactions..."
                 value={txFilter}
                 onChange={(e) => setTxFilter(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-secondary/50 border border-border/60 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-48 text-foreground"
+                className="pl-8 pr-3 py-1.5 text-xs bg-secondary/50 border border-border/60 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-44 text-foreground"
               />
             </div>
           </div>
@@ -722,11 +744,11 @@ export default function Dashboard() {
               filteredTransactions.map((tx: any, idx: number) => {
                 const isCredit = tx.type === "credit"
                 return (
-                  <div key={tx.id || idx} className="py-3.5 flex items-center justify-between gap-3 group">
-                    <div className="flex items-center gap-3.5 min-w-0">
+                  <div key={tx.id || idx} className="py-2.5 sm:py-3 flex items-center justify-between gap-3 group">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
                         className={cn(
-                          "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-bold text-xs shadow-xs",
+                          "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 font-bold text-[11px] shadow-xs",
                           isCredit
                             ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
                             : "bg-secondary text-foreground border border-border/50"
@@ -738,12 +760,12 @@ export default function Dashboard() {
                         <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
                           {tx.merchant || tx.description}
                         </p>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-[10px] text-muted-foreground">
-                            {new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                            {new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                           </span>
                           <span className="text-[10px] text-muted-foreground">•</span>
-                          <span className="text-[10px] font-semibold text-primary/80 bg-primary/10 px-1.5 py-0.25 rounded">
+                          <span className="text-[10px] font-semibold text-primary/80 bg-primary/10 px-1.5 py-0.2 rounded">
                             {tx.category || "General"}
                           </span>
                         </div>
@@ -753,7 +775,7 @@ export default function Dashboard() {
                     <div className="text-right shrink-0">
                       <p
                         className={cn(
-                          "text-sm font-black font-mono",
+                          "text-xs sm:text-sm font-black font-mono",
                           isCredit ? "text-emerald-500" : "text-foreground"
                         )}
                       >
@@ -773,59 +795,59 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="pt-4 mt-2 border-t border-border/40 text-center">
+          <div className="pt-3 mt-2 border-t border-border/40 text-center">
             <Link href="/analytics" className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1">
-              View Complete Financial Analytics <ChevronRight className="w-3.5 h-3.5" />
+              View Complete Analytics <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </Card>
 
-        {/* Right Alerts & Anomalies Feed */}
-        <Card className="lg:col-span-5 p-6 rounded-[2rem] border border-border/70 bg-card/80 backdrop-blur-xl shadow-sm flex flex-col justify-between">
+        {/* Right Alerts & DBSCAN Anomalies (5 Cols) */}
+        <Card className="lg:col-span-5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider flex items-center gap-2 mb-1">
               <AlertCircle className="w-4 h-4 text-primary" />
               DBSCAN Anomaly Radar
             </h3>
-            <p className="text-xs text-muted-foreground mb-4">ML outlier analysis on recurring debits</p>
+            <p className="text-xs text-muted-foreground mb-3.5">ML outlier analysis on recurring debits</p>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {alerts.length > 0 ? (
                 alerts.map((alert, i) => (
                   <div
                     key={i}
                     onClick={() => setActiveAlert(activeAlert === i ? null : i)}
                     className={cn(
-                      "p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10",
-                      activeAlert === i && "ring-1 ring-primary shadow-sm bg-card"
+                      "p-3 rounded-2xl border transition-all cursor-pointer bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10",
+                      activeAlert === i && "ring-1 ring-primary shadow-xs bg-card"
                     )}
                   >
-                    <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
-                        <AlertCircle className="w-4 h-4" />
+                    <div className="flex gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
+                        <AlertCircle className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-xs text-foreground mb-0.5">Spike Flagged</p>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed truncate-2-lines">{alert.message}</p>
+                        <p className="font-bold text-xs text-foreground">Spike Flagged</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed truncate">{alert.message}</p>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center py-10 text-center bg-secondary/30 rounded-2xl border border-dashed border-border/70">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-2 shadow-xs">
-                    <CheckCircle2 className="w-5 h-5" />
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-secondary/30 rounded-2xl border border-dashed border-border/70">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-1.5 shadow-xs">
+                    <CheckCircle2 className="w-4.5 h-4.5" />
                   </div>
                   <p className="text-xs font-bold text-foreground">Zero Critical Anomalies</p>
-                  <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px] mx-auto leading-relaxed">
-                    DBSCAN clustering detects steady spending cadence with no duplicate fees.
+                  <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[220px] mx-auto leading-relaxed">
+                    DBSCAN clustering confirms regular spending cadence with no unauthorized spikes.
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-border/40">
+          <div className="pt-3 mt-3 border-t border-border/40">
             <Link
               href="/analytics/clusters"
               className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl bg-secondary/60 hover:bg-secondary text-foreground transition-colors"
