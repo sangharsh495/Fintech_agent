@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -135,9 +136,11 @@ export default function AnalyticsPage() {
         <p className="text-muted-foreground max-w-md mx-auto mb-8">
           Upload your bank statements to generate deep insights, track your spending patterns, and monitor your cash flow.
         </p>
-        <Button onClick={() => window.location.href = '/upload'} size="lg" className="rounded-xl shadow-lg shadow-primary/25">
-          Upload Statements
-        </Button>
+        <Link href="/upload">
+          <Button size="lg" className="rounded-xl shadow-lg shadow-primary/25 cursor-pointer">
+            Upload Statements
+          </Button>
+        </Link>
       </div>
     )
   }
@@ -308,9 +311,11 @@ export default function AnalyticsPage() {
                   <h2 className="text-h4 font-bold text-foreground">Expense Breakdown</h2>
                   <p className="text-body-sm text-muted-foreground">Category-wise spending analysis</p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 rounded-xl">
-                  View Details <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+                <Link href="/analytics/clusters">
+                  <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 rounded-xl cursor-pointer">
+                    View Details <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </Link>
               </div>
               <div className="flex flex-col lg:flex-row items-center gap-6">
                 <div className="relative">
