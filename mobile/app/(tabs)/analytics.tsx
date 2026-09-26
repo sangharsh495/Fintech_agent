@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from "react"
-import { View, Text, ScrollView, StyleSheet, RefreshControl, ActivityIndicator, Dimensions } from "react-native"
+import { View, Text, ScrollView, StyleSheet, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity } from "react-native"
+import { useRouter } from "expo-router"
 import { useAuth } from "../_layout"
 import { analyticsApi } from "../../lib/api"
 
 export default function AnalyticsScreen() {
   const { token } = useAuth()
+  const router = useRouter()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -38,7 +40,13 @@ export default function AnalyticsScreen() {
       <View style={styles.emptyContainer}>
         <Text style={{ fontSize: 48, marginBottom: 16 }}>📊</Text>
         <Text style={styles.emptyTitle}>No Analytics Yet</Text>
-        <Text style={styles.emptyText}>Upload a bank statement to see your spending insights</Text>
+        <Text style={styles.emptyText}>Upload a bank statement to see your spending insights, cash flow trends, and category distribution.</Text>
+        <TouchableOpacity
+          style={styles.uploadBtn}
+          onPress={() => router.push("/upload")}
+        >
+          <Text style={styles.uploadBtnText}>Upload Bank Statement</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -116,7 +124,18 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f172a" },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0f172a", padding: 24 },
   emptyTitle: { fontSize: 22, color: "#f8fafc", fontWeight: "700", marginBottom: 8 },
-  emptyText: { fontSize: 14, color: "#64748b", textAlign: "center" },
+  emptyText: { fontSize: 14, color: "#64748b", textAlign: "center", marginBottom: 20, lineHeight: 20 },
+  uploadBtn: {
+    backgroundColor: "#6366f1",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  uploadBtnText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
   totalsCard: {
     flexDirection: "row", flexWrap: "wrap", margin: 20, padding: 20, borderRadius: 20,
     backgroundColor: "#1e293b", borderWidth: 1, borderColor: "#334155", gap: 16,
