@@ -35,6 +35,9 @@ venv/
 **/venv/
 __pycache__/
 **/*.pyc
+# VS Code
+.vscode/
+
 .pytest_cache/
 
 # Android binaries
