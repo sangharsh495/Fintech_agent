@@ -62,38 +62,59 @@ export default function TaxPage() {
     { name: "Other Deductions", amount: 0, limit: 0 },
   ])
 
-  useEffect(() => {
-    async function fetchTaxData() {
-      try {
-        const res = await fetch("/api/tax")
-        if (res.ok) {
-          const data = await res.json()
-          
-          if (data.grossIncome > 0) {
-            setIncome(data.grossIncome)
-          }
-          if (data.fy) setFinancialYear(data.fy)
-          setIsNewRegime(data.taxRegime === "new")
-          setOpportunities(data.opportunities || [])
-
-          setDeductions((prev) => prev.map(d => {
-            if (d.name.includes("80C") && data.deductions?.["80C"] !== undefined) {
-              return { ...d, amount: data.deductions["80C"], detected: data.deductions["80C"] > 0 }
-            }
-            if (d.name.includes("Standard Deduction") && data.deductions?.standard !== undefined) {
-              return { ...d, amount: data.deductions.standard, limit: data.deductions.standard, detected: true }
-            }
-            return d
-          }))
+  const fetchTaxData = async () => {
+    try {
+      const res = await fetch("/api/tax")
+      if (res.ok) {
+        const data = await res.json()
+        
+        if (data.grossIncome > 0) {
+          setIncome(data.grossIncome)
         }
-      } catch (error) {
-        console.error("Failed to fetch tax data:", error)
-      } finally {
-        setLoading(false)
+        if (data.fy) setFinancialYear(data.fy)
+        setIsNewRegime(data.taxRegime === "new")
+        setOpportunities(data.opportunities || [])
+
+        setDeductions((prev) => prev.map(d => {
+          if (d.name.includes("80C") && data.deductions?.["80C"] !== undefined) {
+            return { ...d, amount: data.deductions["80C"], detected: data.deductions["80C"] > 0 }
+          }
+          if (d.name.includes("Standard Deduction") && data.deductions?.standard !== undefined) {
+            return { ...d, amount: data.deductions.standard, limit: data.deductions.standard, detected: true }
+          }
+          return d
+        }))
       }
+    } catch (error) {
+      console.error("Failed to fetch tax data:", error)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     fetchTaxData()
+
+    // Auto-sync whenever user returns to browser from mobile APK
+    const handleFocus = () => {
+      fetchTaxData()
+    }
+    window.addEventListener("focus", handleFocus)
+    return () => window.removeEventListener("focus", handleFocus)
   }, [])
+
+  const handleRegimeSwitch = async (newRegime: boolean) => {
+    setIsNewRegime(newRegime)
+    try {
+      await fetch("/api/tax", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ regime: newRegime ? "new" : "old" }),
+      })
+    } catch (err) {
+      console.error("Failed to persist tax regime:", err)
+    }
+  }
 
   const totalDeductions = deductions.reduce((sum, d) => sum + d.amount, 0)
   
@@ -272,10 +293,10 @@ export default function TaxPage() {
                   </p>
                 </div>
                 <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
-                  <button onClick={() => setIsNewRegime(false)} className={cn("tab-btn text-center text-xs py-2 px-3.5", !isNewRegime && "active")}>
+                  <button onClick={() => handleRegimeSwitch(false)} className={cn("tab-btn text-center text-xs py-2 px-3.5", !isNewRegime && "active")}>
                     Old Regime
                   </button>
-                  <button onClick={() => setIsNewRegime(true)} className={cn("tab-btn text-center text-xs py-2 px-3.5", isNewRegime && "active")}>
+                  <button onClick={() => handleRegimeSwitch(true)} className={cn("tab-btn text-center text-xs py-2 px-3.5", isNewRegime && "active")}>
                     New Regime
                   </button>
                 </div>
