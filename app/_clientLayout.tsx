@@ -12,6 +12,8 @@ import { useIsMobile } from "@/components/ui/use-mobile"
 import LaunchScreen from "@/components/launch-screen"
 import Footer from "@/components/footer"
 
+const LAUNCH_SCREEN_INTERVAL_MS = 24 * 60 * 60 * 1000
+
 export default function ClientLayout({
   children,
 }: Readonly<{
@@ -33,15 +35,40 @@ export default function ClientLayout({
     }
   }, [isMobile])
 
+  // On phones the sidebar is a drawer: close it when a page is picked, when
+  // the backdrop is tapped (sidebar.tsx dispatches "sidebar-close") or on Escape.
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false)
+  }, [pathname, isMobile])
+
+  useEffect(() => {
+    const close = () => setSidebarOpen(false)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && window.matchMedia("(max-width: 767px)").matches) close()
+    }
+    window.addEventListener("sidebar-close", close)
+    window.addEventListener("keydown", onKey)
+    return () => {
+      window.removeEventListener("sidebar-close", close)
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [])
+
   useEffect(() => {
     setMounted(true)
-    const savedTheme = localStorage.getItem("theme") || "light"
+    let savedTheme = "light"
+    try {
+      savedTheme = localStorage.getItem("theme") || "light"
+    } catch {}
     setIsDark(savedTheme === "dark")
     document.documentElement.classList.toggle("dark", savedTheme === "dark")
 
-    // Check session storage to only show launch screen once per session
-    const isLaunchComplete = sessionStorage.getItem("launch_complete") === "true"
-    if (isLaunchComplete) {
+    // Show the intro at most once a day. sessionStorage is per tab, so the
+    // old check replayed the splash in every new tab and blocked every tap.
+    try {
+      const seenAt = Number(localStorage.getItem("launch_seen_at") || 0)
+      if (Date.now() - seenAt < LAUNCH_SCREEN_INTERVAL_MS) setShowLaunchScreen(false)
+    } catch {
       setShowLaunchScreen(false)
     }
   }, [])
@@ -78,7 +105,9 @@ export default function ClientLayout({
         {showLaunchScreen && (
           <LaunchScreen
             onComplete={() => {
-              sessionStorage.setItem("launch_complete", "true")
+              try {
+                localStorage.setItem("launch_seen_at", String(Date.now()))
+              } catch {}
               setShowLaunchScreen(false)
             }}
           />

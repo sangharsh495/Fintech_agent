@@ -1,13 +1,11 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { UploadStatement } from "@/components/upload-statement"
 import { AIWidget } from "@/components/ai-sidebar"
 import { Card } from "@/components/ui/card"
 import { Upload, Zap, Shield, Clock } from "lucide-react"
 
 export default function UploadPage() {
-  const router = useRouter()
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-background flex flex-col">
@@ -17,7 +15,7 @@ export default function UploadPage() {
         <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300" />
 
         <div className="relative z-10 px-4 md:px-6 lg:px-8 py-12 md:py-16 flex flex-col items-center justify-center text-center">
-          <div className="section-header slide-in-from-bottom-4 max-w-2xl float">
+          <div className="section-header slide-in-from-bottom-4 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <Upload className="w-4 h-4" />
               Upload Data
@@ -52,7 +50,7 @@ export default function UploadPage() {
 
             {/* Upload Widget */}
             <Card className="p-4 md:p-6 card-hover">
-              <UploadStatement onSuccess={() => setTimeout(() => router.push("/"), 2000)} />
+              <UploadStatement />
             </Card>
 
             {/* Supported Formats */}

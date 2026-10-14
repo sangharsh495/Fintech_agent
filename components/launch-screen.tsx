@@ -6,10 +6,7 @@ import {
   ShieldCheck,
   Building2,
   TrendingUp,
-  Cpu,
-  Database,
   ArrowRight,
-  Wallet,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -17,15 +14,13 @@ interface LaunchScreenProps {
   onComplete: () => void
 }
 
+// Short, honest welcome copy: the splash is a brand moment, not a real
+// progress indicator, so it must not claim work that is not happening.
 const loadingSteps = [
-  { text: "Initializing FinFlow secure context...", icon: ShieldCheck },
-  { text: "Connecting to Neon Serverless Database...", icon: Database },
-  { text: "Fetching active Indian bank profiles...", icon: Building2 },
-  { text: "Syncing statement logs and cache keys...", icon: Wallet },
-  { text: "Calculating tax liabilities & deductions...", icon: TrendingUp },
-  { text: "Running DBSCAN spending anomaly models...", icon: Cpu },
-  { text: "Optimizing net worth dashboards...", icon: Sparkles },
-  { text: "Decryption vaults validated. Launching FinFlow...", icon: ShieldCheck },
+  { text: "Opening your secure workspace...", icon: ShieldCheck },
+  { text: "Bank statements, in one place", icon: Building2 },
+  { text: "Spending insights and tax planning", icon: TrendingUp },
+  { text: "Ready", icon: Sparkles },
 ]
 
 export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
@@ -34,8 +29,8 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
   const [isExiting, setIsExiting] = useState(false)
 
   useEffect(() => {
-    // Progress increment over 10 seconds (10000ms / 100 steps = 100ms interval)
-    const duration = 10000
+    // A brief intro; it used to hold the whole app hostage for 10 seconds.
+    const duration = 2000
     const intervalTime = 100
     const increment = 100 / (duration / intervalTime)
 
@@ -63,7 +58,7 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
         }
         return prev
       })
-    }, 1250)
+    }, 500)
 
     return () => clearInterval(stepTimer)
   }, [])
@@ -81,7 +76,7 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
     <div
       className={cn(
         "fixed inset-0 z-[9999] bg-[#0c0f16] flex flex-col items-center justify-between p-6 md:p-12 overflow-hidden transition-all duration-800 ease-in-out",
-        isExiting ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        isExiting ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
       )}
     >
       {/* Decorative Blurs */}
@@ -91,12 +86,8 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
       {/* Top spacing */}
       <div className="w-full flex justify-between items-center z-10">
         <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-mono">
-          System Launch v1.2.0
+          FinFlow
         </span>
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span className="text-[10px] font-semibold text-emerald-400 font-mono">DB Active</span>
-        </div>
       </div>
 
       {/* Central Brand Logo & Intro */}
@@ -111,7 +102,7 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
         </div>
 
         <h1 className="text-4xl font-black tracking-tight mb-3 text-white">
-          Fin<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Wise</span>
+          Fin<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Flow</span>
         </h1>
         
         <p className="text-sm text-muted-foreground/80 max-w-sm leading-relaxed mb-10">
@@ -130,7 +121,7 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
           </div>
 
           <div className="flex justify-between items-center text-[10px] text-muted-foreground/60 font-mono">
-            <span>Loading Modules</span>
+            <span>Welcome</span>
             <span className="font-bold tabular-nums text-white">{Math.round(progress)}%</span>
           </div>
         </div>
@@ -145,7 +136,7 @@ export default function LaunchScreen({ onComplete }: LaunchScreenProps) {
             <ActiveIcon className="w-4.5 h-4.5 animate-bounce" />
           </div>
           <div className="text-left overflow-hidden">
-            <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">Sync State</p>
+            <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">FinFlow</p>
             <p className="text-xs font-semibold text-white truncate max-w-[210px] animate-in fade-in slide-in-from-bottom-2 duration-300">
               {loadingSteps[currentStep].text}
             </p>

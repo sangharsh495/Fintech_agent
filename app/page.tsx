@@ -124,7 +124,7 @@ function getBankTheme(bankName: string) {
 }
 
 export default function Dashboard() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [data, setData] = useState<DashboardData | null>(null)
   const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [alerts, setAlerts] = useState<any[]>([])
@@ -136,6 +136,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    // Visitors get the public landing page; only signed-in users have a
+    // dashboard to load (fetching it logged-out just produced 401s).
+    if (status !== "authenticated") {
+      if (status === "unauthenticated") setIsLoading(false)
+      return
+    }
     Promise.all([
       fetch("/api/dashboard").then((res) => res.json()),
       fetch("/api/analytics").then((res) => res.json())
@@ -158,7 +167,7 @@ export default function Dashboard() {
       })
       .catch((err) => console.error("Failed to load dashboard data:", err))
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [status])
 
   const filteredTransactions = useMemo(() => {
     if (!data?.recentTransactions) return []

@@ -171,6 +171,20 @@ export default function OnboardingPage() {
     window.location.href = "/"
   }
 
+  // Skipping still marks onboarding done; "/" redirects unfinished accounts
+  // back here, so without this the skip button would loop.
+  const handleSkip = async () => {
+    try {
+      await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ complete: true }),
+      })
+      await updateSession({ onboardingComplete: true })
+    } catch {}
+    window.location.href = "/"
+  }
+
   const firstName = session?.user?.name?.split(" ")[0] || ""
 
   return (
@@ -202,9 +216,7 @@ export default function OnboardingPage() {
               <span>256-bit Encrypted</span>
             </div>
             <button
-              onClick={() => {
-                window.location.href = "/"
-              }}
+              onClick={handleSkip}
               className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-primary px-3 py-1.5 rounded-xl hover:bg-secondary/80 border border-transparent hover:border-border transition-all cursor-pointer"
             >
               <span>Skip to Dashboard</span>
@@ -733,7 +745,9 @@ export default function OnboardingPage() {
               variant="outline"
               onClick={handleBack}
               disabled={step === 1 || isLoading}
-              className="h-11 px-5 rounded-xl border-border hover:bg-secondary text-xs font-bold cursor-pointer"
+              // Hidden (but still taking its space) on the first step, where there is nothing to go back to.
+              aria-hidden={step === 1}
+              className={`h-11 px-5 rounded-xl border-border hover:bg-secondary text-xs font-bold cursor-pointer ${step === 1 ? "invisible" : ""}`}
             >
               <ChevronLeft className="w-4 h-4 mr-1.5" />
               Back

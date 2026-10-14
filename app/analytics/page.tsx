@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
         <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300" />
 
         <div className="relative z-10 px-4 md:px-6 lg:px-8 py-10 md:py-14 flex flex-col items-center text-center">
-          <div className="section-header slide-in-from-bottom-4 max-w-3xl float">
+          <div className="section-header slide-in-from-bottom-4 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <BarChart3 className="w-4 h-4" />
               Smart Analytics

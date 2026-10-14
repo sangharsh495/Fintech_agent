@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
@@ -22,6 +22,22 @@ export default function LoginPage() {
   const [forgotStep, setForgotStep] = useState<"email" | "otp" | "success">("email")
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotError, setForgotError] = useState("")
+
+  const closeForgotModal = () => {
+    setShowForgotModal(false)
+    setForgotStep("email")
+    setForgotError("")
+  }
+
+  // Escape closes the reset-password dialog, as it does any other dialog.
+  useEffect(() => {
+    if (!showForgotModal) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeForgotModal()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [showForgotModal])
 
   // Unverified account verification modal
   const [showVerifyModal, setShowVerifyModal] = useState(false)
@@ -388,9 +404,19 @@ export default function LoginPage() {
 
       {/* Forgot Password Modal */}
       {showForgotModal && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-foreground">Reset Password</h3>
+        <div
+          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeForgotModal()
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-password-title"
+            className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4"
+          >
+            <h3 id="reset-password-title" className="text-lg font-bold text-foreground">Reset Password</h3>
 
             {forgotError && (
               <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">

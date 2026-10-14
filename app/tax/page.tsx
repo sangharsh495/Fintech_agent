@@ -194,7 +194,7 @@ export default function TaxPage() {
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[128px] pointer-events-none opacity-50 mix-blend-screen animate-in fade-in duration-1000 delay-300"></div>
 
         <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 flex flex-col items-center justify-center text-center">
-          <div className="section-header slide-up max-w-3xl float">
+          <div className="section-header slide-up max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold mb-4 sm:mb-6 shadow-[0_0_15px_rgba(var(--primary),0.3)] backdrop-blur-md">
               <Calculator className="w-3.5 h-3.5" />
               Tax Optimization

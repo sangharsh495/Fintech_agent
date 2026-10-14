@@ -46,6 +46,15 @@ export const metadata: Metadata = {
     "Net Worth Tracker",
   ],
   authors: [{ name: "FinFlow Team" }],
+  // Declared so browsers stop requesting the missing /favicon.ico.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-light-32x32.png", sizes: "32x32", media: "(prefers-color-scheme: light)" },
+      { url: "/icon-dark-32x32.png", sizes: "32x32", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: "/apple-icon.png",
+  },
 }
 
 export default function RootLayout({

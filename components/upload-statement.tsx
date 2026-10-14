@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import type React from "react"
 import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -71,6 +72,7 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
     transactionsAdded?: number
     transactionsSkipped?: number
     gapWarning?: string
+    continuityWarning?: string
     message?: string
     error?: string
   }>({})
@@ -236,6 +238,7 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
         transactionsAdded: data.transactionsAdded,
         transactionsSkipped: data.transactionsSkipped,
         gapWarning: data.gapWarning,
+        continuityWarning: data.continuityWarning,
         message: data.message,
       })
       setFile(null)
@@ -491,6 +494,13 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
               <span>{result.gapWarning}</span>
             </div>
           )}
+
+          {result.continuityWarning && (
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{result.continuityWarning}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -524,17 +534,22 @@ export function UploadStatement({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </Button>
       ) : (
-        <Button
-          variant="outline"
-          onClick={() => {
-            setStatus("idle")
-            setResult({})
-            setFile(null)
-          }}
-          className="w-full h-11 rounded-xl text-xs font-bold border-border hover:bg-secondary cursor-pointer"
-        >
-          Ingest Another Bank Statement
-        </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <Button asChild className="w-full h-11 rounded-xl text-xs font-bold cursor-pointer">
+            <Link href="/">View Dashboard</Link>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setStatus("idle")
+              setResult({})
+              setFile(null)
+            }}
+            className="w-full h-11 rounded-xl text-xs font-bold border-border hover:bg-secondary cursor-pointer"
+          >
+            Ingest Another Bank Statement
+          </Button>
+        </div>
       )}
     </div>
   )
