@@ -24,6 +24,7 @@ import { withUserScopedDb } from "@/server/db/rls-connection"
 import { aiAuditLog, chatSessions, chatMessages } from "@/server/db/schema"
 import { eq, and, desc } from "drizzle-orm"
 import { safeLogError, safeLogInfo } from "@/server/lib/safe-log"
+import { groqKeysFromEnv } from "@/lib/groq/env-keys"
 
 export const dynamic = "force-dynamic"
 
@@ -93,15 +94,7 @@ function isOracleReady(): boolean {
 }
 
 function hasGroqKey(): boolean {
-  return [
-    process.env.GROQ_API_KEY,
-    process.env.GROQ_KEY_1,
-    process.env.GROQ_KEY_2,
-    process.env.GROQ_KEY_3,
-    process.env.GROQ_API_KEY_1,
-    process.env.GROQ_API_KEY_2,
-    process.env.GROQ_API_KEY_3,
-  ].some(Boolean)
+  return groqKeysFromEnv().length > 0
 }
 
 export async function POST(req: NextRequest) {

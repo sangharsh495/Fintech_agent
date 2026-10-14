@@ -1,4 +1,5 @@
 import { safeLogError } from "@/server/lib/safe-log";
+import { groqKeysFromEnv } from "@/lib/groq/env-keys";
 export interface GroqKeyInfo {
   key: string;
   cooldownExpiresAt: number;
@@ -15,18 +16,7 @@ class GroqRotatorService {
 
   private initializeKeys() {
     // Gather all potential Groq keys from environment variables
-    const rawKeys = [
-      process.env.GROQ_API_KEY,
-      process.env.GROQ_KEY_1,
-      process.env.GROQ_KEY_2,
-      process.env.GROQ_KEY_3,
-      process.env.GROQ_API_KEY_1,
-      process.env.GROQ_API_KEY_2,
-      process.env.GROQ_API_KEY_3,
-    ];
-
-    // Filter unique, non-empty keys
-    const uniqueKeys = Array.from(new Set(rawKeys.filter(Boolean))) as string[];
+    const uniqueKeys = groqKeysFromEnv();
 
     this.keys = uniqueKeys.map((key) => ({
       key,
@@ -43,7 +33,7 @@ class GroqRotatorService {
    */
   public getAvailableKey(): string {
     if (this.keys.length === 0) {
-      return process.env.GROQ_API_KEY || "";
+      return "";
     }
 
     const now = Date.now();
@@ -75,7 +65,7 @@ class GroqRotatorService {
       return this.keys[bestKeyIndex].key;
     }
 
-    return process.env.GROQ_API_KEY || "";
+    return "";
   }
 
   /**

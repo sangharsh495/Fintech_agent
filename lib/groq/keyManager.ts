@@ -1,4 +1,5 @@
 import { getRedisClient } from "@/server/lib/redis";
+import { groqKeysFromEnv } from "./env-keys";
 
 export type KeyStateStatus = {
   keySuffix: string;
@@ -57,15 +58,7 @@ class GroqKeyManager {
   }
 
   private getKeys(): string[] {
-    const envKeys = [
-      process.env.GROQ_KEY_1,
-      process.env.GROQ_KEY_2,
-      process.env.GROQ_KEY_3,
-      process.env.GROQ_API_KEY_1,
-      process.env.GROQ_API_KEY_2,
-      process.env.GROQ_API_KEY_3,
-      process.env.GROQ_API_KEY,
-    ].filter((k): k is string => Boolean(k))
+    const envKeys = groqKeysFromEnv()
 
     return Array.from(new Set([...this.keys, ...envKeys]))
   }
