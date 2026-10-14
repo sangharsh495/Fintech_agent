@@ -1,0 +1,247 @@
+{
+  "statement_id": "AXIS_015",
+  "bank": "AXIS",
+  "bank_display_name": "Axis Bank",
+  "account_holder": "Priya Patel",
+  "account_number": "281924158052",
+  "ifsc": "AXIS0668481",
+  "opening_balance": 40510.14,
+  "closing_balance": -6983.92,
+  "transaction_count": 26,
+  "transactions": [
+    {
+      "date": "2025-11-01",
+      "narration": "UPI/134431297337/rahul.k/Received",
+      "ref": "134431297337",
+      "debit": 0.0,
+      "credit": 1274.71,
+      "balance": 41784.85,
+      "type": "credit"
+    },
+    {
+      "date": "2025-11-04",
+      "narration": "IMPS/278663126786/vendor.shop",
+      "ref": "278663126786",
+      "debit": 14970.71,
+      "credit": 0.0,
+      "balance": 26814.14,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-06",
+      "narration": "UPI/675313180110/priya.s/Payment",
+      "ref": "675313180110",
+      "debit": 3497.18,
+      "credit": 0.0,
+      "balance": 23316.96,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-07",
+      "narration": "UPI/337874958234/rahul.k/Payment",
+      "ref": "337874958234",
+      "debit": 2174.87,
+      "credit": 0.0,
+      "balance": 21142.09,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-10",
+      "narration": "POS/813600892797/Blinkit",
+      "ref": "813600892797",
+      "debit": 1932.38,
+      "credit": 0.0,
+      "balance": 19209.71,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-11",
+      "narration": "UPI/836626844479/rahul.k/Received",
+      "ref": "836626844479",
+      "debit": 0.0,
+      "credit": 1061.34,
+      "balance": 20271.05,
+      "type": "credit"
+    },
+    {
+      "date": "2025-11-14",
+      "narration": "IMPS/858590717027/rahul.k",
+      "ref": "858590717027",
+      "debit": 7986.45,
+      "credit": 0.0,
+      "balance": 12284.6,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-15",
+      "narration": "NEFT/454910149104/SELF EMPLOYED CR/SALARY",
+      "ref": "454910149104",
+      "debit": 0.0,
+      "credit": 70043.01,
+      "balance": 82327.61,
+      "type": "credit"
+    },
+    {
+      "date": "2025-11-17",
+      "narration": "ATM WDL/644316722360/NAGPUR",
+      "ref": "644316722360",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 80327.61,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-19",
+      "narration": "POS/769927711686/Spotify",
+      "ref": "769927711686",
+      "debit": 2578.22,
+      "credit": 0.0,
+      "balance": 77749.39,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-19",
+      "narration": "ACH DR/339548437499/EMI LOAN 3440",
+      "ref": "339548437499",
+      "debit": 4500,
+      "credit": 0.0,
+      "balance": 73249.39,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-19",
+      "narration": "ACH DR/645448648170/EMI LOAN 3089",
+      "ref": "645448648170",
+      "debit": 4500,
+      "credit": 0.0,
+      "balance": 68749.39,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-21",
+      "narration": "POS/892375100641/Ola",
+      "ref": "892375100641",
+      "debit": 2679.86,
+      "credit": 0.0,
+      "balance": 66069.53,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-22",
+      "narration": "POS/976461107985/Spotify",
+      "ref": "976461107985",
+      "debit": 704.59,
+      "credit": 0.0,
+      "balance": 65364.94,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-22",
+      "narration": "ATM WDL/859996671283/NAGPUR",
+      "ref": "859996671283",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 55364.94,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-24",
+      "narration": "ATM WDL/314583585526/NAGPUR",
+      "ref": "314583585526",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 50364.94,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-24",
+      "narration": "IMPS/507137023316/tenant.rent",
+      "ref": "507137023316",
+      "debit": 13755.63,
+      "credit": 0.0,
+      "balance": 36609.31,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-26",
+      "narration": "POS/242862871437/Swiggy",
+      "ref": "242862871437",
+      "debit": 2543.62,
+      "credit": 0.0,
+      "balance": 34065.69,
+      "type": "debit"
+    },
+    {
+      "date": "2025-11-28",
+      "narration": "ACH DR/901399342537/EMI LOAN 5144",
+      "ref": "901399342537",
+      "debit": 4500,
+      "credit": 0.0,
+      "balance": 29565.69,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-01",
+      "narration": "POS/710349735042/Netflix",
+      "ref": "710349735042",
+      "debit": 3447.69,
+      "credit": 0.0,
+      "balance": 26118.0,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-01",
+      "narration": "IMPS/829651859567/freelance.client",
+      "ref": "829651859567",
+      "debit": 14600.2,
+      "credit": 0.0,
+      "balance": 11517.8,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-03",
+      "narration": "POS/408575543429/Flipkart",
+      "ref": "408575543429",
+      "debit": 3093.53,
+      "credit": 0.0,
+      "balance": 8424.27,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-04",
+      "narration": "POS/935439647830/Amazon Retail",
+      "ref": "935439647830",
+      "debit": 2979.83,
+      "credit": 0.0,
+      "balance": 5444.44,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-06",
+      "narration": "POS/569743592565/Reliance Digital",
+      "ref": "569743592565",
+      "debit": 5390.71,
+      "credit": 0.0,
+      "balance": 53.73,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-09",
+      "narration": "POS/174505490006/Reliance Digital",
+      "ref": "174505490006",
+      "debit": 5498.99,
+      "credit": 0.0,
+      "balance": -5445.26,
+      "type": "debit"
+    },
+    {
+      "date": "2025-12-12",
+      "narration": "POS/843337264269/Spotify",
+      "ref": "843337264269",
+      "debit": 1538.66,
+      "credit": 0.0,
+      "balance": -6983.92,
+      "type": "debit"
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "statement_id": "YES_010",
+  "bank": "YES",
+  "bank_display_name": "Yes Bank",
+  "account_holder": "Sneha Reddy",
+  "account_number": "944909093938",
+  "ifsc": "YES0935313",
+  "opening_balance": 44087.26,
+  "closing_balance": 108330.72,
+  "transaction_count": 27,
+  "transactions": [
+    {
+      "date": "2025-04-02",
+      "narration": "UPI/147380905572/vendor.shop/Payment",
+      "ref": "147380905572",
+      "debit": 2248.84,
+      "credit": 0.0,
+      "balance": 41838.42,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-03",
+      "narration": "UPI/727152882099/freelance.client/Received",
+      "ref": "727152882099",
+      "debit": 0.0,
+      "credit": 4715.86,
+      "balance": 46554.28,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-03",
+      "narration": "UPI/974147049030/vendor.shop/Received",
+      "ref": "974147049030",
+      "debit": 0.0,
+      "credit": 7064.12,
+      "balance": 53618.4,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-04",
+      "narration": "ATM WDL/237787966857/NAGPUR",
+      "ref": "237787966857",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 48618.4,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-04",
+      "narration": "ATM WDL/860160971175/NAGPUR",
+      "ref": "860160971175",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 43618.4,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-04",
+      "narration": "UPI/470940981294/priya.s/Payment",
+      "ref": "470940981294",
+      "debit": 1595.36,
+      "credit": 0.0,
+      "balance": 42023.04,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-04",
+      "narration": "UPI/136297100665/vendor.shop/Payment",
+      "ref": "136297100665",
+      "debit": 2914.23,
+      "credit": 0.0,
+      "balance": 39108.81,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-05",
+      "narration": "INT.PD:637880681434",
+      "ref": "637880681434",
+      "debit": 0.0,
+      "credit": 142.67,
+      "balance": 39251.48,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-08",
+      "narration": "NEFT/234002964664/ACCENTURE SOL/SALARY",
+      "ref": "234002964664",
+      "debit": 0.0,
+      "credit": 78912.43,
+      "balance": 118163.91,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-09",
+      "narration": "UPI/204422517933/tenant.rent/Payment",
+      "ref": "204422517933",
+      "debit": 2496.69,
+      "credit": 0.0,
+      "balance": 115667.22,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-09",
+      "narration": "UPI/651840416365/rahul.k/Payment",
+      "ref": "651840416365",
+      "debit": 663.2,
+      "credit": 0.0,
+      "balance": 115004.02,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-11",
+      "narration": "ATM WDL/591455998198/NAGPUR",
+      "ref": "591455998198",
+      "debit": 10000,
+      "credit": 0.0,
+      "balance": 105004.02,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-11",
+      "narration": "UPI/979075438218/tenant.rent/Payment",
+      "ref": "979075438218",
+      "debit": 2718.61,
+      "credit": 0.0,
+      "balance": 102285.41,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-11",
+      "narration": "INT.PD:640597147666",
+      "ref": "640597147666",
+      "debit": 0.0,
+      "credit": 115.08,
+      "balance": 102400.49,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-11",
+      "narration": "POS/515242251775/Amazon Retail",
+      "ref": "515242251775",
+      "debit": 5637.7,
+      "credit": 0.0,
+      "balance": 96762.79,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-12",
+      "narration": "UPI/517336274216/freelance.client/Payment",
+      "ref": "517336274216",
+      "debit": 1849.03,
+      "credit": 0.0,
+      "balance": 94913.76,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-12",
+      "narration": "INT.PD:861490225261",
+      "ref": "861490225261",
+      "debit": 0.0,
+      "credit": 17.93,
+      "balance": 94931.69,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-13",
+      "narration": "UPI/467124271649/airtel.prepaid/Recharge",
+      "ref": "467124271649",
+      "debit": 299,
+      "credit": 0.0,
+      "balance": 94632.69,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-14",
+      "narration": "POS/362387936206/Blinkit",
+      "ref": "362387936206",
+      "debit": 505.51,
+      "credit": 0.0,
+      "balance": 94127.18,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-17",
+      "narration": "UPI/307735066421/rahul.k/Received",
+      "ref": "307735066421",
+      "debit": 0.0,
+      "credit": 778.6,
+      "balance": 94905.78,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-19",
+      "narration": "INT.PD:635138821444",
+      "ref": "635138821444",
+      "debit": 0.0,
+      "credit": 67.6,
+      "balance": 94973.38,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-19",
+      "narration": "UPI/669605855606/rahul.k/Payment",
+      "ref": "669605855606",
+      "debit": 305.49,
+      "credit": 0.0,
+      "balance": 94667.89,
+      "type": "debit"
+    },
+    {
+      "date": "2025-04-22",
+      "narration": "UPI/753661140938/priya.s/Received",
+      "ref": "753661140938",
+      "debit": 0.0,
+      "credit": 696.69,
+      "balance": 95364.58,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-23",
+      "narration": "UPI/848830735011/vendor.shop/Received",
+      "ref": "848830735011",
+      "debit": 0.0,
+      "credit": 3438.87,
+      "balance": 98803.45,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-23",
+      "narration": "UPI/324628544895/rahul.k/Received",
+      "ref": "324628544895",
+      "debit": 0.0,
+      "credit": 7590.09,
+      "balance": 106393.54,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-24",
+      "narration": "UPI/713117231582/tenant.rent/Received",
+      "ref": "713117231582",
+      "debit": 0.0,
+      "credit": 6437.18,
+      "balance": 112830.72,
+      "type": "credit"
+    },
+    {
+      "date": "2025-04-24",
+      "narration": "ACH DR/341293860807/EMI LOAN 6450",
+      "ref": "341293860807",
+      "debit": 4500,
+      "credit": 0.0,
+      "balance": 108330.72,
+      "type": "debit"
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "statement_id": "HDFC_006",
+  "bank": "HDFC",
+  "bank_display_name": "HDFC Bank",
+  "account_holder": "Rohan Mehta",
+  "account_number": "835038429160",
+  "ifsc": "HDFC0422435",
+  "opening_balance": 55259.89,
+  "closing_balance": 48820.5,
+  "transaction_count": 39,
+  "transactions": [
+    {
+      "date": "2026-01-01",
+      "narration": "UPI/586313310489/vendor.shop/Payment",
+      "ref": "586313310489",
+      "debit": 3261.35,
+      "credit": 0.0,
+      "balance": 51998.54,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-03",
+      "narration": "UPI/941816576988/vendor.shop/Payment",
+      "ref": "941816576988",
+      "debit": 1836.96,
+      "credit": 0.0,
+      "balance": 50161.58,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "UPI/744894198063/vendor.shop/Payment",
+      "ref": "744894198063",
+      "debit": 3060.15,
+      "credit": 0.0,
+      "balance": 47101.43,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "UPI/152711531318/airtel.prepaid/Recharge",
+      "ref": "152711531318",
+      "debit": 199,
+      "credit": 0.0,
+      "balance": 46902.43,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "POS/960117656397/Apollo Pharmacy",
+      "ref": "960117656397",
+      "debit": 5625.34,
+      "credit": 0.0,
+      "balance": 41277.09,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-05",
+      "narration": "POS/774711524520/Uber",
+      "ref": "774711524520",
+      "debit": 196.74,
+      "credit": 0.0,
+      "balance": 41080.35,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-06",
+      "narration": "POS/488648039343/DMart",
+      "ref": "488648039343",
+      "debit": 772.86,
+      "credit": 0.0,
+      "balance": 40307.49,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-07",
+      "narration": "UPI/803869898144/tenant.rent/Received",
+      "ref": "803869898144",
+      "debit": 0.0,
+      "credit": 1645.9,
+      "balance": 41953.39,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-08",
+      "narration": "ATM WDL/755189090544/NAGPUR",
+      "ref": "755189090544",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 39953.39,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-11",
+      "narration": "UPI/749360522950/tenant.rent/Payment",
+      "ref": "749360522950",
+      "debit": 3162.07,
+      "credit": 0.0,
+      "balance": 36791.32,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-11",
+      "narration": "POS/242443646683/Apollo Pharmacy",
+      "ref": "242443646683",
+      "debit": 623.03,
+      "credit": 0.0,
+      "balance": 36168.29,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-14",
+      "narration": "UPI/108424178901/tenant.rent/Payment",
+      "ref": "108424178901",
+      "debit": 264.94,
+      "credit": 0.0,
+      "balance": 35903.35,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-17",
+      "narration": "POS/719912002495/Swiggy",
+      "ref": "719912002495",
+      "debit": 1564.82,
+      "credit": 0.0,
+      "balance": 34338.53,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-18",
+      "narration": "ATM WDL/147586449982/NAGPUR",
+      "ref": "147586449982",
+      "debit": 5000,
+      "credit": 0.0,
+      "balance": 29338.53,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-21",
+      "narration": "POS/443937440696/Blinkit",
+      "ref": "443937440696",
+      "debit": 1605.02,
+      "credit": 0.0,
+      "balance": 27733.51,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-22",
+      "narration": "UPI/290980495495/freelance.client/Payment",
+      "ref": "290980495495",
+      "debit": 1640.47,
+      "credit": 0.0,
+      "balance": 26093.04,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-22",
+      "narration": "UPI/722420937019/rahul.k/Received",
+      "ref": "722420937019",
+      "debit": 0.0,
+      "credit": 5055.64,
+      "balance": 31148.68,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-24",
+      "narration": "ATM WDL/494476439159/NAGPUR",
+      "ref": "494476439159",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 29148.68,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-25",
+      "narration": "UPI/692549010044/vendor.shop/Received",
+      "ref": "692549010044",
+      "debit": 0.0,
+      "credit": 4074.8,
+      "balance": 33223.48,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-26",
+      "narration": "ATM WDL/190901270287/NAGPUR",
+      "ref": "190901270287",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 31223.48,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-26",
+      "narration": "UPI/405226086204/airtel.prepaid/Recharge",
+      "ref": "405226086204",
+      "debit": 199,
+      "credit": 0.0,
+      "balance": 31024.48,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-26",
+      "narration": "UPI/679749280223/airtel.prepaid/Recharge",
+      "ref": "679749280223",
+      "debit": 499,
+      "credit": 0.0,
+      "balance": 30525.48,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-27",
+      "narration": "NEFT/257401606694/SELF EMPLOYED CR/SALARY",
+      "ref": "257401606694",
+      "debit": 0.0,
+      "credit": 45740.88,
+      "balance": 76266.36,
+      "type": "credit"
+    },
+    {
+      "date": "2026-01-29",
+      "narration": "UPI/380686849640/vendor.shop/Payment",
+      "ref": "380686849640",
+      "debit": 1712.6,
+      "credit": 0.0,
+      "balance": 74553.76,
+      "type": "debit"
+    },
+    {
+      "date": "2026-01-29",
+      "narration": "UPI/918342208838/rahul.k/Payment",
+      "ref": "918342208838",
+      "debit": 1440.38,
+      "credit": 0.0,
+      "balance": 73113.38,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-01",
+      "narration": "POS/376225286246/Flipkart",
+      "ref": "376225286246",
+      "debit": 2606.06,
+      "credit": 0.0,
+      "balance": 70507.32,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-03",
+      "narration": "UPI/976194326802/airtel.prepaid/Recharge",
+      "ref": "976194326802",
+      "debit": 199,
+      "credit": 0.0,
+      "balance": 70308.32,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-05",
+      "narration": "ACH DR/838017353467/EMI LOAN 1964",
+      "ref": "838017353467",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 63508.32,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-06",
+      "narration": "UPI/531377865456/tenant.rent/Payment",
+      "ref": "531377865456",
+      "debit": 2707.61,
+      "credit": 0.0,
+      "balance": 60800.71,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-07",
+      "narration": "INT.PD:158999650620",
+      "ref": "158999650620",
+      "debit": 0.0,
+      "credit": 77.21,
+      "balance": 60877.92,
+      "type": "credit"
+    },
+    {
+      "date": "2026-02-07",
+      "narration": "ACH DR/414350410999/EMI LOAN 8327",
+      "ref": "414350410999",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 54077.92,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-07",
+      "narration": "UPI/787385590079/vendor.shop/Received",
+      "ref": "787385590079",
+      "debit": 0.0,
+      "credit": 2770.6,
+      "balance": 56848.52,
+      "type": "credit"
+    },
+    {
+      "date": "2026-02-08",
+      "narration": "UPI/324661664768/vendor.shop/Received",
+      "ref": "324661664768",
+      "debit": 0.0,
+      "credit": 1902.87,
+      "balance": 58751.39,
+      "type": "credit"
+    },
+    {
+      "date": "2026-02-08",
+      "narration": "POS/603767713916/Ola",
+      "ref": "603767713916",
+      "debit": 2396.71,
+      "credit": 0.0,
+      "balance": 56354.68,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-10",
+      "narration": "ATM WDL/690679436656/NAGPUR",
+      "ref": "690679436656",
+      "debit": 2000,
+      "credit": 0.0,
+      "balance": 54354.68,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-12",
+      "narration": "UPI/479807654117/tenant.rent/Received",
+      "ref": "479807654117",
+      "debit": 0.0,
+      "credit": 4460.52,
+      "balance": 58815.2,
+      "type": "credit"
+    },
+    {
+      "date": "2026-02-15",
+      "narration": "UPI/707710272209/tenant.rent/Payment",
+      "ref": "707710272209",
+      "debit": 2453.2,
+      "credit": 0.0,
+      "balance": 56362.0,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-15",
+      "narration": "POS/978988858318/Spotify",
+      "ref": "978988858318",
+      "debit": 5751.13,
+      "credit": 0.0,
+      "balance": 50610.87,
+      "type": "debit"
+    },
+    {
+      "date": "2026-02-17",
+      "narration": "UPI/258842160902/tenant.rent/Payment",
+      "ref": "258842160902",
+      "debit": 1790.37,
+      "credit": 0.0,
+      "balance": 48820.5,
+      "type": "debit"
+    }
+  ]
+}

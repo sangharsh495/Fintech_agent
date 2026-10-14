@@ -1,0 +1,256 @@
+{
+  "statement_id": "ICICI_010",
+  "bank": "ICICI",
+  "bank_display_name": "ICICI Bank",
+  "account_holder": "Rohan Mehta",
+  "account_number": "913657524115",
+  "ifsc": "ICIC0688963",
+  "opening_balance": 35427.33,
+  "closing_balance": 52102.08,
+  "transaction_count": 27,
+  "transactions": [
+    {
+      "date": "2025-06-01",
+      "narration": "POS/323528712004/Spotify",
+      "ref": "323528712004",
+      "debit": 1490.79,
+      "credit": 0.0,
+      "balance": 33936.54,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-01",
+      "narration": "POS/909103526632/Amazon Retail",
+      "ref": "909103526632",
+      "debit": 5411.73,
+      "credit": 0.0,
+      "balance": 28524.81,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-03",
+      "narration": "UPI/882946304644/freelance.client/Payment",
+      "ref": "882946304644",
+      "debit": 393.88,
+      "credit": 0.0,
+      "balance": 28130.93,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-05",
+      "narration": "POS/836857028110/Zomato",
+      "ref": "836857028110",
+      "debit": 4249.89,
+      "credit": 0.0,
+      "balance": 23881.04,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-06",
+      "narration": "UPI/108544788344/rahul.k/Received",
+      "ref": "108544788344",
+      "debit": 0.0,
+      "credit": 6267.64,
+      "balance": 30148.68,
+      "type": "credit"
+    },
+    {
+      "date": "2025-06-07",
+      "narration": "IMPS/848093676912/vendor.shop",
+      "ref": "848093676912",
+      "debit": 10084.4,
+      "credit": 0.0,
+      "balance": 20064.28,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-09",
+      "narration": "NEFT/826907091709/WIPRO LTD/SALARY",
+      "ref": "826907091709",
+      "debit": 0.0,
+      "credit": 73465.77,
+      "balance": 93530.05,
+      "type": "credit"
+    },
+    {
+      "date": "2025-06-11",
+      "narration": "UPI/141669492205/rahul.k/Payment",
+      "ref": "141669492205",
+      "debit": 2063.0,
+      "credit": 0.0,
+      "balance": 91467.05,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-12",
+      "narration": "IMPS/100008653058/vendor.shop",
+      "ref": "100008653058",
+      "debit": 11269.33,
+      "credit": 0.0,
+      "balance": 80197.72,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-13",
+      "narration": "UPI/935813380295/priya.s/Payment",
+      "ref": "935813380295",
+      "debit": 887.0,
+      "credit": 0.0,
+      "balance": 79310.72,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-15",
+      "narration": "POS/984618370659/Amazon Retail",
+      "ref": "984618370659",
+      "debit": 5734.32,
+      "credit": 0.0,
+      "balance": 73576.4,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-16",
+      "narration": "UPI/339528583742/vendor.shop/Payment",
+      "ref": "339528583742",
+      "debit": 2951.93,
+      "credit": 0.0,
+      "balance": 70624.47,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-16",
+      "narration": "UPI/968416390770/tenant.rent/Payment",
+      "ref": "968416390770",
+      "debit": 1459.92,
+      "credit": 0.0,
+      "balance": 69164.55,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-17",
+      "narration": "POS/596008373003/IRCTC",
+      "ref": "596008373003",
+      "debit": 2246.02,
+      "credit": 0.0,
+      "balance": 66918.53,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-18",
+      "narration": "UPI/587030432775/vendor.shop/Received",
+      "ref": "587030432775",
+      "debit": 0.0,
+      "credit": 6637.24,
+      "balance": 73555.77,
+      "type": "credit"
+    },
+    {
+      "date": "2025-06-18",
+      "narration": "POS/210016547116/Swiggy",
+      "ref": "210016547116",
+      "debit": 5418.77,
+      "credit": 0.0,
+      "balance": 68137.0,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-19",
+      "narration": "UPI/808298334092/rahul.k/Payment",
+      "ref": "808298334092",
+      "debit": 153.42,
+      "credit": 0.0,
+      "balance": 67983.58,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-22",
+      "narration": "UPI/563489110681/rahul.k/Payment",
+      "ref": "563489110681",
+      "debit": 2088.55,
+      "credit": 0.0,
+      "balance": 65895.03,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-22",
+      "narration": "UPI/314240875679/rahul.k/Payment",
+      "ref": "314240875679",
+      "debit": 856.75,
+      "credit": 0.0,
+      "balance": 65038.28,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-22",
+      "narration": "UPI/233563866581/tenant.rent/Received",
+      "ref": "233563866581",
+      "debit": 0.0,
+      "credit": 1041.91,
+      "balance": 66080.19,
+      "type": "credit"
+    },
+    {
+      "date": "2025-06-25",
+      "narration": "ACH DR/417025796967/EMI LOAN 6897",
+      "ref": "417025796967",
+      "debit": 6800,
+      "credit": 0.0,
+      "balance": 59280.19,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-25",
+      "narration": "POS/417572622504/Airtel Postpaid",
+      "ref": "417572622504",
+      "debit": 3714.31,
+      "credit": 0.0,
+      "balance": 55565.88,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-26",
+      "narration": "UPI/993828608089/freelance.client/Received",
+      "ref": "993828608089",
+      "debit": 0.0,
+      "credit": 2212.62,
+      "balance": 57778.5,
+      "type": "credit"
+    },
+    {
+      "date": "2025-06-26",
+      "narration": "UPI/697645944179/rahul.k/Payment",
+      "ref": "697645944179",
+      "debit": 2867.43,
+      "credit": 0.0,
+      "balance": 54911.07,
+      "type": "debit"
+    },
+    {
+      "date": "2025-06-29",
+      "narration": "IMPS/560754276295/freelance.client",
+      "ref": "560754276295",
+      "debit": 2961.14,
+      "credit": 0.0,
+      "balance": 51949.93,
+      "type": "debit"
+    },
+    {
+      "date": "2025-07-02",
+      "narration": "UPI/616060299372/freelance.client/Payment",
+      "ref": "616060299372",
+      "debit": 386.79,
+      "credit": 0.0,
+      "balance": 51563.14,
+      "type": "debit"
+    },
+    {
+      "date": "2025-07-03",
+      "narration": "UPI/366660479000/rahul.k/Received",
+      "ref": "366660479000",
+      "debit": 0.0,
+      "credit": 538.94,
+      "balance": 52102.08,
+      "type": "credit"
+    }
+  ]
+}
