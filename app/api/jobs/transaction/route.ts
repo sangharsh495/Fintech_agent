@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 import { safeLogError } from '@/server/lib/safe-log';
 import { addTransactionJob, TransactionJobData } from '@/server/jobs/queue';
+import { QueueBackendUnavailableError } from '@/server/jobs/queues';
 import { z } from 'zod';
 
 // Validation schema
@@ -47,6 +48,9 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
     });
   } catch (error) {
+    if (error instanceof QueueBackendUnavailableError) {
+      return NextResponse.json({ error: 'Background jobs are not configured on this server' }, { status: 503 });
+    }
     safeLogError('Job creation error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
