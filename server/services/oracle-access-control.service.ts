@@ -124,8 +124,8 @@ class OracleAccessControlService {
    */
   private buildAIModelConfig(record: typeof aiAccessPolicies.$inferSelect): AIModelAccessPolicy {
     const contextTypes = Array.isArray(record.allowedContextTypes)
-      ? Array.from(new Set([...(record.allowedContextTypes as string[]), "aggregates", "documents", "summary", "tax", "profile", "transactions", "analytics", "ml-clusters", "full-context"]))
-      : ["profile", "aggregates", "transactions", "tax", "analytics", "ml-clusters", "documents", "summary", "full-context"]
+      ? Array.from(new Set([...(record.allowedContextTypes as string[]), "aggregates", "documents", "summary", "tax", "profile", "transactions", "analytics", "ml-clusters", "goals", "full-context"]))
+      : ["profile", "aggregates", "transactions", "tax", "analytics", "ml-clusters", "goals", "documents", "summary", "full-context"]
 
     return {
       allowed: record.isEnabled,
@@ -181,6 +181,9 @@ class OracleAccessControlService {
           "tax",
           "analytics",
           "ml-clusters",
+          // /ai-ca requests goals; leaving it out made every Virtual CA
+          // request fail this check and fall back to profile + summary only.
+          "goals",
           "documents",
           "summary",
           "full-context",

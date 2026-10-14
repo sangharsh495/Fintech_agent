@@ -23,6 +23,8 @@ import {
   taxSummaries,
   taxFilings,
   goals,
+  users,
+  netWorthSnapshots,
 } from "@/server/db/schema"
 import { eq, and, desc, gte, sum, sql } from "drizzle-orm"
 import {
@@ -212,7 +214,13 @@ export async function buildCASystemPrompt(
   )
 
   if (!aiAccess.allowed) {
-    allowedContextTypes = ["profile", "summary"]
+    // Drop only the context types the policy does not permit; a single
+    // unlisted type used to strip the tax, filing and spending context too.
+    const permitted = aiAccess.policy?.allowedContextTypes ?? []
+    const isContextDenial = aiAccess.reason?.startsWith("Unauthorized context types") && aiAccess.policy?.allowed
+    allowedContextTypes = isContextDenial
+      ? allowedContextTypes.filter((t) => permitted.includes(t))
+      : ["profile", "summary"]
   }
 
   try {
@@ -220,12 +228,28 @@ export async function buildCASystemPrompt(
     // ─── Fetch profile and banks ────────────────────────────
     const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
     const banks = await db.select().from(bankAccounts).where(and(eq(bankAccounts.userId, userId), eq(bankAccounts.isActive, true)))
+    const [account] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
+    const firstName = account?.name?.trim().split(/\s+/)[0] || null
+    const [latestSnapshot] = await db
+      .select()
+      .from(netWorthSnapshots)
+      .where(eq(netWorthSnapshots.userId, userId))
+      .orderBy(desc(netWorthSnapshots.snapshotDate))
+      .limit(1)
 
     // ─── Fetch from AGGREGATION tables (NOT raw transactions) ──
     const now = new Date()
+    // The window ends at the user's latest month of data, not today: someone
+    // whose newest statement is from March still gets their real averages
+    // instead of zeros.
+    const [{ latestMonth } = { latestMonth: null }] = await db
+      .select({ latestMonth: sql<string | null>`max(${monthlySummaries.month})` })
+      .from(monthlySummaries)
+      .where(eq(monthlySummaries.userId, userId))
+    const windowEnd = latestMonth ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
     const threeMonthsAgoStr = (() => {
-      const d = new Date()
-      d.setMonth(d.getMonth() - 3)
+      const [y, m] = windowEnd.split("-").map(Number)
+      const d = new Date(y, m - 1 - 2, 1)
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
     })()
 
@@ -246,15 +270,26 @@ export async function buildCASystemPrompt(
 
     // Tax aggregates from tax_summaries
     const currentYear = now.getFullYear()
-    const currentFy = now.getMonth() >= 3
+    let currentFy = now.getMonth() >= 3
       ? `${currentYear}-${currentYear + 1}`
       : `${currentYear - 1}-${currentYear}`
+
+    // Use the current FY when it has data, otherwise the user's latest FY
+    // with data (e.g. last year's statements uploaded in April).
+    // tax_summaries stores the short form ("2025-26").
+    const fyRows = await db
+      .selectDistinct({ fy: taxSummaries.fy })
+      .from(taxSummaries)
+      .where(eq(taxSummaries.userId, userId))
+    const shortCurrentFy = `${currentFy.slice(0, 4)}-${currentFy.slice(-2)}`
+    const dataFys = fyRows.map((r) => r.fy).sort()
+    const taxFy = dataFys.includes(shortCurrentFy) ? shortCurrentFy : dataFys[dataFys.length - 1] ?? shortCurrentFy
+    currentFy = `${taxFy.slice(0, 4)}-${Number(taxFy.slice(0, 4)) + 1}`
 
     const taxAggregates = await db
       .select()
       .from(taxSummaries)
-      // tax_summaries stores the short form ("2025-26").
-      .where(and(eq(taxSummaries.userId, userId), eq(taxSummaries.fy, `${currentFy.slice(0, 4)}-${currentFy.slice(-2)}`)))
+      .where(and(eq(taxSummaries.userId, userId), eq(taxSummaries.fy, taxFy)))
 
     // Filing draft, if the user has run the filing wizard: reconciled across
     // Form 16, AIS/TIS, CAS and bank data, with the ITR form decision.
@@ -399,6 +434,24 @@ export async function buildCASystemPrompt(
         .join("\n")
     }
 
+    // Per-account balances from the latest net-worth snapshot
+    let balanceLines = ""
+    if (latestSnapshot?.bankBalances) {
+      try {
+        const parsed = JSON.parse(latestSnapshot.bankBalances) as Array<{ bankId: string; bankName: string; balance: number }>
+        balanceLines = parsed
+          .map((b) => {
+            const bank = banks.find((x) => x.id === b.bankId)
+            const label = `${b.bankName}${bank?.accountNickname ? ` (${bank.accountNickname})` : ""}${bank?.accountLast4 ? ` ••${bank.accountLast4}` : ""}`
+            const amount = Number(b.balance)
+            return `- ${label}: ₹${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}${amount < 0 ? " (overdrawn)" : ""}`
+          })
+          .join("\n")
+      } catch {
+        balanceLines = ""
+      }
+    }
+
     // Monthly trends
     const monthlyTrends = months
       .map(([month, data]) => `${month}: Income ₹${Math.round(data.income).toLocaleString("en-IN")}, Expenses ₹${Math.round(data.expenses).toLocaleString("en-IN")}`)
@@ -415,7 +468,7 @@ export async function buildCASystemPrompt(
     if (allowedContextTypes.includes("profile")) {
       contextSections.profile = `
 USER PROFILE & ACCOUNT DETAILS:
-- Name/ID: ${userId}
+- Name: ${firstName ?? "not provided"} (address the user by this first name)
 - Occupation: ${profile?.occupation || "not specified"}
 - Income bracket: ${profile?.incomeBracket || "not specified"}
 - City & State: ${profile?.city || "unknown"}, ${profile?.state || "unknown"}
@@ -432,7 +485,7 @@ VERIFIED TAX COMPUTATION (FY ${engineFy} rules${engineFy !== currentFy ? `, appl
 engine. Quote these figures exactly; do not recompute them.
 
 - Tax regime in use: ${taxRegime.toUpperCase()}
-- Cheaper regime: ${betterRegime.toUpperCase()} (difference: ₹${Math.abs(Math.round(oldTax - newTax)).toLocaleString("en-IN")})
+- Cheaper regime: ${Math.round(oldTax) === Math.round(newTax) ? `neither: both regimes cost the same (₹${Math.round(oldTax).toLocaleString("en-IN")})` : `${betterRegime.toUpperCase()} (difference: ₹${Math.abs(Math.round(oldTax - newTax)).toLocaleString("en-IN")})`}
 - Gross FY salary income: ₹${Math.round(grossIncome).toLocaleString("en-IN")}
 - 80C utilised: ₹${Math.round(deduction80C).toLocaleString("en-IN")} of the ₹1,50,000 ceiling
 - Taxable income (old / new): ₹${Math.round(taxResult.taxableIncomeOld).toLocaleString("en-IN")} / ₹${Math.round(taxResult.taxableIncomeNew).toLocaleString("en-IN")}
@@ -466,7 +519,11 @@ ${(((filingDraft.reconciliationFindings as Array<{ item: string; severity: strin
 
     if (allowedContextTypes.includes("aggregates") || allowedContextTypes.includes("summary")) {
       contextSections.aggregates = `
-SPENDING METRICS (LAST 3 MONTHS, FROM PRE-AGGREGATED DATA):
+ACCOUNT BALANCES (closing balance of each account's latest uploaded statement):
+${balanceLines || "- No statement uploaded yet."}
+${latestSnapshot ? `- Total across accounts: ₹${Number(latestSnapshot.totalBalance).toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : ""}
+
+SPENDING METRICS (LAST 3 MONTHS OF DATA, ${threeMonthsAgoStr} TO ${windowEnd}, FROM PRE-AGGREGATED DATA):
 - Avg monthly income: ₹${Math.round(avgIncome).toLocaleString("en-IN")}
 - Avg monthly expenses: ₹${Math.round(avgExpense).toLocaleString("en-IN")}
 - Avg monthly savings: ₹${Math.round(avgIncome - avgExpense).toLocaleString("en-IN")} (${savingsRate}% savings rate)
