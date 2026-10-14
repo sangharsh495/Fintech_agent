@@ -24,6 +24,11 @@ export interface BankProfile {
     debit: string[]
     credit: string[]
     balance: string[]
+    /**
+     * A single amount column whose direction comes from a Dr/Cr suffix or the
+     * running balance. Defaults to DEFAULT_AMOUNT_KEYWORDS when omitted.
+     */
+    amount?: string[]
     reference?: string[]
     valueDate?: string[]
   }
@@ -58,6 +63,12 @@ export interface BankProfile {
     decimalSep: string
   }
 }
+
+/** Header labels for a single-amount column, shared by every profile. */
+export const DEFAULT_AMOUNT_KEYWORDS = ["Amount", "Amount (INR)", "Transaction Amount", "Txn Amount", "Amount (Rs.)"]
+
+/** Header labels for a separate Cr/Dr direction column, shared by every profile. */
+export const DEFAULT_DIRECTION_KEYWORDS = ["Cr/Dr", "Dr/Cr", "Cr / Dr", "Dr / Cr", "Txn Type", "Type"]
 
 // ─── Pre-built Bank Profiles ────────────────────────────────
 
@@ -749,7 +760,7 @@ export const GENERIC_PROFILE: BankProfile = {
   columns: {
     date: [
       "Date", "Txn Date", "Transaction Date", "Tran Date", "Value Date",
-      "Posting Date",
+      "Posting Date", "Txn Posted Date", "Posted Date", "Transaction Posted Date",
     ],
     description: [
       "Narration", "Description", "Particulars", "Details", "Remarks",
@@ -799,13 +810,40 @@ export const GENERIC_PROFILE: BankProfile = {
 // ─── Helper Functions ───────────────────────────────────────
 
 /**
- * Auto-detect bank from PDF text content.
+ * True when `identifier` occurs in `text` as a name in its own right.
+ *
+ * Domains ("hdfcbank.com") match anywhere. A bank name must sit on word
+ * boundaries and must not be the tail of a longer name: "Bank of India" inside
+ * "Central Bank of India" or "Cornerstone Bank of India" is preceded, on the
+ * same line, by a capitalised word and so does not count. Lines are separated
+ * by newlines in the text passed in (see statementHeaderText).
+ */
+function containsBankName(text: string, identifier: string): boolean {
+  const upperText = text.toUpperCase()
+  const id = identifier.toUpperCase()
+  if (id.includes(".") && !id.includes(" ")) return upperText.includes(id)
+
+  let from = 0
+  for (;;) {
+    const at = upperText.indexOf(id, from)
+    if (at === -1) return false
+    from = at + 1
+    const before = at === 0 ? "" : upperText[at - 1]!
+    const after = upperText[at + id.length] ?? ""
+    if (/[A-Z0-9]/.test(before) || /[A-Z0-9]/.test(after)) continue
+    const precedingWord = /([A-Za-z]+) $/.exec(text.slice(Math.max(0, at - 40), at))?.[1]
+    if (precedingWord && /^[A-Z]/.test(precedingWord)) continue
+    return true
+  }
+}
+
+/**
+ * Auto-detect bank from PDF text content — pass the statement header, not the
+ * whole document, since narrations name other banks.
  * Checks each bank's identifiers against the text (case-insensitive).
- * Returns the first match, or null if no bank is recognized.
+ * Returns the best match, or null if no bank is recognized.
  */
 export function detectBank(text: string): BankProfile | null {
-  const upper = text.toUpperCase()
-
   // Collect all matches and prefer the longest, most specific identifier.
   // This prevents false positives like "Indian Bank" matching inside
   // "South Indian Bank" — the longer, more specific identifier wins.
@@ -814,7 +852,7 @@ export function detectBank(text: string): BankProfile | null {
   for (const profile of BANK_PROFILES) {
     for (const identifier of profile.identifiers) {
       const idUpper = identifier.toUpperCase()
-      if (upper.includes(idUpper)) {
+      if (containsBankName(text, identifier)) {
         // Weight multi-word identifiers higher to avoid single-word false positives.
         const words = idUpper.split(/\s+/).length
         const score = idUpper.length + words * 10

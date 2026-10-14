@@ -10,7 +10,8 @@ import path from "path"
 import os from "os"
 import { PasswordRequiredError } from "./pdf.types"
 import type { PDFDecryptResult } from "./pdf.types"
-import { detectBank } from "./bank-profiles"
+import { BANK_PROFILES, detectBank, getBankProfile } from "./bank-profiles"
+import type { BankProfile } from "./bank-profiles"
 import { safeLogError } from "@/server/lib/safe-log";
 
 const execFileAsync = promisify(execFile)
@@ -18,20 +19,36 @@ const execFileAsync = promisify(execFile)
 // ─── Public API ─────────────────────────────────────────────
 
 /**
+ * The bank behind an encrypted statement, for the password hint. Its text is
+ * unreadable before decryption, so this uses, in order: the bank the user
+ * chose, the file name ("SBI_statement.pdf", "HDFC-Jan-2025.pdf"), and any
+ * readable bytes at the start of the file.
+ */
+function bankForHint(fileBuffer: Buffer, hints: { bankId?: string; fileName?: string }): BankProfile | null {
+  const chosen = hints.bankId ? getBankProfile(hints.bankId) : null
+  if (chosen && chosen.id !== "generic") return chosen
+
+  const tokens = (hints.fileName ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+  const fromName = BANK_PROFILES.find((p) => p.id !== "generic" && tokens.includes(p.id))
+  if (fromName) return fromName
+
+  return detectBank(fileBuffer.subarray(0, 4096).toString("latin1"))
+}
+
+/**
  * Attempt to decrypt a PDF buffer.
  */
 export async function decryptPDF(
   fileBuffer: Buffer,
-  password?: string
+  password?: string,
+  hints: { bankId?: string; fileName?: string } = {}
 ): Promise<PDFDecryptResult> {
   const isEncrypted = isEncryptedPDF(fileBuffer)
   if (!isEncrypted) {
     return { buffer: fileBuffer, wasEncrypted: false, decryptMethod: "none" }
   }
 
-  // Scan text to detect bank before decryption to give hints
-  const headerText = fileBuffer.subarray(0, 4096).toString("latin1")
-  const detectedProfile = detectBank(headerText)
+  const detectedProfile = bankForHint(fileBuffer, hints)
 
   if (!password) {
     const hint = detectedProfile?.passwordHint || "Enter the PDF password"

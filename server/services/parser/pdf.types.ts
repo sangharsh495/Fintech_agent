@@ -27,6 +27,10 @@ export interface PDFParseOptions {
   password?: string
   /** Explicit bank profile ID — skips auto-detection if provided */
   bankId?: string
+  /** Original file name, used for the password hint when the PDF is encrypted */
+  fileName?: string
+  /** Likely bank (e.g. from the account uploaded into), for the password hint only — never overrides detection */
+  hintBankId?: string
 }
 
 // ─── Parse Result ──────────────────────────────────────────
@@ -39,6 +43,14 @@ export interface ParsedStatementResult {
   bankProfile: string
   pageCount: number
   wasEncrypted: boolean
+  /** Rows (by index) whose balance does not follow from the previous row. */
+  continuityErrors: Array<{ index: number; expected: number; actual: number }>
+  /** Text chunks the extractor could not read; their rows are missing. */
+  failedChunks: number
+  /** Which tier produced the transactions. */
+  engine: "deterministic" | "llm"
+  /** The statement was a scan and its text came from OCR. */
+  ocr: boolean
 }
 
 // ─── Positioned Text Item ──────────────────────────────────
@@ -63,7 +75,12 @@ export interface PositionedPage {
 // ─── Column Assignment ─────────────────────────────────────
 
 /** Column types we detect in the transaction table */
-export type ColumnType = "date" | "description" | "debit" | "credit" | "balance" | "reference" | "valueDate"
+/**
+ * "amount" is a single signed/suffixed amount column (e.g. "349.00 Dr"), used instead of debit + credit.
+ * "direction" is a separate Cr/Dr column. "other" reserves the band of a header the parser does not
+ * use (serial number, branch code, posting time) so its values never leak into neighbouring columns.
+ */
+export type ColumnType = "date" | "description" | "debit" | "credit" | "amount" | "direction" | "balance" | "reference" | "valueDate" | "other"
 
 /** A detected column boundary */
 export interface DetectedColumn {

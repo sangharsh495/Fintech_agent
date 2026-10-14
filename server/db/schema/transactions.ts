@@ -70,7 +70,7 @@ export const transactions = pgTable("transactions", {
   bankAccountId: uuid("bank_account_id"),          // FK → bankAccounts.id
   statementUploadId: uuid("statement_upload_id"),  // FK → statementUploads.id
   rawDescription: text("raw_description"),         // Original description before categorization
-  hash: varchar("hash", { length: 64 }),           // SHA256(date+amount+rawDescription) for dedup
+  hash: varchar("hash", { length: 64 }),           // SHA256 dedup key, see computeStoredHash in parser/deduplicator.ts
 
   // ── Cluster assignments (populated by ML service) ──
   spendingCluster: integer("spending_cluster"),    // Behavioral cluster ID

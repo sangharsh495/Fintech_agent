@@ -7,6 +7,27 @@ import type { BankProfile } from "./bank-profiles"
 import { detectBank, GENERIC_PROFILE } from "./bank-profiles"
 import type { StatementMetadata, PositionedPage } from "./pdf.types"
 
+/** A transaction row starts with a date: 01/02/2025, 01-02-25, 02 Jan 2025, 2025-01-02. */
+const ROW_DATE = /^(?:\d{1,2}[\/\-. ](?:\d{1,2}|[A-Za-z]{3})[\/\-. ]\d{2,4}|\d{4}-\d{2}-\d{2})\b/
+
+/**
+ * Text of the statement header: page 1 above the first transaction row.
+ *
+ * Bank detection must use this rather than the whole document, because
+ * narrations routinely name other banks ("Chq Paid ... HDFC BANK LTD",
+ * "NEFT ... ICIC0SF0002"), which would otherwise outscore the issuing bank.
+ */
+export function statementHeaderText(pages: PositionedPage[]): string {
+  const first = pages[0]
+  if (!first) return ""
+  const items = first.content.filter((item) => item.str.trim())
+  const firstRowY = items.filter((item) => ROW_DATE.test(item.str.trim())).reduce((min, item) => Math.min(min, item.y), Infinity)
+  const header = Number.isFinite(firstRowY) ? items.filter((item) => item.y < firstRowY - 1) : items
+  // One item per line, so a name is never glued to the end of the previous item.
+  const text = [...header].sort((a, b) => a.y - b.y || a.x - b.x).map((item) => item.str).join("\n")
+  return Number.isFinite(firstRowY) ? text : text.slice(0, 1500)
+}
+
 /**
  * Extract statement metadata from the PDF text content using the bank profile.
  *
@@ -26,7 +47,7 @@ export function extractMetadata(
   // If using generic profile, try to auto-detect bank for better header matching
   let effectiveProfile = profile
   if (profile.id === "generic") {
-    const detected = detectBank(fullText)
+    const detected = detectBank(statementHeaderText(pages))
     if (detected) {
       effectiveProfile = detected
     }

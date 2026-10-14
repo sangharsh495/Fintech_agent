@@ -33,6 +33,29 @@ export function computeHash(date: Date, amount: number, rawDescription: string, 
   return crypto.createHash("sha256").update(str).digest("hex")
 }
 
+/**
+ * The stored dedup key (v2). `computeHash` alone collides on two genuine,
+ * identical same-day payments, and the UNIQUE (user_id, hash) index then
+ * rejects the whole upload. This key adds what tells such rows apart while
+ * staying stable when an overlapping statement is uploaded again:
+ * - the account, since the index is per user rather than per account
+ * - the direction and the running balance after the row, when known
+ * - the occurrence number among otherwise-identical rows in the same upload
+ */
+function computeStoredHash(txn: ParsedTransaction, bankAccountId: string, occurrence: number): string {
+  const str = [
+    "v2",
+    bankAccountId,
+    txn.date.toISOString().split("T")[0],
+    txn.type,
+    txn.amount.toFixed(2),
+    txn.balance != null ? txn.balance.toFixed(2) : "",
+    txn.rawDescription.toLowerCase().trim(),
+    occurrence,
+  ].join("|")
+  return crypto.createHash("sha256").update(str).digest("hex")
+}
+
 export interface DeduplicationResult {
   newTransactions: ParsedTransaction[]
   duplicates: ParsedTransaction[]
@@ -57,8 +80,25 @@ export async function deduplicateTransactions(
   const newTransactions: ParsedTransaction[] = []
   const duplicates: ParsedTransaction[] = []
 
-  for (const txn of incoming) {
-    if (txn.hash && existingHashes.has(txn.hash)) {
+  const occurrences = new Map<string, number>()
+  const legacyOccurrences = new Map<string, number>()
+  const nextOccurrence = (counts: Map<string, number>, key: string) => {
+    const n = counts.get(key) ?? 0
+    counts.set(key, n + 1)
+    return n
+  }
+
+  for (const parsed of incoming) {
+    const legacyHash = computeHash(parsed.date, parsed.amount, parsed.rawDescription)
+    const occurrence = nextOccurrence(occurrences, `${legacyHash}|${parsed.type}|${parsed.balance ?? ""}`)
+    const legacyOccurrence = nextOccurrence(legacyOccurrences, legacyHash)
+
+    const txn = { ...parsed, hash: computeStoredHash(parsed, bankAccountId, occurrence) }
+
+    // Rows stored before v2 carry the legacy hash. The unique index allowed
+    // only one of them per key, so only the first occurrence can match one.
+    const isDuplicate = existingHashes.has(txn.hash) || (legacyOccurrence === 0 && existingHashes.has(legacyHash))
+    if (isDuplicate) {
       duplicates.push(txn)
     } else {
       newTransactions.push(txn)
