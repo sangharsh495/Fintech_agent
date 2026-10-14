@@ -1,5 +1,6 @@
 import { registerRootComponent } from 'expo';
-import App from './App';
+// The app is a WebView shell around the web app (see App.webview.tsx).
+import App from './App.webview';
 
 registerRootComponent(App);
 
