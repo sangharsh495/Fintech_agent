@@ -29,3 +29,9 @@ next-env.d.ts
 # OS files
 .DS_Store
 */.DS_Store
+# Regenerated evaluation corpora (E1 is committed)
+eval/corpus/heldout/
+eval/corpus/external/agami/
+
+# Other tools' worktree copies of this project
+.kilo/

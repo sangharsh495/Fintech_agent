@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["pino", "thread-stream"],
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  serverExternalPackages: ["pino", "thread-stream", "pdf-parse", "pdf.js-extract"],
   images: {
     unoptimized: true,
   },
