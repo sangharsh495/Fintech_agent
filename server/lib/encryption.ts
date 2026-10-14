@@ -225,6 +225,7 @@ export function verifyTLSConnection(): boolean {
   // Neon connections always use TLS (sslmode=require is in the connection string)
   const hasTLS =
     dbUrl.includes("sslmode=require") ||
+    dbUrl.includes("sslmode=verify-full") ||
     dbUrl.includes("neon.tech") ||
     dbUrl.includes("ssl=true")
 

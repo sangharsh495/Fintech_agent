@@ -6,5 +6,11 @@
     "app/api/ai/chat/route.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/jobs/refresh-aggregates",
+      "schedule": "30 20 * * *"
+    }
+  ]
 }

@@ -30,15 +30,20 @@ export async function GET(req: NextRequest) {
     if (to) conditions.push(lte(transactions.date, new Date(to)))
     if (category) conditions.push(eq(transactions.category, category))
 
-    const dataAndTotal = await withUserScopedDb(userId, async (db) => {
-      return Promise.all([
-        db.select().from(transactions).where(and(...conditions)).orderBy(desc(transactions.date)).limit(limit).offset(offset),
-        db.select({ count: sql<number>`count(*)` }).from(transactions).where(and(...conditions)),
-      ])
+    const [data, totalResult] = await withUserScopedDb(userId, async (db) => {
+      const txns = await db
+        .select()
+        .from(transactions)
+        .where(and(...conditions))
+        .orderBy(desc(transactions.date))
+        .limit(limit)
+        .offset(offset)
+      const countRes = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(transactions)
+        .where(and(...conditions))
+      return [txns, countRes] as const
     })
-
-    const data = dataAndTotal[0]
-    const totalResult = dataAndTotal[1]
 
     const total = Number(totalResult[0]?.count || 0)
     return NextResponse.json({ transactions: data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })

@@ -1,7 +1,9 @@
 import { Worker, Job } from "bullmq"
 import { statementUploads, transactions, bankAccounts } from "@/server/db/schema"
+import { chronological, sequencedTimestamp } from "@/server/lib/transaction-order"
 import { eq, and } from "drizzle-orm"
 import { statementProcessingQueue, JobNames, type StatementProcessingJobData } from "@/server/jobs/queues"
+import { refreshUserAggregates } from "@/server/jobs/refresh-aggregates"
 import { parseStatementFile } from "@/server/services/parser"
 import { categorizeTransaction } from "@/server/services/parser/categorizer"
 import { deduplicateTransactions } from "@/server/services/parser/deduplicator"
@@ -123,6 +125,11 @@ const worker = new Worker<StatementProcessingJobData>(
         return result;
       });
 
+      // Make the new rows visible to the tax engine and dashboard now.
+      if (newTransactions.length > 0) {
+        await refreshUserAggregates(userId).catch((err) => console.error("[Worker] Aggregate refresh failed:", err))
+      }
+
       // Step 7: Trigger ML clustering for this user
       console.log(`[Worker] Triggering ML clustering for user ${userId}`)
       await addJob(
@@ -219,7 +226,8 @@ async function insertTransactionsScoped(
   uploadId: string,
   transactionsData: ProcessedTransaction[]
 ) {
-  const transactionRecords = transactionsData.map((txn) => ({
+  const insertedAt = new Date()
+  const transactionRecords = chronological(transactionsData).map((txn, i) => ({
     userId,
     bankAccountId,
     statementUploadId: uploadId,
@@ -239,6 +247,7 @@ async function insertTransactionsScoped(
     balanceAfter: txn.balance?.toFixed(2),
     rawDescription: txn.rawDescription,
     hash: txn.hash,
+    createdAt: sequencedTimestamp(insertedAt, i),
   }))
 
   // Batch insert in chunks of 100

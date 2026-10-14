@@ -18,10 +18,15 @@ import pg from "pg"
 
 const { Pool } = pg
 
-// ─── Connection Pool Configuration ──────────────────────────
-// Strip channel_binding param (pg driver handles SSL natively)
+function sanitizeDatabaseUrl(url: string): string {
+  let cleaned = url.replace(/[&?]channel_binding=[^&]*/g, "")
+  // Normalize sslmode to verify-full to eliminate pg-connection-string deprecation warnings
+  cleaned = cleaned.replace(/([&?])sslmode=(?:require|prefer|verify-ca)(&|$)/g, "$1sslmode=verify-full$2")
+  return cleaned
+}
+
 const rawUrl = process.env.APP_DATABASE_URL || process.env.DATABASE_URL || "postgres://localhost:5432/mock"
-const connectionUrl = rawUrl.replace(/[&?]channel_binding=[^&]*/g, "")
+const connectionUrl = sanitizeDatabaseUrl(rawUrl)
 
 const pool = new Pool({
   connectionString: connectionUrl,
@@ -33,7 +38,7 @@ const pool = new Pool({
 })
 
 const adminUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || rawUrl;
-const adminConnectionUrl = adminUrl.replace(/[&?]channel_binding=[^&]*/g, "");
+const adminConnectionUrl = sanitizeDatabaseUrl(adminUrl);
 
 const adminPool = new Pool({
   connectionString: adminConnectionUrl,

@@ -88,21 +88,23 @@ export async function GET(req: NextRequest) {
 
       // If no snapshot exists yet, compute from raw data (explicit, audited path)
       if (!latestSnapshot) {
-        perBankBalances = await Promise.all(
-          banks.map(async (bank) => {
-            const [latest] = await db
-              .select({ balance: transactions.balanceAfter })
-              .from(transactions)
-              .where(and(eq(transactions.userId, userId), eq(transactions.bankAccountId, bank.id)))
-              .orderBy(desc(transactions.date))
-              .limit(1)
-            return {
-              bankId: bank.id, bankName: bank.bankName, accountNickname: bank.accountNickname,
-              accountLast4: bank.accountLast4, accountType: bank.accountType,
-              balance: parseFloat(latest?.balance || "0"),
-            }
+        perBankBalances = []
+        for (const bank of banks) {
+          const [latest] = await db
+            .select({ balance: transactions.balanceAfter })
+            .from(transactions)
+            .where(and(eq(transactions.userId, userId), eq(transactions.bankAccountId, bank.id)))
+            .orderBy(desc(transactions.date), desc(transactions.createdAt))
+            .limit(1)
+          perBankBalances.push({
+            bankId: bank.id,
+            bankName: bank.bankName,
+            accountNickname: bank.accountNickname,
+            accountLast4: bank.accountLast4,
+            accountType: bank.accountType,
+            balance: parseFloat(latest?.balance || "0"),
           })
-        )
+        }
       }
 
       const computedBalance = perBankBalances.reduce((s, b) => s + b.balance, 0)

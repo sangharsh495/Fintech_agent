@@ -18,6 +18,11 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   const cronSecret = process.env.CRON_SECRET
 
+  // Without a configured secret the endpoint would be open to anyone, and it
+  // recomputes every user's aggregates. Refuse in production; allow locally.
+  if (!cronSecret && process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 503 })
+  }
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -33,3 +38,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Aggregation refresh failed" }, { status: 500 })
   }
 }
+
+/** Vercel Cron calls with GET (and the Authorization header above). */
+export const GET = POST
