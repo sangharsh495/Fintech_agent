@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import { useSession } from "next-auth/react"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Card } from "@/components/ui/card"
@@ -27,15 +28,57 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const GREETING = {
-  id: "greeting",
-  role: "assistant" as const,
-  parts: [
-    {
-      type: "text" as const,
-      text: "Namaste! I'm FinFlow AI, your personal financial assistant. I have access to your real financial data and can answer specific questions about your income, expenses, tax optimization, and savings. How can I help you today?",
-    },
-  ],
+function makeGreeting(firstName: string | null) {
+  return {
+    id: "greeting",
+    role: "assistant" as const,
+    parts: [
+      {
+        type: "text" as const,
+        text: `Namaste${firstName ? `, ${firstName}` : ""}! I'm FinFlow AI, your personal financial assistant. I can see your uploaded statements, balances and tax position, so ask me anything specific about your income, spending, tax or savings.`,
+      },
+    ],
+  }
+}
+
+const GENERIC_SUGGESTIONS = [
+  "How can I save tax for FY 2025-26?",
+  "Compare Old vs New regime for my income",
+  "What deductions can I claim under 80C and 80D?",
+  "How are capital gains taxed in India?",
+]
+
+interface DashboardSnapshot {
+  hasData?: boolean
+  perBankBalances?: Array<{ bankName: string; balance: number }>
+  recentTransactions?: Array<{ category?: string | null; type?: string }>
+}
+
+/** Suggested questions built from the user's own accounts and spending. */
+function personalSuggestions(d: DashboardSnapshot | null): string[] {
+  if (!d?.hasData) {
+    return [
+      "How do I download my bank statement as a PDF?",
+      "Which tax regime suits a salaried person?",
+      "What deductions can I claim under 80C and 80D?",
+      "How much should I keep as an emergency fund?",
+    ]
+  }
+  const out: string[] = []
+  const banks = d.perBankBalances ?? []
+  const overdrawn = banks.find((b) => b.balance < 0)
+  if (overdrawn) out.push(`My ${overdrawn.bankName} account is overdrawn. What should I do?`)
+  if (banks.length > 1) out.push(`What is my total balance across my ${banks.length} accounts?`)
+  else out.push("What is my current balance and how has it changed?")
+  const spend = new Map<string, number>()
+  for (const t of d.recentTransactions ?? []) {
+    if (t.type === "debit" && t.category) spend.set(t.category, (spend.get(t.category) ?? 0) + 1)
+  }
+  const topCategory = [...spend.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+  out.push(topCategory ? `How can I spend less on ${topCategory}?` : "Where is most of my money going?")
+  out.push("Which tax regime is cheaper for me this year?")
+  out.push("How much more can I invest under 80C to save tax?")
+  return out.slice(0, 4)
 }
 
 interface ChatSessionSummary {
@@ -304,6 +347,10 @@ function chatErrorMessage(err: Error): string {
 }
 
 export default function AICAsPage() {
+  const { data: authSession } = useSession()
+  const firstName = authSession?.user?.name?.trim().split(/\s+/)[0] || null
+  const GREETING = useMemo(() => makeGreeting(firstName), [firstName])
+  const [dashboard, setDashboard] = useState<DashboardSnapshot | null>(null)
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [sessionsLoading, setSessionsLoading] = useState(true)
@@ -333,6 +380,47 @@ export default function AICAsPage() {
   const [input, setInput] = useState("")
   const isLoading = status === "streaming" || status === "submitted"
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  // Follow new text only while the reader is at the bottom; scrolling up to
+  // re-read an answer must not be undone by every streamed token.
+  const stickToBottomRef = useRef(true)
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false)
+
+  const scrollToLatest = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const el = messagesContainerRef.current
+    if (!el) return
+    // Scroll the message list itself; scrollIntoView also scrolled the page.
+    el.scrollTo({ top: el.scrollHeight, behavior })
+    stickToBottomRef.current = true
+    setShowJumpToLatest(false)
+  }, [])
+
+  const handleMessagesScroll = useCallback(() => {
+    const el = messagesContainerRef.current
+    if (!el) return
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+    stickToBottomRef.current = atBottom
+    if (atBottom) setShowJumpToLatest(false)
+  }, [])
+
+  // Suggested questions come from the user's own accounts and spending.
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setDashboard(data))
+      .catch(() => setDashboard(null))
+  }, [])
+
+  // Replace the generic greeting with the personal one once the name loads.
+  // Keyed on the name only: setMessages gets a new identity every render, so
+  // depending on it re-ran this effect forever (React error #185).
+  const greetedNameRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!firstName || greetedNameRef.current === firstName) return
+    greetedNameRef.current = firstName
+    if (chatMessages.length === 1 && chatMessages[0]?.id === "greeting") setMessages([GREETING])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstName])
 
   const loadSessions = useCallback(async (): Promise<ChatSessionSummary[]> => {
     try {
@@ -419,6 +507,7 @@ export default function AICAsPage() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
     const textToSend = input.trim()
+    stickToBottomRef.current = true
     sendMessage(
       { parts: [{ type: "text", text: textToSend }] },
       { body: { sessionId: currentSessionId } }
@@ -428,15 +517,15 @@ export default function AICAsPage() {
   }
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [chatMessages, isLoading])
+    if (stickToBottomRef.current) {
+      // Instant while streaming so the view keeps up; smooth otherwise.
+      scrollToLatest(status === "streaming" ? "auto" : "smooth")
+    } else {
+      setShowJumpToLatest(true)
+    }
+  }, [chatMessages, isLoading, status, scrollToLatest])
 
-  const suggestedQueries = [
-    "How can I save tax for FY 2025-26?",
-    "Compare Old vs New regime for my income",
-    "What deductions can I claim under 80C and 80D?",
-    "How are capital gains taxed in India?",
-  ]
+  const suggestedQueries = dashboard ? personalSuggestions(dashboard) : GENERIC_SUGGESTIONS
 
   const securitySteps = [
     { num: 1, title: "Data Upload", desc: "You securely upload your financial documents." },
@@ -446,28 +535,32 @@ export default function AICAsPage() {
   ]
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
+    <div className="flex flex-col min-h-[calc(100dvh-10rem)] md:min-h-[calc(100vh-4rem)] bg-background">
       {/* Hero Header */}
       <div className="relative border-b border-border/40 bg-card overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
         
-        <div className="relative z-10 px-6 py-8 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4 animate-in slide-in-from-bottom-2">
+        <div className="relative z-10 px-6 py-3 sm:py-8 flex flex-col items-center justify-center text-center max-w-4xl mx-auto">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-4 animate-in slide-in-from-bottom-2">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             FinFlow AI
           </div>
           
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 text-foreground drop-shadow-sm">
+          <h1 className="text-lg sm:text-2xl md:text-4xl font-extrabold tracking-tight sm:mb-2 text-foreground drop-shadow-sm">
             AI Virtual <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Chartered Accountant</span>
           </h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
+          <p className="hidden sm:block text-sm text-muted-foreground max-w-2xl">
             Get expert guidance on Indian tax laws, financial planning, and wealth optimization with our AI-powered assistant trained on current regulations.
           </p>
         </div>
       </div>
 
-      <div className="flex-1 px-4 md:px-6 py-6 max-w-[1440px] mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[72vh] min-h-[600px]">
+      <div className="flex-1 px-3 sm:px-4 md:px-6 py-3 sm:py-6 max-w-[1440px] mx-auto w-full">
+        {/* One row clamped to the grid's height (grid-rows-1 = minmax(0, 1fr)),
+            so long chats scroll inside the message list instead of growing the
+            page. On phones the chat fills the screen between the header and
+            the tab bar. */}
+        <div className="grid grid-cols-1 grid-rows-1 lg:grid-cols-12 gap-6 h-[calc(100dvh-15rem)] min-h-[360px] lg:h-[72vh] lg:min-h-[600px]">
           
           {/* Column 1 - Past Chats Sidebar */}
           <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-full">
@@ -532,8 +625,8 @@ export default function AICAsPage() {
           </div>
 
           {/* Column 2 - Main Chat Interface */}
-          <div className="lg:col-span-6 flex flex-col gap-4 h-full">
-            <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full relative">
+          <div className="lg:col-span-6 flex flex-col gap-4 h-full min-h-0">
+            <Card className="flex flex-col flex-1 min-h-0 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full relative">
               {/* Mobile Consultation Controls Header */}
               <div className="lg:hidden relative z-40 flex items-center justify-between px-4 py-2.5 bg-secondary/50 border-b border-border/50">
                 <button
@@ -615,7 +708,12 @@ export default function AICAsPage() {
               )}
 
               {/* Messages Area */}
-              <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-5 overscroll-contain">
+              <div
+                ref={messagesContainerRef}
+                onScroll={handleMessagesScroll}
+                data-testid="chat-messages"
+                className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-5 overscroll-contain"
+              >
                 {historyLoading && (
                   <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -687,6 +785,15 @@ export default function AICAsPage() {
                 )}
                 <div ref={messagesEndRef} className="h-2" />
               </div>
+              {showJumpToLatest && (
+                <button
+                  type="button"
+                  onClick={() => scrollToLatest()}
+                  className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold shadow-lg cursor-pointer"
+                >
+                  Jump to latest ↓
+                </button>
+              )}
 
               {/* Input Area */}
               <div className="p-4 bg-card border-t border-border/40">
