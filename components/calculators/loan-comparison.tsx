@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
+import { clamp, monthlyEmi } from "@/lib/loan-math"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 interface Loan {
@@ -19,15 +20,12 @@ export default function LoanComparison() {
     { id: "3", name: "Bank C", principal: 500000, rate: 7.5, tenure: 5 },
   ])
 
-  const calculateEMI = (principal: number, rate: number, tenure: number) => {
-    const R = rate / 100 / 12
-    const N = tenure * 12
-    return (principal * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1)
-  }
+  const calculateEMI = (principal: number, rate: number, tenure: number) =>
+    monthlyEmi(principal, rate, clamp(tenure, 0, 40) * 12)
 
   const comparisonData = loans.map((loan) => {
     const emi = calculateEMI(loan.principal, loan.rate, loan.tenure)
-    const totalPayable = emi * loan.tenure * 12
+    const totalPayable = emi * clamp(loan.tenure, 0, 40) * 12
     const totalInterest = totalPayable - loan.principal
 
     return {
@@ -63,7 +61,7 @@ export default function LoanComparison() {
                 <input
                   type="number"
                   value={loan.principal}
-                  onChange={(e) => handleUpdate(loan.id, "principal", Number(e.target.value))}
+                  onChange={(e) => handleUpdate(loan.id, "principal", clamp(Number(e.target.value), 0, 1000000000))}
                   className="w-full px-2 py-1 rounded border border-border bg-card text-foreground mt-1"
                 />
               </label>
@@ -74,7 +72,7 @@ export default function LoanComparison() {
                   type="number"
                   step="0.1"
                   value={loan.rate}
-                  onChange={(e) => handleUpdate(loan.id, "rate", Number(e.target.value))}
+                  onChange={(e) => handleUpdate(loan.id, "rate", clamp(Number(e.target.value), 0, 50))}
                   className="w-full px-2 py-1 rounded border border-border bg-card text-foreground mt-1"
                 />
               </label>
@@ -84,7 +82,7 @@ export default function LoanComparison() {
                 <input
                   type="number"
                   value={loan.tenure}
-                  onChange={(e) => handleUpdate(loan.id, "tenure", Number(e.target.value))}
+                  onChange={(e) => handleUpdate(loan.id, "tenure", clamp(Number(e.target.value), 0, 40))}
                   className="w-full px-2 py-1 rounded border border-border bg-card text-foreground mt-1"
                 />
               </label>

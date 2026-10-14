@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { clamp } from "@/lib/loan-math"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -77,7 +78,7 @@ export default function FDCalculator() {
                                 <Input
                                     type="number"
                                     value={principal}
-                                    onChange={(e) => setPrincipal(Number(e.target.value) || 10000)}
+                                    onChange={(e) => setPrincipal(clamp(Number(e.target.value), 0, 5000000))}
                                     className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pl-7"
                                 />
                             </div>
@@ -103,7 +104,7 @@ export default function FDCalculator() {
                                 <Input
                                     type="number"
                                     value={rate}
-                                    onChange={(e) => setRate(Number(e.target.value) || 3)}
+                                    onChange={(e) => setRate(clamp(Number(e.target.value), 0, 12))}
                                     className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pr-8"
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">% p.a.</span>
@@ -130,7 +131,7 @@ export default function FDCalculator() {
                                 <Input
                                     type="number"
                                     value={tenure}
-                                    onChange={(e) => setTenure(Number(e.target.value) || 1)}
+                                    onChange={(e) => setTenure(clamp(Number(e.target.value), 0, 20))}
                                     className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pr-8"
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">Yrs</span>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { amortizationBalances, clamp, monthlyEmi } from "@/lib/loan-math"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -32,30 +33,18 @@ export default function EMICalculator() {
   const [rate, setRate] = useState(8.5)
   const [tenure, setTenure] = useState(5)
 
-  const calculateEMI = () => {
-    const P = principal
-    const R = rate / 100 / 12
-    const N = tenure * 12
-    return (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1)
-  }
-
-  const emi = calculateEMI()
-  const totalPayable = emi * tenure * 12
+  // Inputs are capped at the slider maximum while typing; the minimum is
+  // applied here so a half-typed value never breaks the maths.
+  const months = clamp(tenure, 1, 30) * 12
+  const emi = monthlyEmi(principal, rate, months)
+  const totalPayable = emi * months
   const totalInterest = totalPayable - principal
 
-  const amortizationSchedule = Array.from({ length: tenure * 12 }, (_, i) => {
-    const R = rate / 100 / 12
-    let balance = principal
-    for (let j = 0; j <= i; j++) {
-      const interest = balance * R
-      const principalPayment = emi - interest
-      balance -= principalPayment
-    }
-    return {
-      month: i + 1,
-      balance: Math.max(0, balance),
-    }
-  })
+  // One pass over the schedule (the old version re-ran it for every month).
+  const amortizationSchedule = amortizationBalances(principal, rate, months).map((balance, i) => ({
+    month: i + 1,
+    balance,
+  }))
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -71,7 +60,7 @@ export default function EMICalculator() {
                 <Input
                   type="number"
                   value={principal}
-                  onChange={(e) => setPrincipal(Number(e.target.value) || 100000)}
+                  onChange={(e) => setPrincipal(clamp(Number(e.target.value), 0, 10000000))}
                   className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pl-7"
                 />
               </div>
@@ -97,7 +86,7 @@ export default function EMICalculator() {
                 <Input
                   type="number"
                   value={rate}
-                  onChange={(e) => setRate(Number(e.target.value) || 3)}
+                  onChange={(e) => setRate(clamp(Number(e.target.value), 0, 15))}
                   className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pr-8"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">% p.a.</span>
@@ -124,7 +113,7 @@ export default function EMICalculator() {
                 <Input
                   type="number"
                   value={tenure}
-                  onChange={(e) => setTenure(Number(e.target.value) || 1)}
+                  onChange={(e) => setTenure(clamp(Number(e.target.value), 0, 30))}
                   className="h-8 text-right font-medium no-spinners bg-secondary/30 focus-visible:ring-1 focus-visible:ring-primary pr-8"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">Yrs</span>
