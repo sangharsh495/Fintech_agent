@@ -42,14 +42,23 @@ interface Slab {
   rate: number
 }
 
-/** Old regime: basic exemption varies with age, the rest of the ladder does not. */
+/**
+ * Old regime: basic exemption varies with age, the rest of the ladder does not.
+ * A super senior's exemption reaches 5L, so the 5% band disappears and income
+ * above 5L goes straight to 20%.
+ */
 function oldRegimeSlabs(age: number): Slab[] {
-  const exemption = age >= 80 ? 500000 : age >= 60 ? 300000 : 250000
+  if (age >= 80) {
+    return [
+      { from: 500000, rate: 0.2 },
+      { from: 1000000, rate: 0.3 },
+    ]
+  }
   return [
-    { from: exemption, rate: 0.05 },
+    { from: age >= 60 ? 300000 : 250000, rate: 0.05 },
     { from: 500000, rate: 0.2 },
     { from: 1000000, rate: 0.3 },
-  ].filter((slab, index, all) => index === 0 || slab.from > all[index - 1]!.from)
+  ]
 }
 
 /** New regime (Sec 115BAC). Age-neutral by design. */
@@ -129,7 +138,8 @@ const CESS_RATE = 0.04
 function applyChapterVIACaps(
   deductions: DeductionInput,
   grossTotalIncome: number,
-  age: number
+  age: number,
+  parentsSenior: boolean
 ): { total: number; capped: Record<string, number>; workings: string[] } {
   const workings: string[] = []
   const capped: Record<string, number> = {}
@@ -149,11 +159,20 @@ function applyChapterVIACaps(
 
   const isSenior = age >= 60
 
+  // Sec 80D has separate ceilings for the taxpayer's family and for parents.
+  // A combined figure (Form 16 reports one) gets the most the section allows
+  // without knowing the parents' age.
+  const section80D =
+    deductions.section80DParents === undefined
+      ? cap("Sec 80D — health insurance (self, family and parents)", deductions.section80D, isSenior ? 100000 : 75000)
+      : cap("Sec 80D — health insurance (self and family)", deductions.section80D, isSenior ? 50000 : 25000) +
+        cap("Sec 80D — health insurance (parents)", deductions.section80DParents, parentsSenior ? 50000 : 25000)
+
   const total =
     cap("Sec 80C / 80CCC / 80CCD(1)", deductions.section80C, 150000) +
     cap("Sec 80CCD(1B) — NPS", deductions.section80CCD1B, 50000) +
     cap("Sec 80CCD(2) — employer NPS", deductions.section80CCD2, null) +
-    cap("Sec 80D — health insurance", deductions.section80D, isSenior ? 100000 : 75000) +
+    section80D +
     cap("Sec 80DD — disabled dependant", deductions.section80DD, 125000) +
     cap("Sec 80DDB — specified illness", deductions.section80DDB, isSenior ? 100000 : 40000) +
     cap("Sec 80E — education loan interest", deductions.section80E, null) +
@@ -205,23 +224,28 @@ function slabTax(income: number, slabs: Slab[]): number {
  * Surcharge with marginal relief.
  *
  * Marginal relief ensures the extra tax from crossing a threshold never exceeds
- * the income by which it was crossed. It is computed band by band against the
- * tax that would have been payable exactly at the threshold.
+ * the income by which it was crossed. It is computed against the tax that would
+ * have been payable exactly at the threshold — including the surcharge of the
+ * band below it, which applies at that income.
  */
 function computeSurcharge(
   totalIncome: number,
   taxOnSlabIncome: number,
   taxOnSpecialRateIncome: number,
   regime: Regime,
-  taxAtThreshold: (threshold: number) => number
+  taxAtThreshold: (threshold: number) => { slab: number; special: number }
 ): { surcharge: number; marginalRelief: number; note?: string } {
   const bands = regime === "NEW"
     ? SURCHARGE_BANDS.filter((b) => b.rate <= 0.25)
     : SURCHARGE_BANDS
 
   let applicable: (typeof SURCHARGE_BANDS)[number] | null = null
+  let below: (typeof SURCHARGE_BANDS)[number] | null = null
   for (const band of bands) {
-    if (totalIncome > band.threshold) applicable = band
+    if (totalIncome > band.threshold) {
+      below = applicable
+      applicable = band
+    }
   }
 
   if (!applicable) return { surcharge: 0, marginalRelief: 0 }
@@ -234,7 +258,12 @@ function computeSurcharge(
   // Marginal relief: tax + surcharge at this income must not exceed
   // (tax at the threshold) + (income above the threshold).
   const totalTax = taxOnSlabIncome + taxOnSpecialRateIncome + surcharge
-  const ceiling = taxAtThreshold(applicable.threshold) + (totalIncome - applicable.threshold)
+  const atThreshold = taxAtThreshold(applicable.threshold)
+  const belowRate = below?.rate ?? 0
+  const taxWithSurchargeAtThreshold =
+    atThreshold.slab * (1 + belowRate) +
+    atThreshold.special * (1 + Math.min(belowRate, SPECIAL_RATE_SURCHARGE_CAP))
+  const ceiling = taxWithSurchargeAtThreshold + (totalIncome - applicable.threshold)
   const marginalRelief = Math.max(0, totalTax - ceiling)
 
   return {
@@ -323,13 +352,29 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
   }
 
   // ── Head 2: House property (Sec 22–27) ──
-  // A self-occupied-property loss (typically Sec 24(b) interest) cannot be set
-  // off against other heads under the new regime.
-  const houseProperty = isOld ? input.housePropertyIncome : Math.max(0, input.housePropertyIncome)
-  if (input.housePropertyIncome !== 0) {
+  // Self-occupied home loan interest (Sec 24(b)) is capped at Rs. 2,00,000, and
+  // the resulting loss can be set off against other heads only up to
+  // Rs. 2,00,000 (Sec 71(3A)). Neither is available under the new regime.
+  const homeLoanInterest = isOld ? Math.min(Math.max(0, input.deductions.section24b), 200000) : 0
+  const housePropertyBeforeSetOffCap = input.housePropertyIncome - homeLoanInterest
+  const houseProperty = isOld
+    ? Math.max(housePropertyBeforeSetOffCap, -200000)
+    : Math.max(0, input.housePropertyIncome)
+  if (input.deductions.section24b > 0) {
     workings.push(
       isOld
-        ? `House property: ${fmt(input.housePropertyIncome)}`
+        ? input.deductions.section24b > 200000
+          ? `Sec 24(b) home loan interest: claimed ${fmt(input.deductions.section24b)}, restricted to the statutory ceiling of ${fmt(200000)}`
+          : `Sec 24(b) home loan interest: ${fmt(homeLoanInterest)}`
+        : "Sec 24(b) interest on a self-occupied house is not available under the new regime"
+    )
+  }
+  if (input.housePropertyIncome !== 0 || homeLoanInterest > 0) {
+    workings.push(
+      isOld
+        ? houseProperty > housePropertyBeforeSetOffCap
+          ? `House property: loss of ${fmt(-housePropertyBeforeSetOffCap)} restricted to ${fmt(200000)} for set-off against other income (Sec 71(3A))`
+          : `House property: ${fmt(houseProperty)}`
         : `House property: ${fmt(houseProperty)} (a self-occupied loss cannot be set off under the new regime)`
     )
   }
@@ -365,7 +410,7 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
   // The new regime allows only Sec 80CCD(2) (employer NPS) and Sec 80JJAA.
   let totalDeductions: number
   if (isOld) {
-    const result = applyChapterVIACaps(deductionsAgainstSlabIncome(input.deductions), grossTotalIncome, age)
+    const result = applyChapterVIACaps(deductionsAgainstSlabIncome(input.deductions), grossTotalIncome, age, input.parentsSenior ?? false)
     totalDeductions = result.total
     workings.push(...result.workings)
   } else {
@@ -430,13 +475,13 @@ function computeRegime(input: TaxComputationInput, regime: Regime): RegimeComput
 
   // ── Surcharge ──
   // Recomputes tax at a threshold with the same structure, for marginal relief.
-  const taxAtThreshold = (threshold: number): number => {
+  const taxAtThreshold = (threshold: number): { slab: number; special: number } => {
     const specialPortion = Math.min(threshold, stcg111A + ltcg112ATaxable)
     const slabPortion = Math.max(0, threshold - specialPortion)
     const specialShare = stcg111A + ltcg112ATaxable > 0
       ? specialPortion * (specialRateTax / (stcg111A + ltcg112ATaxable))
       : 0
-    return slabTax(slabPortion, slabs) + specialShare
+    return { slab: slabTax(slabPortion, slabs), special: specialShare }
   }
 
   const surchargeResult = computeSurcharge(
@@ -487,9 +532,60 @@ function deductionsAgainstSlabIncome(deductions: DeductionInput): DeductionInput
   return deductions
 }
 
+// ─── Input sanitisation ─────────────────────────────────────
+
+/** Professional tax cannot exceed Rs. 2,500 a year (Art. 276(2) of the Constitution). */
+const PROFESSIONAL_TAX_CEILING = 2500
+
+/** A non-finite amount (NaN, Infinity) would poison every figure downstream. */
+function finiteOrZero(value: number): number {
+  return Number.isFinite(value) ? value : 0
+}
+
+function nonNegative(value: number): number {
+  return Math.max(0, finiteOrZero(value))
+}
+
+/**
+ * Callers validate their own inputs, but the engine is the last line before a
+ * figure reaches a return, so it does not trust them. House property and
+ * business income may legitimately be negative (a loss).
+ */
+function sanitiseInput(input: TaxComputationInput): TaxComputationInput {
+  const deductions = Object.fromEntries(
+    // An absent optional field (section80DParents) must stay absent: it selects
+    // the combined 80D ceiling, and 0 would select the split one.
+    Object.entries(input.deductions)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => [key, nonNegative(value as number)])
+  ) as unknown as DeductionInput
+
+  return {
+    ...input,
+    age: input.age === undefined ? undefined : nonNegative(input.age),
+    salaryIncome: nonNegative(input.salaryIncome),
+    hraExemption: nonNegative(input.hraExemption),
+    ltaExemption: nonNegative(input.ltaExemption),
+    professionalTax: Math.min(nonNegative(input.professionalTax), PROFESSIONAL_TAX_CEILING),
+    housePropertyIncome: finiteOrZero(input.housePropertyIncome),
+    presumptiveIncome44ADA: nonNegative(input.presumptiveIncome44ADA),
+    presumptiveIncome44AD: nonNegative(input.presumptiveIncome44AD),
+    // A business loss is a real figure; only non-finite values are rejected.
+    businessIncome: finiteOrZero(input.businessIncome),
+    shortTermCapitalGains111A: nonNegative(input.shortTermCapitalGains111A),
+    longTermCapitalGains112A: nonNegative(input.longTermCapitalGains112A),
+    otherCapitalGains: nonNegative(input.otherCapitalGains),
+    otherSourcesIncome: nonNegative(input.otherSourcesIncome),
+    savingsInterest: nonNegative(input.savingsInterest),
+    deductions,
+    taxesPaid: input.taxesPaid === undefined ? undefined : nonNegative(input.taxesPaid),
+  }
+}
+
 // ─── Public entry point ─────────────────────────────────────
 
-export function computeIndianTax(input: TaxComputationInput): TaxComputationResult {
+export function computeIndianTax(rawInput: TaxComputationInput): TaxComputationResult {
+  const input = sanitiseInput(rawInput)
   const old = computeRegime(input, "OLD")
   const neu = computeRegime(input, "NEW")
 

@@ -54,8 +54,16 @@ export interface DeductionInput {
   section80CCD1B: number
   /** Sec 80CCD(2) — employer NPS. Allowed under BOTH regimes. */
   section80CCD2: number
-  /** Sec 80D — health insurance, self/family + parents. Cap 25k–1,00,000. */
+  /**
+   * Sec 80D — health insurance. When `section80DParents` is given, this is the
+   * self/spouse/children premium only (cap 25,000; 50,000 if the taxpayer is a
+   * senior). Otherwise it is a combined figure (as Form 16 reports it), capped
+   * at the most the section allows when the parents' age is unknown:
+   * 75,000, or 1,00,000 for a senior taxpayer.
+   */
   section80D: number
+  /** Sec 80D — parents' premium. Cap 25,000; 50,000 if a parent is a senior (see `parentsSenior`). */
+  section80DParents?: number
   /** Sec 80DD — maintenance of a disabled dependant. 75,000 or 1,25,000. */
   section80DD: number
   /** Sec 80DDB — treatment of specified illnesses. 40,000 or 1,00,000. */
@@ -109,6 +117,8 @@ export interface TaxComputationInput {
   financialYear: FinancialYear
   /** 60+ gets a higher basic exemption under the old regime; 80+ higher still. */
   age?: number
+  /** Either parent is 60+, which raises the Sec 80D parents' ceiling to 50,000. */
+  parentsSenior?: boolean
 
   // Head 1 — Salary (Sec 15–17)
   salaryIncome: number

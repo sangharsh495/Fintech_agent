@@ -237,6 +237,8 @@ export interface BuildFilingOptions {
   advanceTaxPaid?: number
   /** Regime the user explicitly chose, overriding the engine's recommendation. */
   regimeOverride?: "OLD" | "NEW"
+  /** Either parent is 60+, for the Sec 80D parents' ceiling. */
+  parentsSenior?: boolean
   /** Facts only the user can supply, feeding the ITR form decision. */
   declarations?: {
     hasForeignAssets?: boolean
@@ -288,6 +290,7 @@ export async function buildFilingDraft(
 
   const reconciliation = harmoniseTaxSources(harmonised, {
     age: context.age,
+    parentsSenior: options.parentsSenior,
     userDeductions: options.userDeductions,
     advanceTaxPaid: options.advanceTaxPaid,
   })
@@ -329,6 +332,9 @@ export async function buildFilingDraft(
     presumptiveScheme: options.presumptive?.scheme,
     hasFnOTrading: declarations.hasFnOTrading ?? false,
     hasCapitalGains,
+    ltcg112A: input.longTermCapitalGains112A,
+    hasOtherCapitalGains: input.shortTermCapitalGains111A > 0 || input.otherCapitalGains > 0,
+    financialYear,
     hasForeignAssets: declarations.hasForeignAssets ?? false,
     hasForeignIncome: declarations.hasForeignIncome ?? false,
     agriculturalIncome: declarations.agriculturalIncome ?? 0,

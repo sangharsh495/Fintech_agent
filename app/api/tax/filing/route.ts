@@ -40,6 +40,7 @@ const filingRequestSchema = z.object({
       section80CCD1B: nonNegative.optional(),
       section80CCD2: nonNegative.optional(),
       section80D: nonNegative.optional(),
+      section80DParents: nonNegative.optional(),
       section80DD: nonNegative.optional(),
       section80DDB: nonNegative.optional(),
       section80E: nonNegative.optional(),
@@ -70,6 +71,7 @@ const filingRequestSchema = z.object({
     .optional(),
   advanceTaxPaid: nonNegative.optional(),
   regimeOverride: z.enum(["OLD", "NEW"]).optional(),
+  parentsSenior: z.boolean().optional(),
   declarations: z
     .object({
       hasForeignAssets: z.boolean().optional(),
@@ -223,6 +225,7 @@ export async function POST(req: NextRequest) {
       if (body.presumptive !== undefined) options.presumptive = body.presumptive
       if (body.advanceTaxPaid !== undefined) options.advanceTaxPaid = body.advanceTaxPaid
       if (body.regimeOverride !== undefined) options.regimeOverride = body.regimeOverride
+      if (body.parentsSenior !== undefined) options.parentsSenior = body.parentsSenior
       if (body.declarations !== undefined) options.declarations = body.declarations
 
       // Merge over what was already declared so a partial update (e.g. only

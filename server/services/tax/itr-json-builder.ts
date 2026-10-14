@@ -288,6 +288,12 @@ export function validateITRPayload(payload: ITRPayload): ValidationIssue[] {
   if (payload.form === "ITR-1" && chosen.specialRateTax > 0) {
     error("form", "Capital gains taxed at special rates cannot be reported in ITR-1 (Sahaj). File ITR-2.")
   }
+  // AY 2025-26 lets ITR-1 report Sec 112A gains up to Rs. 1,25,000, but this
+  // generator does not emit that schedule yet; refusing is better than a
+  // return that silently leaves the gain out.
+  if (payload.form === "ITR-1" && (payload.capitalGains?.ltcg112A ?? 0) > 0) {
+    error("form", "This ITR-1 has Sec 112A long-term gains. FinFlow cannot generate the ITR-1 Schedule LTCG 112A yet: generate ITR-2 instead, or enter the gains on the e-filing portal.")
+  }
   if (payload.form === "ITR-1" && chosen.grossTotalIncome > 5000000) {
     error("form", "Total income above Rs. 50,00,000 cannot be reported in ITR-1 (Sahaj). File ITR-2.")
   }

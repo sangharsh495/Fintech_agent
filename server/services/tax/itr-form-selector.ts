@@ -35,6 +35,14 @@ export interface TaxpayerProfile {
   hasFnOTrading: boolean
 
   hasCapitalGains: boolean
+  /** Gross long-term gains under Sec 112A (listed equity), for the AY 2025-26 ITR-1/ITR-4 allowance. */
+  ltcg112A?: number
+  /** Any capital gains other than Sec 112A LTCG (STCG, debt, property…). */
+  hasOtherCapitalGains?: boolean
+  /** A capital loss brought forward or to be carried forward. */
+  hasCapitalLossCarryForward?: boolean
+  /** "2024-2025" etc.; rules that changed between years depend on it. */
+  financialYear?: string
   hasForeignAssets: boolean
   hasForeignIncome?: boolean
   /** Agricultural income above Rs. 5,000 disqualifies ITR-1 and ITR-4. */
@@ -64,10 +72,38 @@ const ITR1_INCOME_CEILING = 5000000
 const ITR4_INCOME_CEILING = 5000000
 const SEC_44AD_TURNOVER_CEILING = 30000000 // Rs. 3 crore, with the 95% digital receipts condition
 const SEC_44ADA_TURNOVER_CEILING = 7500000 // Rs. 75 lakh, with the 95% digital receipts condition
+/** From AY 2025-26, ITR-1 and ITR-4 may report Sec 112A LTCG up to this amount. */
+const SIMPLE_FORM_LTCG_112A_LIMIT = 125000
+
+/**
+ * From AY 2025-26 (FY 2024-25 onward) ITR-1 and ITR-4 accept long-term gains
+ * under Sec 112A of up to Rs. 1,25,000, provided there are no other capital
+ * gains and no capital loss to carry forward. Earlier years allow none.
+ */
+function simpleFormLtcgAllowed(profile: TaxpayerProfile): boolean {
+  const startYear = Number(profile.financialYear?.slice(0, 4) ?? 0)
+  return (
+    profile.hasCapitalGains &&
+    startYear >= 2024 &&
+    !profile.hasOtherCapitalGains &&
+    !profile.hasCapitalLossCarryForward &&
+    profile.ltcg112A !== undefined &&
+    profile.ltcg112A <= SIMPLE_FORM_LTCG_112A_LIMIT
+  )
+}
 
 export function determineITRForm(profile: TaxpayerProfile): ITRSelection {
   const disqualifiers: string[] = []
   const warnings: string[] = []
+
+  const smallLtcgOnly = simpleFormLtcgAllowed(profile)
+  // Capital gains that rule out the simplified forms.
+  const barringCapitalGains = profile.hasCapitalGains && !smallLtcgOnly
+  if (smallLtcgOnly) {
+    warnings.push(
+      `Long-term gains under Sec 112A of Rs. ${(profile.ltcg112A ?? 0).toLocaleString("en-IN")} are within the Rs. 1,25,000 that ITR-1 and ITR-4 accept from AY 2025-26; report them in Schedule LTCG 112A.`
+    )
+  }
 
   // ── Conditions that bar BOTH of the simplified forms (ITR-1 and ITR-4) ──
 
@@ -159,7 +195,7 @@ export function determineITRForm(profile: TaxpayerProfile): ITRSelection {
       }
     }
 
-    if (profile.hasCapitalGains) {
+    if (barringCapitalGains) {
       disqualifiers.push("You have capital gains, which ITR-4 (Sugam) cannot report.")
       return {
         form: "ITR-3",
@@ -212,7 +248,7 @@ export function determineITRForm(profile: TaxpayerProfile): ITRSelection {
 
   // ── ITR-2: everything a salaried filer can have except business income ──
 
-  if (profile.hasCapitalGains) {
+  if (barringCapitalGains) {
     disqualifiers.push("You have capital gains, which ITR-1 (Sahaj) cannot report.")
   }
   if (profile.grossIncome > ITR1_INCOME_CEILING) {

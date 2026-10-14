@@ -151,6 +151,8 @@ function deductionsFromForm16(chapterVIA: Record<string, number>): DeductionInpu
 
 export interface HarmoniseOptions {
   age?: number
+  /** Either parent is 60+ (raises the Sec 80D parents' ceiling). */
+  parentsSenior?: boolean
   /** Deduction amounts the user asserted in the wizard, which override parsed ones. */
   userDeductions?: Partial<DeductionInput>
   /** Advance tax and self-assessment tax already paid, beyond TDS. */
@@ -273,8 +275,11 @@ export function harmoniseTaxSources(
   }
 
   // Form 16 reports the self-occupied loss the employer already considered;
-  // it nets against the let-out income above.
-  const housePropertyIncome = housePropertyFromRent + (form16?.housePropertyIncome ?? 0)
+  // it nets against the let-out income above. That loss is usually the same
+  // Sec 24(b) interest the engine applies from `section24b`, so the two must
+  // never both be carried (see the user-override block below).
+  const form16HouseLoss = Math.min(0, form16?.housePropertyIncome ?? 0)
+  let housePropertyIncome = housePropertyFromRent + (form16?.housePropertyIncome ?? 0)
 
   // ── Deductions ──
   const deductions = form16 ? deductionsFromForm16(form16.chapterVIA) : emptyDeductions()
@@ -304,6 +309,8 @@ export function harmoniseTaxSources(
     for (const [section, amount] of Object.entries(bankDerived.detectedDeductions)) {
       const key = mapSectionToKey(section)
       if (!key || amount <= 0) continue
+      // Form 16 already carries the home loan interest as a house property loss.
+      if (key === "section24b" && form16HouseLoss < 0) continue
       if (deductions[key] === 0) {
         deductions[key] = amount
         findings.push({
@@ -332,6 +339,20 @@ export function harmoniseTaxSources(
       if (typeof value === "number" && value >= 0) {
         deductions[key as keyof DeductionInput] = value
       }
+    }
+
+    // A declared Sec 24(b) figure replaces the employer-considered loss rather
+    // than adding to it.
+    if ((options.userDeductions.section24b ?? 0) > 0 && form16HouseLoss < 0) {
+      housePropertyIncome -= form16HouseLoss
+      findings.push({
+        item: "Section 24(b) — home loan interest",
+        severity: "info",
+        values: { form16: -form16HouseLoss },
+        adopted: deductions.section24b,
+        message: `Your declared home loan interest of Rs. ${Math.round(deductions.section24b).toLocaleString("en-IN")} replaces the Rs. ${Math.round(-form16HouseLoss).toLocaleString("en-IN")} house property loss on your Form 16, so the interest is counted once.`,
+        citation: "Sec 24(b) read with Sec 71(3A)",
+      })
     }
   }
 
@@ -368,6 +389,7 @@ export function harmoniseTaxSources(
   const input: TaxComputationInput = {
     financialYear,
     age,
+    parentsSenior: options.parentsSenior,
     salaryIncome,
     hraExemption: form16?.exemptions.hra ?? 0,
     ltaExemption: form16?.exemptions.lta ?? 0,

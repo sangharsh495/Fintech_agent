@@ -35,6 +35,9 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Forms the server-side builder can emit (itr-json-builder.ts).
+const JSON_SUPPORTED_FORMS: string[] = ["ITR-1", "ITR-2"]
+
 // ─── Types mirroring the API responses ──────────────────────
 
 interface Finding {
@@ -997,8 +1000,19 @@ export default function TaxFilingPage() {
                 </div>
               )}
 
+              {!JSON_SUPPORTED_FORMS.includes(draft.itrForm) && (
+                <div className="mt-5 p-4 rounded-xl bg-amber-500/5 border border-amber-500/30 text-xs text-muted-foreground">
+                  Your income needs {draft.itrForm}. FinFlow can generate the upload JSON for ITR-1 and ITR-2 only,
+                  so file {draft.itrForm} on the e-filing portal (or with a CA) using the figures and audit above.
+                </div>
+              )}
+
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button onClick={generateReturn} disabled={busy} className="rounded-xl">
+                <Button
+                  onClick={generateReturn}
+                  disabled={busy || !JSON_SUPPORTED_FORMS.includes(draft.itrForm)}
+                  className="rounded-xl"
+                >
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
                   Generate {draft.itrForm} JSON
                 </Button>
