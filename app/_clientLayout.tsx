@@ -118,10 +118,12 @@ export default function ClientLayout({
           sidebarOpen={sidebarOpen}
           onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-        <div className="flex pt-16">
+        {/* No top padding: the navbar is sticky, so it already takes its 4rem in
+            the flow. pt-16 added a second, blank 4rem band under it on every page. */}
+        <div className="flex">
           <Sidebar isOpen={sidebarOpen} />
           <main
-            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 ${isChatPage ? "pb-0 overflow-hidden" : "pb-28 md:pb-0"} ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
+            className={`flex-1 min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-auto transition-all duration-300 ${isChatPage ? "pb-24 md:pb-0 md:overflow-hidden" : "pb-28 md:pb-0"} ${sidebarOpen ? "md:ml-[18rem]" : "md:ml-0"}`}
           >
             <div className={isChatPage ? "w-full flex-1 flex flex-col min-h-0" : "container-page py-4 sm:py-8 w-full flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
               {children}
