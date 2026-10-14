@@ -425,7 +425,7 @@ export function AIWidget({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 group flex items-center gap-3 p-1.5 pr-4 rounded-full bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-white border border-indigo-500/40 shadow-[0_10px_35px_rgba(79,70,229,0.35)] hover:shadow-[0_15px_45px_rgba(79,70,229,0.5)] hover:border-indigo-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-xl"
+          className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 group flex items-center gap-3 p-1.5 sm:pr-4 rounded-full bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 text-white border border-indigo-500/40 shadow-[0_10px_35px_rgba(79,70,229,0.35)] hover:shadow-[0_15px_45px_rgba(79,70,229,0.5)] hover:border-indigo-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-xl"
           aria-label="Open FinFlow Virtual CA Copilot"
         >
           {/* Animated Glowing Orb Icon */}
@@ -437,7 +437,8 @@ export function AIWidget({
             </span>
           </div>
 
-          <div className="flex flex-col text-left">
+          {/* Label hidden on phones so the button does not cover page controls */}
+          <div className="hidden sm:flex flex-col text-left">
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-black tracking-wide bg-gradient-to-r from-white via-indigo-100 to-indigo-200 bg-clip-text text-transparent">
                 Ask Virtual CA
@@ -512,8 +513,8 @@ export function AIWidget({
             </div>
           </div>
 
-          {/* ── Messages & Interactive Feed ── */}
-          <ScrollArea className="flex-1 p-4">
+          {/* ── Messages & Interactive Feed (Smooth Scrollable) ── */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 overscroll-contain">
             {messages.length === 0 ? (
               <div className="space-y-4 py-2">
                 {/* Hero Greeting Card */}
@@ -625,7 +626,7 @@ export function AIWidget({
               </div>
             )}
             <div ref={messagesEndRef} />
-          </ScrollArea>
+          </div>
 
           {/* ── Error Banner ── */}
           {error && (

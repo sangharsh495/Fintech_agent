@@ -294,6 +294,15 @@ function FormattedContent({ text }: { text: string }) {
   )
 }
 
+/** The chat route answers errors as JSON ({ error }); show that text, not a raw dump. */
+function chatErrorMessage(err: Error): string {
+  try {
+    const parsed = JSON.parse(err.message)
+    if (parsed?.error) return String(parsed.error)
+  } catch {}
+  return err.message || "The Virtual CA could not answer. Please try again."
+}
+
 export default function AICAsPage() {
   const [sessions, setSessions] = useState<ChatSessionSummary[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -301,7 +310,17 @@ export default function AICAsPage() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [showMobileHistory, setShowMobileHistory] = useState(false)
 
-  const { messages: chatMessages, sendMessage, setMessages, status } = useChat({
+  // Escape closes the phone history panel, like every other overlay.
+  useEffect(() => {
+    if (!showMobileHistory) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowMobileHistory(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [showMobileHistory])
+
+  const { messages: chatMessages, sendMessage, setMessages, status, error: chatError } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/ai/chat",
       body: {
@@ -516,7 +535,7 @@ export default function AICAsPage() {
           <div className="lg:col-span-6 flex flex-col gap-4 h-full">
             <Card className="flex flex-col flex-1 overflow-hidden border-border/50 shadow-xs bg-card/45 backdrop-blur-xl rounded-2xl h-full relative">
               {/* Mobile Consultation Controls Header */}
-              <div className="lg:hidden flex items-center justify-between px-4 py-2.5 bg-secondary/50 border-b border-border/50">
+              <div className="lg:hidden relative z-40 flex items-center justify-between px-4 py-2.5 bg-secondary/50 border-b border-border/50">
                 <button
                   type="button"
                   onClick={() => setShowMobileHistory(!showMobileHistory)}
@@ -547,6 +566,7 @@ export default function AICAsPage() {
                     <button
                       type="button"
                       onClick={() => setShowMobileHistory(false)}
+                      aria-label="Close past consultations"
                       className="p-1 rounded-lg text-muted-foreground hover:text-foreground"
                     >
                       <X className="w-4 h-4" />
@@ -595,7 +615,7 @@ export default function AICAsPage() {
               )}
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-5 overscroll-contain">
                 {historyLoading && (
                   <div className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -658,6 +678,11 @@ export default function AICAsPage() {
                       <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">Formulating advice...</span>
                     </div>
+                  </div>
+                )}
+                {chatError && !isLoading && (
+                  <div role="alert" className="mx-auto max-w-md text-center text-xs text-destructive bg-destructive/5 border border-destructive/30 rounded-xl px-4 py-3">
+                    {chatErrorMessage(chatError)}
                   </div>
                 )}
                 <div ref={messagesEndRef} className="h-2" />

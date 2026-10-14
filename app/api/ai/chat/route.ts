@@ -73,10 +73,48 @@ if (!endpoint || !apiKey) {
   safeLogInfo("[AI CHAT] ORACLE_AI_ENDPOINT or ORACLE_AI_API_KEY not defined. Running with Groq fallback.")
 }
 
+/**
+ * Resolves once the model has produced output, or throws the provider error
+ * (status code included) so callers can retry with another key. fullStream is
+ * a tee of the underlying stream, so reading it here loses nothing for the
+ * response built afterwards.
+ */
+async function awaitFirstOutput(result: { fullStream: AsyncIterable<any> }): Promise<void> {
+  for await (const part of result.fullStream) {
+    if (part.type === "error") throw part.error
+    if (["text-delta", "reasoning-delta", "tool-call", "finish-step", "finish"].includes(part.type)) return
+  }
+}
+
+function isOracleReady(): boolean {
+  return Boolean(
+    apiKey && !apiKey.includes("your-deployment-ocid") && endpoint && !endpoint.includes("amaaaaaak...")
+  )
+}
+
+function hasGroqKey(): boolean {
+  return [
+    process.env.GROQ_API_KEY,
+    process.env.GROQ_KEY_1,
+    process.env.GROQ_KEY_2,
+    process.env.GROQ_KEY_3,
+    process.env.GROQ_API_KEY_1,
+    process.env.GROQ_API_KEY_2,
+    process.env.GROQ_API_KEY_3,
+  ].some(Boolean)
+}
+
 export async function POST(req: NextRequest) {
   const session = await getSession(req)
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  if (!isOracleReady() && !hasGroqKey()) {
+    return NextResponse.json(
+      { error: "The Virtual CA is not configured on this server yet (no AI provider key). Your data and every other feature still work." },
+      { status: 503 }
+    )
   }
 
   // ─── userId from JWT ONLY, never from request body ────────
@@ -200,11 +238,7 @@ export async function POST(req: NextRequest) {
       // ─── Model selection ────────────────────────────────────
       const modelName = aiAccess.policy?.model || process.env.ORACLE_AI_MODEL || "oracle-llama-3-8b"
 
-      const isOracleConfigured =
-        apiKey &&
-        !apiKey.includes("your-deployment-ocid") &&
-        endpoint &&
-        !endpoint.includes("amaaaaaak...")
+      const isOracleConfigured = isOracleReady()
 
       // ─── The system prompt IS the hardened context from buildCASystemPrompt ──
       // NO additional system prompt text is added here — the defense preamble,
@@ -279,6 +313,11 @@ export async function POST(req: NextRequest) {
             onFinish: async ({ text }: { text: string }) => persistAssistantReply(text),
           } as any)
 
+          // Wait for Groq's first output before answering. A revoked or
+          // rate-limited key only fails once streaming starts, which used to
+          // happen after we had already returned, so the rotator never saw the
+          // error and never moved on to the next key.
+          await awaitFirstOutput(result)
           return result.toUIMessageStreamResponse()
         })
       }
@@ -329,7 +368,10 @@ export async function POST(req: NextRequest) {
 
       await oracleAccessControl.logAIUsage(userId, userEmail, process.env.ORACLE_AI_MODEL || "unknown", 0, [], currentPath, false)
 
-      return NextResponse.json({ error: "AI service unavailable" }, { status: 500 })
+      return NextResponse.json(
+        { error: "The Virtual CA could not reach the AI provider right now. Please try again in a minute." },
+        { status: 503 }
+      )
     }
   })
 }
