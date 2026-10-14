@@ -164,7 +164,7 @@ function DistributionPieChart({
                 <span className="text-muted-foreground flex-1 text-xs">{item.name}</span>
                 <span className="font-bold text-foreground text-xs">{item.value}</span>
                 <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                  {item.percentage.toFixed(1)}%
+                  {Number(item.percentage ?? 0).toFixed(1)}%
                 </span>
               </div>
             ))}
@@ -304,12 +304,12 @@ function AnomalyPanel({ anomalySummary }: { anomalySummary: AnomalySummary }) {
           </div>
           <div className="bg-card/80 rounded-xl p-4 border border-border">
             <p className="text-xs text-muted-foreground">Anomaly Rate</p>
-            <p className="text-2xl font-bold text-amber-500">{anomalySummary.anomaly_rate}%</p>
+            <p className="text-2xl font-bold text-amber-500">{anomalySummary.anomaly_rate ?? 0}%</p>
           </div>
           <div className="bg-card/80 rounded-xl p-4 border border-border">
             <p className="text-xs text-muted-foreground">Total Amount</p>
             <p className="text-2xl font-bold text-foreground">
-              ₹{(anomalySummary.total_anomaly_amount / 1000).toFixed(1)}K
+              ₹{(Number(anomalySummary.total_anomaly_amount ?? 0) / 1000).toFixed(1)}K
             </p>
           </div>
         </div>
@@ -375,7 +375,7 @@ function ModelPerformanceCard({ runHistory }: { runHistory: any[] }) {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {run.silhouette_score !== null ? (
+              {run.silhouette_score != null ? (
                 <Badge
                   variant="outline"
                   className={cn(

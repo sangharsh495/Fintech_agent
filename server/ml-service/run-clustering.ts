@@ -1,16 +1,17 @@
-import { exec } from "child_process"
+import { execFile } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
 import { promisify } from "util"
 import { safeLogError } from "@/server/lib/safe-log";
 
-const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 export interface ClusteringResults {
   algorithm: string
   n_clusters: number
-  silhouette_score: number
-  inertia: number
+  /** Null when no ML model ran (the rule-based fallback has no such score). */
+  silhouette_score: number | null
+  inertia: number | null
   total_transactions: number
   parameters: any
   clusters: {
@@ -37,14 +38,20 @@ export async function runPythonClustering(
   numTransactions: number
 ): Promise<ClusteringResults> {
   const processCwd = process.cwd()
-  const pythonPath = path.join(processCwd, "ml-service", "venv", "bin", "python")
+  // The project virtualenv when present, otherwise the system interpreter.
+  const venvPython = path.join(processCwd, "ml-service", "venv", "bin", "python")
+  const pythonPath = fs.existsSync(venvPython) ? venvPython : "python3"
   const scriptPath = path.join(processCwd, "ml-service", "app", "main.py")
 
   console.log(`[ML Service] Spawning Python clustering: ${pythonPath} ${scriptPath} --file ${tempFilePath}`)
 
   try {
-    const { stdout, stderr } = await execAsync(
-      `"${pythonPath}" "${scriptPath}" --file "${tempFilePath}" --userId "${userId}"`
+    // Arguments are passed directly, not through a shell; the buffer is sized
+    // for large users (the 1 MB default made big results fall back silently).
+    const { stdout, stderr } = await execFileAsync(
+      pythonPath,
+      [scriptPath, "--file", tempFilePath, "--userId", userId],
+      { maxBuffer: 64 * 1024 * 1024, timeout: 120_000 }
     )
 
     if (stderr && stderr.trim()) {
@@ -68,14 +75,15 @@ async function getJSClusteringFallback(tempFilePath: string): Promise<Clustering
   const data = JSON.parse(raw)
   const txns = data.transactions || []
 
-  // Fallback clustering in JS (rule-based grouping to look identical to ML results)
+  // Rule-based grouping used when Python is unavailable. It reports itself as
+  // such: no model ran, so there is no silhouette score or inertia to report.
   const results: ClusteringResults = {
-    algorithm: "kmeans-js-fallback",
+    algorithm: "rule-based-js-fallback",
     n_clusters: 13,
-    silhouette_score: 0.65,
-    inertia: 120.4,
+    silhouette_score: null,
+    inertia: null,
     total_transactions: txns.length,
-    parameters: { init: "random", random_state: 42 },
+    parameters: { method: "fixed amount, category and time thresholds" },
     clusters: {
       spending_behavior: { "0": [], "1": [], "2": [] },
       transaction_size: { "0": [], "1": [], "2": [], "3": [] },

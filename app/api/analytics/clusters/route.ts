@@ -127,6 +127,8 @@ export async function GET(request: NextRequest) {
             chart_data: clusters.map((c) => ({
               name: c.label,
               value: c.transaction_count,
+              color: c.color,
+              percentage: Number(c.percentage_of_total ?? 0),
             })),
             clusters,
           }
@@ -137,8 +139,13 @@ export async function GET(request: NextRequest) {
         const anomalySummary = {
           total_anomalies: userAnomalies.length,
           percentage_anomalies: totalTxns > 0 ? parseFloat(((userAnomalies.length / totalTxns) * 100).toFixed(2)) : 0,
+          anomaly_rate: totalTxns > 0 ? parseFloat(((userAnomalies.length / totalTxns) * 100).toFixed(2)) : 0,
+          total_anomaly_amount: userAnomalies.reduce((sum, a) => sum + Math.abs(parseFloat(a.amount) || 0), 0),
           top_anomalies: userAnomalies.map((a) => ({
+            id: a.id,
             transaction_id: a.id,
+            merchant: a.merchant || a.description || a.rawDescription || "Unknown",
+            anomalyScore: a.anomalyScore ?? 0,
             amount: parseFloat(a.amount),
             category: a.category,
             date: a.date.toISOString(),
@@ -151,8 +158,8 @@ export async function GET(request: NextRequest) {
           cluster_type: r.clusterType,
           algorithm: r.algorithm,
           n_clusters: r.nClusters,
-          silhouette_score: r.silhouetteScore || 0,
-          inertia: r.inertia || 0,
+          silhouette_score: r.silhouetteScore ?? null,
+          inertia: r.inertia ?? null,
           total_transactions: r.totalTransactions,
           status: r.status,
           run_at: r.runAt.toISOString(),

@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { safeLogError } from "@/server/lib/safe-log";
 import { getSession } from "@/server/lib/get-session";
 import { withUserScopedDb } from "@/server/db/rls-connection";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { transactions, clusterMetadata, clusterRuns } from "@/server/db/schema";
-import { execSync } from "child_process";
-import { writeFileSync, unlinkSync } from "fs";
-import { join } from "path";
+import { runPythonClustering } from "@/server/ml-service/run-clustering";
+import { randomUUID } from "crypto";
+import { promises as fs } from "fs";
+import os from "os";
+import path from "path";
+
+const CLUSTER_COLUMNS = {
+  spending_behavior: "spendingCluster",
+  transaction_size: "sizeCluster",
+  temporal: "temporalCluster",
+  category_affinity: "categoryCluster",
+} as const;
 
 /**
  * POST /api/analytics/run-clustering
@@ -41,79 +50,67 @@ export async function POST(req: NextRequest) {
         })),
       };
 
-      const tmpPath = join(process.cwd(), `cluster_input_${userId}.json`);
-      writeFileSync(tmpPath, JSON.stringify(input));
+      // A writable temp location (the app directory is read-only on
+      // serverless hosts), always removed afterwards.
+      const tmpPath = path.join(os.tmpdir(), `finflow-cluster-${randomUUID()}.json`);
+      await fs.writeFile(tmpPath, JSON.stringify(input));
 
-      // 3. Execute the ML service script
-      const cmd = `python3 ${join(process.cwd(), "ml-service/app/main.py")} --file ${tmpPath} --userId ${userId}`;
-      const rawOutput = execSync(cmd, { encoding: "utf-8" });
-      // Clean up temp file
-      unlinkSync(tmpPath);
+      // 3. Run clustering: Python when available, the rule-based JS fallback otherwise.
+      let result;
+      try {
+        result = await runPythonClustering(userId, tmpPath, txnRows.length);
+      } finally {
+        await fs.rm(tmpPath, { force: true });
+      }
 
-      // 4. Parse ML output (expects JSON)
-      const result = JSON.parse(rawOutput);
-
-      // 5. Update transactions with cluster IDs
-      const txnUpdates: Promise<any>[] = [];
-      Object.entries(result.clusters ?? {}).forEach(([clusterType, clusters]) => {
-        // clusterType corresponds to keys used in DB columns (e.g., spending_behavior => spendingCluster)
-        const dbColumn = (() => {
-          switch (clusterType) {
-            case "spending_behavior":
-              return "spendingCluster" as const;
-            case "transaction_size":
-              return "sizeCluster" as const;
-            case "temporal":
-              return "temporalCluster" as const;
-            case "category_affinity":
-              return "categoryCluster" as const;
-            default:
-              return null;
-          }
-        })();
-        if (!dbColumn) return;
-        Object.entries(clusters as Record<string, string[]>).forEach(([clusterId, txnIds]) => {
-          txnIds.forEach((txnId) => {
-            txnUpdates.push(
-              db
-                .update(transactions)
-                .set({ [dbColumn]: Number(clusterId) })
-                .where(eq(transactions.id, txnId))
-            );
-          });
-        });
-      });
-      await Promise.all(txnUpdates);
+      // 5. Update transactions with cluster IDs: one statement per cluster,
+      // scoped to this user.
+      for (const [clusterType, column] of Object.entries(CLUSTER_COLUMNS)) {
+        const groups = (result.clusters as Record<string, Record<string, string[]>>)[clusterType] ?? {};
+        for (const [clusterId, txnIds] of Object.entries(groups)) {
+          if (!txnIds.length) continue;
+          await db
+            .update(transactions)
+            .set({ [column]: Number(clusterId) })
+            .where(and(eq(transactions.userId, userId), inArray(transactions.id, txnIds)));
+        }
+      }
+      for (const anomaly of result.anomalies ?? []) {
+        await db
+          .update(transactions)
+          .set({ isAnomaly: true, anomalyScore: anomaly.score })
+          .where(and(eq(transactions.userId, userId), eq(transactions.id, anomaly.transaction_id)));
+      }
 
       // 6. Store cluster metadata
-      const metaInserts: Promise<any>[] = [];
+      const metaRecords: any[] = [];
       const now = new Date();
       Object.entries(result.metadata ?? {})
         .filter(([k]) => ["spending_behavior", "transaction_size", "temporal", "category_affinity"].includes(k))
         .forEach(([clusterType, meta]) => {
           const metaObj = meta as Record<string, any>;
           Object.entries(metaObj).forEach(([clusterId, data]) => {
-            metaInserts.push(
-              db.insert(clusterMetadata).values({
-                userId,
-                clusterType: clusterType,
-                clusterId: Number(clusterId),
-                label: data.label,
-                description: data.description,
-                color: data.color,
-                centroid: JSON.stringify(data.centroid),
-                transactionCount: data.transaction_count,
-                totalAmount: data.total_amount,
-                avgAmount: data.avg_amount,
-                dominantCategory: data.dominant_category,
-                dominantPaymentMethod: data.dominant_payment_method,
-                percentageOfTotal: data.percentage_of_total,
-                createdAt: now,
-              })
-            );
+            metaRecords.push({
+              userId,
+              clusterType: clusterType,
+              clusterId: Number(clusterId),
+              label: data.label,
+              description: data.description,
+              color: data.color,
+              centroid: JSON.stringify(data.centroid),
+              transactionCount: data.transaction_count,
+              totalAmount: data.total_amount,
+              avgAmount: data.avg_amount,
+              dominantCategory: data.dominant_category,
+              dominantPaymentMethod: data.dominant_payment_method,
+              percentageOfTotal: data.percentage_of_total,
+              createdAt: now,
+            });
           });
         });
-      await Promise.all(metaInserts);
+      if (metaRecords.length > 0) {
+        await db.insert(clusterMetadata).values(metaRecords);
+      }
 
       // 7. Store run history
       await db.insert(clusterRuns).values({
